@@ -418,6 +418,7 @@
       <div class="config-group">
         <label>Modo de operação</label>
         <div class="toggle-group">
+          <button class="toggle-btn" onclick="toggleMode(this,'scalp')">⚡ Scalp (1m / 3m)</button>
           <button class="toggle-btn" onclick="toggleMode(this,'swing')">Swing (4h / 1D)</button>
           <button class="toggle-btn active" onclick="toggleMode(this,'day')">Day Trade (5m / 15m / 1h)</button>
           <button class="toggle-btn" onclick="toggleMode(this,'both')">Automático (todos)</button>
@@ -672,9 +673,10 @@ function toggleRR(el, v) {
 // TIMEFRAMES
 // ─────────────────────────────────────────
 const TIMEFRAMES_BY_MODE = {
+  scalp:['1m','3m'],
   day:  ['5m','15m','1h'],
   swing:['4h','1D'],
-  both: ['5m','15m','1h','4h','1D'],
+  both: ['1m','3m','5m','15m','1h','4h','1D'],
 };
 
 // ─────────────────────────────────────────
@@ -685,7 +687,7 @@ const PROXIES = [
   u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
   u => u,
 ];
-const TF_MAP = { '5m':'5','15m':'15','1h':'60','4h':'240','1D':'D' };
+const TF_MAP = { '1m':'1','3m':'3','5m':'5','15m':'15','1h':'60','4h':'240','1D':'D' };
 
 async function fetchWithProxy(url) {
   for (const proxy of PROXIES) {
@@ -815,20 +817,40 @@ function calcMetas(dir, entry, stop) {
 // ─────────────────────────────────────────
 // MOTOR DE ANÁLISE
 // ─────────────────────────────────────────
+// Pontuação máxima teórica (todos indicadores perfeitos):
+//   RSI:            22 + 8 divergência = 30
+//   MACD cross:     22 + 5 histograma  = 27
+//   EMA:            18 + 6 golden cross = 24
+//   Bollinger:      12
+//   Volume:          8
+//   F&G:            12
+// TOTAL MAX:       113
+const SCORE_MAX = 113;
+
+function isScalpTF(tf) { return tf === '1m' || tf === '3m'; }
+
 function analyzeCandles(coin, tf, candles, fg) {
   if (!candles || candles.length < 50) return null;
   const closes = candles.map(c=>c.close);
   const last   = candles[candles.length-1];
   const price  = last.close;
 
-  const rsiArr  = calcRSI(closes);
+  const scalp = isScalpTF(tf);
+  // Scalp: RSI9 + EMA50 (mais responsivos); demais: RSI14 + EMA200
+  const rsiPeriod = scalp ? 9 : 14;
+  const emaSlowP  = scalp ? 50 : 200;
+
+  const rsiArr  = calcRSI(closes, rsiPeriod);
   const rsi     = rsiArr[rsiArr.length-1];
-  const e9      = calcEMA(closes,9);
-  const e21     = calcEMA(closes,21);
-  const e200    = calcEMA(closes,200);
-  const ema9    = e9[e9.length-1];
-  const ema21   = e21[e21.length-1];
-  const ema200  = e200[e200.length-1];
+
+  const e9arr   = calcEMA(closes,9);
+  const e21arr  = calcEMA(closes,21);
+  const eSlowArr= calcEMA(closes, emaSlowP);
+  const ema9    = e9arr[e9arr.length-1];
+  const ema21   = e21arr[e21arr.length-1];
+  const emaSlow = eSlowArr[eSlowArr.length-1];
+  const ema9p   = e9arr[e9arr.length-2];   // período anterior (para golden/death cross)
+  const ema21p  = e21arr[e21arr.length-2];
 
   const {macdLine,signal,hist} = calcMACD(closes);
   const macdNow  = macdLine[macdLine.length-1], macdPrev = macdLine[macdLine.length-2];
@@ -840,23 +862,46 @@ function analyzeCandles(coin, tf, candles, fg) {
   const atrs = calcATR(candles);
   const atr  = atrs[atrs.length-1];
   const volAvg  = avgVol(candles);
-  const volRatio= last.volume / volAvg;
+  const volRatio= volAvg > 0 ? last.volume / volAvg : 1;
   const levels  = findLevels(candles);
+
+  // Divergência de RSI simples (5 períodos atrás)
+  const rsiBack5  = rsiArr[rsiArr.length-6];
+  const priceBack5= closes[closes.length-6];
+  const bullDiv   = rsiBack5 !== null && price < priceBack5 && rsi > rsiBack5;
+  const bearDiv   = rsiBack5 !== null && price > priceBack5 && rsi < rsiBack5;
 
   let score=0;
   const reasons=[], indicators=[];
 
-  // RSI
+  // ── RSI (max ±30) ──────────────────────
   if (rsi !== null) {
-    if      (rsi < 30) { score += 22; reasons.push({text:`RSI ${rsi.toFixed(1)} — Sobrevendido`,type:'positive'}); }
-    else if (rsi < 40) { score += 10; reasons.push({text:`RSI ${rsi.toFixed(1)} — Zona de compra`,type:'positive'}); }
-    else if (rsi > 70) { score -= 22; reasons.push({text:`RSI ${rsi.toFixed(1)} — Sobrecomprado`,type:'negative'}); }
-    else if (rsi > 60) { score -= 10; reasons.push({text:`RSI ${rsi.toFixed(1)} — Zona de venda`,type:'negative'}); }
-    else               { reasons.push({text:`RSI ${rsi.toFixed(1)} — Neutro`,type:'neutral'}); }
-    indicators.push({name:'RSI (14)',reading:rsi.toFixed(1),color:rsi<35?'var(--accent)':rsi>65?'var(--danger)':'var(--warn)'});
+    // Scalp usa limiares menos extremos para gerar mais sinais
+    const ob  = scalp ? 65 : 70;
+    const os  = scalp ? 35 : 30;
+    const ob2 = scalp ? 58 : 60;
+    const os2 = scalp ? 42 : 40;
+
+    if      (rsi < os)  { score += 22; reasons.push({text:`RSI(${rsiPeriod}) ${rsi.toFixed(1)} — Sobrevendido`,type:'positive'}); }
+    else if (rsi < os2) { score += 10; reasons.push({text:`RSI(${rsiPeriod}) ${rsi.toFixed(1)} — Zona de compra`,type:'positive'}); }
+    else if (rsi > ob)  { score -= 22; reasons.push({text:`RSI(${rsiPeriod}) ${rsi.toFixed(1)} — Sobrecomprado`,type:'negative'}); }
+    else if (rsi > ob2) { score -= 10; reasons.push({text:`RSI(${rsiPeriod}) ${rsi.toFixed(1)} — Zona de venda`,type:'negative'}); }
+    else {
+      // Neutro: inclina levemente pelo lado do RSI
+      score += rsi > 50 ? 3 : -3;
+      reasons.push({text:`RSI(${rsiPeriod}) ${rsi.toFixed(1)} — Neutro`,type:'neutral'});
+    }
+    // Bônus divergência
+    if (bullDiv)      { score += 8; reasons.push({text:'Divergência altista RSI',type:'positive'}); }
+    else if (bearDiv) { score -= 8; reasons.push({text:'Divergência baixista RSI',type:'negative'}); }
+    indicators.push({
+      name:`RSI (${rsiPeriod})`,
+      reading: rsi.toFixed(1) + (bullDiv?' ↗div': bearDiv?' ↘div':''),
+      color: rsi<(os+5)?'var(--accent)':rsi>(ob-5)?'var(--danger)':'var(--warn)'
+    });
   }
 
-  // MACD
+  // ── MACD (max ±27) ─────────────────────
   const mxUp   = macdNow > sigNow && macdPrev <= sigPrev;
   const mxDown = macdNow < sigNow && macdPrev >= sigPrev;
   const mAbove = macdNow > sigNow;
@@ -866,51 +911,69 @@ function analyzeCandles(coin, tf, candles, fg) {
   else             { score -= 8;  reasons.push({text:'MACD abaixo da signal',type:'negative'}); }
   if (histNow > histPrev && histNow > 0) score += 5;
   if (histNow < histPrev && histNow < 0) score -= 5;
-  indicators.push({name:'MACD',reading:mxUp?'Cruzamento altista ✓':mxDown?'Cruzamento baixista ✓':mAbove?'Acima da signal':'Abaixo da signal',color:mxUp||mAbove?'var(--accent)':'var(--danger)'});
+  indicators.push({name:'MACD (12/26/9)',reading:mxUp?'Cruzamento altista ✓':mxDown?'Cruzamento baixista ✓':mAbove?'Acima da signal':'Abaixo da signal',color:mxUp||mAbove?'var(--accent)':'var(--danger)'});
 
-  // EMAs
-  if      (price > ema9 && ema9 > ema21 && ema21 > ema200) { score += 18; reasons.push({text:'EMAs alinhadas ↑',type:'positive'}); }
-  else if (price < ema9 && ema9 < ema21 && ema21 < ema200) { score -= 18; reasons.push({text:'EMAs alinhadas ↓',type:'negative'}); }
-  else if (price > ema200) { score += 8; reasons.push({text:'Acima da EMA200',type:'positive'}); }
-  else                     { score -= 8; reasons.push({text:'Abaixo da EMA200',type:'negative'}); }
-  indicators.push({name:'EMA 9 / 21 / 200',reading:`${ema9.toFixed(2)} / ${ema21.toFixed(2)} / ${ema200.toFixed(2)}`,color:price>ema200?'var(--accent)':'var(--danger)'});
+  // ── EMAs (max ±24) ─────────────────────
+  const emaLabel = scalp ? `EMA9/21/${emaSlowP}` : 'EMA 9/21/200';
+  if      (price > ema9 && ema9 > ema21 && ema21 > emaSlow) { score += 18; reasons.push({text:`${emaLabel} alinhadas ↑`,type:'positive'}); }
+  else if (price < ema9 && ema9 < ema21 && ema21 < emaSlow) { score -= 18; reasons.push({text:`${emaLabel} alinhadas ↓`,type:'negative'}); }
+  else if (price > emaSlow && ema9 > ema21) { score += 10; reasons.push({text:`Tendência alta (EMA${emaSlowP})`,type:'positive'}); }
+  else if (price < emaSlow && ema9 < ema21) { score -= 10; reasons.push({text:`Tendência baixa (EMA${emaSlowP})`,type:'negative'}); }
+  else if (price > emaSlow) { score += 5; reasons.push({text:`Acima da EMA${emaSlowP}`,type:'positive'}); }
+  else                      { score -= 5; reasons.push({text:`Abaixo da EMA${emaSlowP}`,type:'negative'}); }
+  // Golden / Death cross EMA9×21
+  if      (ema9 > ema21 && ema9p <= ema21p) { score += 6; reasons.push({text:'Golden Cross EMA9×21 ✦',type:'positive'}); }
+  else if (ema9 < ema21 && ema9p >= ema21p) { score -= 6; reasons.push({text:'Death Cross EMA9×21',type:'negative'}); }
+  indicators.push({name:emaLabel,reading:`${ema9.toFixed(2)} / ${ema21.toFixed(2)} / ${emaSlow.toFixed(2)}`,color:price>emaSlow?'var(--accent)':'var(--danger)'});
 
-  // Bollinger
+  // ── Bollinger (max ±12) ────────────────
   if (bb) {
-    if      (price <= bb.lower) { score += 12; reasons.push({text:'Bollinger — Banda inferior',type:'positive'}); }
-    else if (price >= bb.upper) { score -= 12; reasons.push({text:'Bollinger — Banda superior',type:'negative'}); }
-    indicators.push({name:'Bollinger Bands',reading:`L:${bb.lower.toFixed(2)} M:${bb.mid.toFixed(2)} H:${bb.upper.toFixed(2)}`,color:price<=bb.lower?'var(--accent)':price>=bb.upper?'var(--danger)':'var(--muted)'});
+    const bbRange = bb.upper - bb.lower;
+    const bbPos   = bbRange > 0 ? (price - bb.lower) / bbRange : 0.5;
+    if      (bbPos <= 0.1)  { score += 12; reasons.push({text:'Bollinger — Banda inferior',type:'positive'}); }
+    else if (bbPos <= 0.25) { score += 5;  reasons.push({text:'Bollinger — Zona inferior',type:'positive'}); }
+    else if (bbPos >= 0.9)  { score -= 12; reasons.push({text:'Bollinger — Banda superior',type:'negative'}); }
+    else if (bbPos >= 0.75) { score -= 5;  reasons.push({text:'Bollinger — Zona superior',type:'negative'}); }
+    indicators.push({name:'Bollinger Bands (20)',reading:`L:${bb.lower.toFixed(2)} M:${bb.mid.toFixed(2)} H:${bb.upper.toFixed(2)}`,color:bbPos<=0.2?'var(--accent)':bbPos>=0.8?'var(--danger)':'var(--muted)'});
   }
 
-  // Volume
+  // ── Volume (max ±8) ────────────────────
   const vp = ((volRatio-1)*100).toFixed(0);
-  if (volRatio > 1.5) { score += (score>0?8:-8); reasons.push({text:`Volume +${vp}% acima da média`,type:score>0?'positive':'negative'}); }
-  indicators.push({name:'Volume (20p média)',reading:`${vp>0?'+':''}${vp}% vs. média`,color:volRatio>1.3?'var(--accent)':'var(--muted)'});
+  if      (volRatio > 1.5) { const vd=score>=0?8:-8; score+=vd; reasons.push({text:`Volume +${vp}% acima da média`,type:vd>0?'positive':'negative'}); }
+  else if (volRatio > 1.2) { score += score>=0?3:-3; }
+  indicators.push({name:'Volume (20 períodos)',reading:`${vp>0?'+':''}${vp}% vs. média`,color:volRatio>1.3?'var(--accent)':'var(--muted)'});
   indicators.push({name:'ATR (14)',reading:atr>1?atr.toFixed(2):atr.toFixed(4),color:'var(--muted)'});
 
-  // Fear & Greed
+  // ── Fear & Greed (max ±12) ─────────────
   if      (fg.value < 25) { score += 12; reasons.push({text:`F&G ${fg.value} — Medo Extremo`,type:'positive'}); }
+  else if (fg.value < 40) { score += 5;  reasons.push({text:`F&G ${fg.value} — Medo`,type:'positive'}); }
   else if (fg.value > 75) { score -= 12; reasons.push({text:`F&G ${fg.value} — Ganância Extrema`,type:'negative'}); }
+  else if (fg.value > 60) { score -= 5;  reasons.push({text:`F&G ${fg.value} — Ganância Moderada`,type:'negative'}); }
   else                    { reasons.push({text:`F&G ${fg.value} — ${fg.label}`,type:'neutral'}); }
   indicators.push({name:'Fear & Greed Index',reading:`${fg.value} — ${fg.label}`,color:fg.value<30?'var(--accent)':fg.value>70?'var(--danger)':'var(--warn)'});
 
   const dir = score >= 0 ? 'buy' : 'sell';
-  const normScore = Math.min(100, Math.round(Math.abs(score)));
+
+  // ── Normalizar score para 0-100 ─────────
+  const normScore = Math.min(100, Math.round((Math.abs(score) / SCORE_MAX) * 100));
   if (normScore < parseInt(state.score)) return null;
 
-  // Stop Loss
+  // ── Stop Loss ──────────────────────────
+  // Scalp usa ATR menor para stops mais ajustados
+  const atrMult = scalp ? 0.8 : 1.2;
+  const atrFall = scalp ? 1.0 : 1.5;
   let entry, stop;
   if (dir === 'buy') {
     const sups = levels.filter(l=>l.type==='support'&&l.price<price).sort((a,b)=>b.price-a.price);
     entry = price;
-    stop  = Math.min(sups.length ? sups[0].price : price-atr*1.5, price-atr*1.2);
+    stop  = Math.min(sups.length ? sups[0].price : price-atr*atrFall, price-atr*atrMult);
   } else {
     const ress = levels.filter(l=>l.type==='resistance'&&l.price>price).sort((a,b)=>a.price-b.price);
     entry = price;
-    stop  = Math.max(ress.length ? ress[0].price : price+atr*1.5, price+atr*1.2);
+    stop  = Math.max(ress.length ? ress[0].price : price+atr*atrFall, price+atr*atrMult);
   }
 
-  // Metas Fibonacci
+  // ── Metas Fibonacci ────────────────────
   const {m1:m1p, m2:m2p, m3:m3p} = calcMetas(dir, entry, stop);
   const lev = state.leverage;
 
@@ -921,16 +984,17 @@ function analyzeCandles(coin, tf, candles, fg) {
 
   const fmtPct = v => (v>0?'+':'')+v.toFixed(2)+'%';
 
-  const capStop = capReturn(entry, stop,  dir, lev);
-  const capM1   = capReturn(entry, m1p,   dir, lev);
-  const capM2   = capReturn(entry, m2p,   dir, lev);
-  const capM3   = capReturn(entry, m3p,   dir, lev);
+  const capStop = capReturn(entry, stop, dir, lev);
+  const capM1   = capReturn(entry, m1p,  dir, lev);
+  const capM2   = capReturn(entry, m2p,  dir, lev);
+  const capM3   = capReturn(entry, m3p,  dir, lev);
 
   const feePctCap = (ROUND_TRIP_FEE * lev * 100).toFixed(2);
 
-  // Resumo
-  const rriWord = state.rr === 'fib' ? 'Fibonacci' : state.rr === 'max' ? 'Máximo' : `1:${state.rr} fixo`;
-  const summary = `${coin} setup ${dir==='buy'?'LONG':'SHORT'} no ${tf}. RSI em ${rsi?.toFixed(1)??'N/A'}, MACD ${mxUp?'cruzamento altista':mxDown?'cruzamento baixista':mAbove?'acima da signal':'abaixo da signal'}. Preço ${price>ema200?'acima':'abaixo'} da EMA200. Alvos via ${rriWord}. Com ${lev}x: Meta 3 = ${dir==='buy'?'+':'-'}${capM3.netPct}% no capital líquido. Fee total da operação: ${feePctCap}% do capital.`;
+  const rriWord  = state.rr==='fib'?'Fibonacci':state.rr==='max'?'Máximo':`1:${state.rr} fixo`;
+  const scaleTag = scalp?'⚡ Scalp':tf==='4h'||tf==='1D'?'Swing':'Day trade';
+  const divNote  = bullDiv?' Divergência altista RSI.':bearDiv?' Divergência baixista RSI.':'';
+  const summary  = `${scaleTag} ${dir==='buy'?'LONG':'SHORT'} em ${coin} · ${tf}. RSI(${rsiPeriod}) ${rsi?.toFixed(1)??'N/A'}, MACD ${mxUp?'cruzamento altista':mxDown?'cruzamento baixista':mAbove?'acima da signal':'abaixo da signal'}.${divNote} Preço ${price>emaSlow?'acima':'abaixo'} da EMA${emaSlowP}. Alvos via ${rriWord}. ${lev}x → Meta 3 = ${dir==='buy'?'+':'-'}${capM3.netPct}% no capital líquido. Fee: ${feePctCap}% do capital.`;
 
   return {
     coin, pair:`${coin}/USDT`, dir,
