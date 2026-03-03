@@ -407,7 +407,7 @@
     <div class="market-pill"><span class="label">BTC</span><span class="val up" id="btcPrice">—</span></div>
     <div class="market-pill"><span class="label">ETH</span><span class="val up" id="ethPrice">—</span></div>
     <div class="market-pill"><span class="label">Fear & Greed</span><span class="val warn" id="fgVal">—</span></div>
-    <div class="market-pill"><span class="label">Alavancagem ativa</span><span class="val warn" id="levDisplay">10x</span></div>
+    <div class="market-pill"><span class="label">Perfil de risco</span><span class="val warn" id="levDisplay">Moderado</span></div>
     <div class="market-pill"><span class="label">Última análise</span><span class="val" id="lastScan" style="color:var(--muted)">—</span></div>
   </div>
 
@@ -426,16 +426,15 @@
       </div>
 
       <div class="config-group">
-        <label>Alavancagem (Bybit Futures)</label>
+        <label>Perfil de risco</label>
         <div class="toggle-group">
-          <button class="toggle-btn" onclick="toggleLeverage(this,5)">5x</button>
-          <button class="toggle-btn active" onclick="toggleLeverage(this,10)">10x</button>
-          <button class="toggle-btn" onclick="toggleLeverage(this,20)">20x</button>
-          <button class="toggle-btn" onclick="toggleLeverage(this,50)">50x</button>
+          <button class="toggle-btn" onclick="toggleRisk(this,'conservative')">Conservador</button>
+          <button class="toggle-btn active" onclick="toggleRisk(this,'moderate')">Moderado</button>
+          <button class="toggle-btn" onclick="toggleRisk(this,'aggressive')">Agressivo</button>
         </div>
-        <div class="fee-note" id="feeNote">
-          Fee Bybit Taker: <strong style="color:var(--warn)">0.055%</strong> × 2 lados = <strong style="color:var(--warn)">0.11%</strong> sobre posição.<br>
-          Com <span id="feeCapText">10x → <strong style="color:var(--warn)">1.10%</strong> do capital por operação.</span>
+        <div class="fee-note" id="riskNote">
+          <span style="color:var(--accent)">Moderado</span> — alavancagem sugerida pelo programa com base no stop de cada operação.<br>
+          Fee Bybit Taker: <strong style="color:var(--warn)">0.055%</strong> × 2 lados = <strong style="color:var(--warn)">0.11%</strong> sobre a posição.
         </div>
       </div>
 
@@ -574,9 +573,9 @@ const state = {
   rr: 'fib',
   score: '65',
   dir: 'both',
+  riskProfile: 'moderate',
   coins: new Set(['BTC','ETH','SOL','BNB','INJ','ARB','WLD']),
   cards: [],
-  leverage: 10,
 };
 
 const ALL_COINS = [
@@ -649,12 +648,35 @@ function toggleMode(el,v)  { state.mode = v; toggleGroup(el); }
 function toggleScore(el,v) { state.score = v; toggleGroup(el); }
 function toggleDir(el,v)   { state.dir = v; toggleGroup(el); }
 
-function toggleLeverage(el, v) {
-  state.leverage = v;
+// Perfil de risco → % do capital que aceita perder no stop
+const RISK_PROFILES = {
+  conservative: { label:'Conservador', targetRisk: 0.10, maxLev: 20 },
+  moderate:     { label:'Moderado',    targetRisk: 0.20, maxLev: 35 },
+  aggressive:   { label:'Agressivo',   targetRisk: 0.30, maxLev: 50 },
+};
+const BYBIT_LEV_STEPS = [2,3,5,7,10,12,15,20,25,30,35,50];
+
+function toggleRisk(el, v) {
+  state.riskProfile = v;
   toggleGroup(el);
-  document.getElementById('levDisplay').textContent = v + 'x';
-  const feePct = (ROUND_TRIP_FEE * v * 100).toFixed(2);
-  document.getElementById('feeCapText').innerHTML = `${v}x → <strong style="color:var(--warn)">${feePct}%</strong> do capital por operação.`;
+  const p = RISK_PROFILES[v];
+  document.getElementById('levDisplay').textContent = p.label;
+  document.getElementById('riskNote').innerHTML =
+    `<span style="color:var(--accent)">${p.label}</span> — risco máximo de <strong style="color:var(--warn)">${(p.targetRisk*100).toFixed(0)}% do capital</strong> por operação. Alavancagem sugerida automaticamente com base no stop de cada setup.<br>Fee Bybit Taker: <strong style="color:var(--warn)">0.055%</strong> × 2 lados = <strong style="color:var(--warn)">0.11%</strong> sobre a posição.`;
+}
+
+// Calcula a alavancagem ideal para o stop de cada setup
+function suggestLeverage(stopDistancePct) {
+  const profile = RISK_PROFILES[state.riskProfile || 'moderate'];
+  // lev = targetRisk / stopDistance (em decimais)
+  const raw = profile.targetRisk / (Math.abs(stopDistancePct) / 100);
+  // Arredondar para o step de alavancagem Bybit mais próximo (para baixo)
+  const maxLev = profile.maxLev;
+  let lev = 2;
+  for (const step of BYBIT_LEV_STEPS) {
+    if (step <= raw && step <= maxLev) lev = step;
+  }
+  return Math.max(2, lev);
 }
 
 const RR_NOTES = {
@@ -817,15 +839,9 @@ function calcMetas(dir, entry, stop) {
 // ─────────────────────────────────────────
 // MOTOR DE ANÁLISE
 // ─────────────────────────────────────────
-// Pontuação máxima teórica (todos indicadores perfeitos):
-//   RSI:            22 + 8 divergência = 30
-//   MACD cross:     22 + 5 histograma  = 27
-//   EMA:            18 + 6 golden cross = 24
-//   Bollinger:      12
-//   Volume:          8
-//   F&G:            12
-// TOTAL MAX:       113
-const SCORE_MAX = 113;
+// Score máximo dos 4 indicadores principais (RSI+MACD+EMA+BB = 74).
+// Bônus (divergência, golden cross, volume, F&G) podem empurrar além — capped em 100.
+const SCORE_MAX = 74;
 
 function isScalpTF(tf) { return tf === '1m' || tf === '3m'; }
 
@@ -975,7 +991,10 @@ function analyzeCandles(coin, tf, candles, fg) {
 
   // ── Metas Fibonacci ────────────────────
   const {m1:m1p, m2:m2p, m3:m3p} = calcMetas(dir, entry, stop);
-  const lev = state.leverage;
+
+  // Alavancagem sugerida automaticamente com base no stop e perfil de risco
+  const stopDistancePct = Math.abs((stop - entry) / entry * 100);
+  const lev = suggestLeverage(stopDistancePct);
 
   const stopPctRaw = ((stop-entry)/entry*100);
   const m1PctRaw   = ((m1p-entry)/entry*100);
@@ -1028,10 +1047,10 @@ function startScan() {
   const LOGS = [
     'Conectando à Bybit Futures (category=linear)...',
     'Buscando Fear & Greed Index...',
-    ...tfs.flatMap(tf => coins.map(c => `${c}USDT — ${tf} [${state.leverage}x]`)),
+    ...tfs.flatMap(tf => coins.map(c => `${c}USDT — ${tf}`)),
     'Calculando RSI, MACD, EMAs, Bollinger, ATR...',
     `Projetando metas via ${state.rr==='fib'?'Fibonacci':state.rr==='max'?'Fibonacci Máximo':'R/R fixo'}...`,
-    `Calculando retorno no capital (${state.leverage}x) e descontando fees...`,
+    `Calculando alavancagem sugerida (perfil: ${RISK_PROFILES[state.riskProfile||'moderate'].label})...`,
     `Filtrando Score ≥ ${state.score}, ordenando por retorno...`,
     'Concluído ✓',
   ];
@@ -1074,7 +1093,7 @@ async function runRealAnalysis() {
   for (const coin of coins) {
     for (const tf of tfs) {
       try {
-        addLog(`${coin}/USDT — ${tf} [${state.leverage}x]...`);
+        addLog(`${coin}/USDT — ${tf}...`);
         document.getElementById('progressText').textContent = `${coin}/USDT — ${tf}`;
         const candles = await fetchCandles(coin, tf);
         const result  = candles ? analyzeCandles(coin, tf, candles, fg) : null;
@@ -1218,7 +1237,7 @@ function renderGroupCard(coin, setups) {
   const idx   = groupActiveIndex[coin];
   const d     = setups[idx];
   const total = setups.length;
-  const lev   = d.leverage || state.leverage;
+  const lev   = d.leverage || 10;
   const isLong= d.dir==='buy';
   const sc    = d.score>=80?'high':d.score>=65?'mid':'low';
   const capM3 = d.m3.cap;
@@ -1346,7 +1365,7 @@ function filterCards(type, el) {
 function openModal(d) {
   const overlay = document.getElementById('modalOverlay');
   const content = document.getElementById('modalContent');
-  const lev     = d.leverage || state.leverage;
+  const lev     = d.leverage || 10;
   const isLong  = d.dir === 'buy';
   const sign    = isLong ? '+' : '-';
   const feeCapPct = (ROUND_TRIP_FEE * lev * 100).toFixed(2);
@@ -1512,7 +1531,7 @@ function saveToJournal(d) {
     dir:       d.dir,
     score:     d.score,
     timeframe: d.timeframe,
-    leverage:  d.leverage || state.leverage,
+    leverage:  d.leverage || 10,
     entry:     d.entry,
     stop:      d.stop,
     stopPct:   d.stopPct,
