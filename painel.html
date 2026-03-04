@@ -256,6 +256,60 @@
   .breakeven-note { font-family: var(--mono); font-size: 9px; color: var(--muted); }
   .hot-badge { font-size: 10px; color: var(--accent); margin-top: 2px; font-family: var(--mono); }
 
+  /* ── ENTRADA CONDICIONAL ── */
+  .conditional-entry-block {
+    background: linear-gradient(135deg, rgba(255,184,0,0.08), rgba(255,184,0,0.04));
+    border: 1px solid rgba(255,184,0,0.3); border-radius: 10px;
+    padding: 10px 14px; margin-bottom: 14px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .ceb-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .ceb-label { font-family: var(--mono); font-size: 9px; color: var(--warn); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px; }
+  .ceb-main  { font-family: var(--mono); font-size: 12px; color: var(--text); line-height: 1.6; }
+  .ceb-main em { color: var(--warn); font-style: normal; font-weight: 700; }
+  .ceb-pattern { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+  /* ── MTF CONFLUENCE BADGE ── */
+  .mtf-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(0,136,255,0.12); border: 1px solid rgba(0,136,255,0.3);
+    color: var(--accent2); font-family: var(--mono); font-size: 10px; font-weight: 700;
+    padding: 3px 9px; border-radius: 5px; letter-spacing: 0.5px;
+  }
+  .mtf-badge.mtf-sell { background: rgba(255,61,107,0.12); border-color: rgba(255,61,107,0.3); color: var(--danger); }
+
+  /* ── PATTERN TAGS ── */
+  .pattern-tag {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    padding: 3px 9px; border-radius: 4px; display: inline-block;
+  }
+  .pattern-tag.bull { background: rgba(0,229,160,0.12); border: 1px solid rgba(0,229,160,0.3); color: var(--accent); }
+  .pattern-tag.bear { background: rgba(255,61,107,0.12); border: 1px solid rgba(255,61,107,0.3); color: var(--danger); }
+  .pattern-tag.neut { background: rgba(255,184,0,0.10); border: 1px solid rgba(255,184,0,0.25); color: var(--warn); }
+
+  /* ── DIVERGENCE TAG ── */
+  .div-tag {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    padding: 3px 9px; border-radius: 4px;
+    background: rgba(138,43,226,0.15); border: 1px solid rgba(138,43,226,0.35); color: #c084fc;
+  }
+
+  /* ── MODAL SECTION BLOCKS ── */
+  .modal-section { background: var(--surface2); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+  .modal-section h4 { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+  .pattern-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .pattern-row:last-child { border-bottom: none; }
+  .pattern-row-badge { flex-shrink: 0; }
+  .pattern-row-text { font-family: var(--mono); font-size: 11px; color: var(--text); line-height: 1.6; }
+  .pattern-row-text .ptrig { color: var(--warn); font-weight: 700; }
+  .mtf-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .mtf-tf-pill {
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    padding: 4px 10px; border-radius: 5px;
+    background: rgba(0,136,255,0.1); border: 1px solid rgba(0,136,255,0.25); color: var(--accent2);
+  }
+  .mtf-tf-pill.sell { background: rgba(255,61,107,0.1); border-color: rgba(255,61,107,0.25); color: var(--danger); }
+
   /* ── SCORE ── */
   .score-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
   .score-label { font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
@@ -407,7 +461,7 @@
     <div class="market-pill"><span class="label">BTC</span><span class="val up" id="btcPrice">—</span></div>
     <div class="market-pill"><span class="label">ETH</span><span class="val up" id="ethPrice">—</span></div>
     <div class="market-pill"><span class="label">Fear & Greed</span><span class="val warn" id="fgVal">—</span></div>
-    <div class="market-pill"><span class="label">Perfil de risco</span><span class="val warn" id="levDisplay">Moderado</span></div>
+    <div class="market-pill"><span class="label">Alavancagem ativa</span><span class="val warn" id="levDisplay">10x</span></div>
     <div class="market-pill"><span class="label">Última análise</span><span class="val" id="lastScan" style="color:var(--muted)">—</span></div>
   </div>
 
@@ -418,7 +472,6 @@
       <div class="config-group">
         <label>Modo de operação</label>
         <div class="toggle-group">
-          <button class="toggle-btn" onclick="toggleMode(this,'scalp')">⚡ Scalp (1m / 3m)</button>
           <button class="toggle-btn" onclick="toggleMode(this,'swing')">Swing (4h / 1D)</button>
           <button class="toggle-btn active" onclick="toggleMode(this,'day')">Day Trade (5m / 15m / 1h)</button>
           <button class="toggle-btn" onclick="toggleMode(this,'both')">Automático (todos)</button>
@@ -426,15 +479,16 @@
       </div>
 
       <div class="config-group">
-        <label>Perfil de risco</label>
+        <label>Alavancagem (Bybit Futures)</label>
         <div class="toggle-group">
-          <button class="toggle-btn" onclick="toggleRisk(this,'conservative')">Conservador</button>
-          <button class="toggle-btn active" onclick="toggleRisk(this,'moderate')">Moderado</button>
-          <button class="toggle-btn" onclick="toggleRisk(this,'aggressive')">Agressivo</button>
+          <button class="toggle-btn" onclick="toggleLeverage(this,5)">5x</button>
+          <button class="toggle-btn active" onclick="toggleLeverage(this,10)">10x</button>
+          <button class="toggle-btn" onclick="toggleLeverage(this,20)">20x</button>
+          <button class="toggle-btn" onclick="toggleLeverage(this,50)">50x</button>
         </div>
-        <div class="fee-note" id="riskNote">
-          <span style="color:var(--accent)">Moderado</span> — alavancagem sugerida pelo programa com base no stop de cada operação.<br>
-          Fee Bybit Taker: <strong style="color:var(--warn)">0.055%</strong> × 2 lados = <strong style="color:var(--warn)">0.11%</strong> sobre a posição.
+        <div class="fee-note" id="feeNote">
+          Fee Bybit Taker: <strong style="color:var(--warn)">0.055%</strong> × 2 lados = <strong style="color:var(--warn)">0.11%</strong> sobre posição.<br>
+          Com <span id="feeCapText">10x → <strong style="color:var(--warn)">1.10%</strong> do capital por operação.</span>
         </div>
       </div>
 
@@ -573,9 +627,9 @@ const state = {
   rr: 'fib',
   score: '65',
   dir: 'both',
-  riskProfile: 'moderate',
   coins: new Set(['BTC','ETH','SOL','BNB','INJ','ARB','WLD']),
   cards: [],
+  leverage: 10,
 };
 
 const ALL_COINS = [
@@ -648,35 +702,12 @@ function toggleMode(el,v)  { state.mode = v; toggleGroup(el); }
 function toggleScore(el,v) { state.score = v; toggleGroup(el); }
 function toggleDir(el,v)   { state.dir = v; toggleGroup(el); }
 
-// Perfil de risco → % do capital que aceita perder no stop
-const RISK_PROFILES = {
-  conservative: { label:'Conservador', targetRisk: 0.10, maxLev: 20 },
-  moderate:     { label:'Moderado',    targetRisk: 0.20, maxLev: 35 },
-  aggressive:   { label:'Agressivo',   targetRisk: 0.30, maxLev: 50 },
-};
-const BYBIT_LEV_STEPS = [2,3,5,7,10,12,15,20,25,30,35,50];
-
-function toggleRisk(el, v) {
-  state.riskProfile = v;
+function toggleLeverage(el, v) {
+  state.leverage = v;
   toggleGroup(el);
-  const p = RISK_PROFILES[v];
-  document.getElementById('levDisplay').textContent = p.label;
-  document.getElementById('riskNote').innerHTML =
-    `<span style="color:var(--accent)">${p.label}</span> — risco máximo de <strong style="color:var(--warn)">${(p.targetRisk*100).toFixed(0)}% do capital</strong> por operação. Alavancagem sugerida automaticamente com base no stop de cada setup.<br>Fee Bybit Taker: <strong style="color:var(--warn)">0.055%</strong> × 2 lados = <strong style="color:var(--warn)">0.11%</strong> sobre a posição.`;
-}
-
-// Calcula a alavancagem ideal para o stop de cada setup
-function suggestLeverage(stopDistancePct) {
-  const profile = RISK_PROFILES[state.riskProfile || 'moderate'];
-  // lev = targetRisk / stopDistance (em decimais)
-  const raw = profile.targetRisk / (Math.abs(stopDistancePct) / 100);
-  // Arredondar para o step de alavancagem Bybit mais próximo (para baixo)
-  const maxLev = profile.maxLev;
-  let lev = 2;
-  for (const step of BYBIT_LEV_STEPS) {
-    if (step <= raw && step <= maxLev) lev = step;
-  }
-  return Math.max(2, lev);
+  document.getElementById('levDisplay').textContent = v + 'x';
+  const feePct = (ROUND_TRIP_FEE * v * 100).toFixed(2);
+  document.getElementById('feeCapText').innerHTML = `${v}x → <strong style="color:var(--warn)">${feePct}%</strong> do capital por operação.`;
 }
 
 const RR_NOTES = {
@@ -695,10 +726,9 @@ function toggleRR(el, v) {
 // TIMEFRAMES
 // ─────────────────────────────────────────
 const TIMEFRAMES_BY_MODE = {
-  scalp:['1m','3m'],
   day:  ['5m','15m','1h'],
   swing:['4h','1D'],
-  both: ['1m','3m','5m','15m','1h','4h','1D'],
+  both: ['5m','15m','1h','4h','1D'],
 };
 
 // ─────────────────────────────────────────
@@ -709,7 +739,7 @@ const PROXIES = [
   u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
   u => u,
 ];
-const TF_MAP = { '1m':'1','3m':'3','5m':'5','15m':'15','1h':'60','4h':'240','1D':'D' };
+const TF_MAP = { '5m':'5','15m':'15','1h':'60','4h':'240','1D':'D' };
 
 async function fetchWithProxy(url) {
   for (const proxy of PROXIES) {
@@ -800,6 +830,278 @@ function findLevels(candles,lb=50) {
 }
 
 // ─────────────────────────────────────────
+// VWAP — preço médio ponderado por volume
+// ─────────────────────────────────────────
+function calcVWAP(candles) {
+  const recent = candles.slice(-80);
+  let cumTPV = 0, cumVol = 0;
+  for (const c of recent) {
+    const tp = (c.high + c.low + c.close) / 3;
+    cumTPV += tp * c.volume;
+    cumVol += c.volume;
+  }
+  return cumVol > 0 ? cumTPV / cumVol : null;
+}
+
+// ─────────────────────────────────────────
+// OBV — On Balance Volume (tendência)
+// ─────────────────────────────────────────
+function calcOBVTrend(candles, period = 20) {
+  if (candles.length < period + 1) return 'neutral';
+  let obv = 0;
+  const obvArr = [];
+  for (let i = 1; i < candles.length; i++) {
+    if (candles[i].close > candles[i-1].close)      obv += candles[i].volume;
+    else if (candles[i].close < candles[i-1].close) obv -= candles[i].volume;
+    obvArr.push(obv);
+  }
+  const recent = obvArr.slice(-period);
+  const emaOBV = calcEMA(recent, Math.floor(period / 2));
+  const last  = emaOBV[emaOBV.length - 1];
+  const prev  = emaOBV[emaOBV.length - 4] ?? emaOBV[0];
+  if (last > prev * 1.005)  return 'rising';
+  if (last < prev * 0.995)  return 'falling';
+  return 'neutral';
+}
+
+// ─────────────────────────────────────────
+// STOCHASTIC RSI
+// ─────────────────────────────────────────
+function calcStochRSI(rsiArr, period = 14) {
+  const valid = rsiArr.filter(v => v !== null);
+  if (valid.length < period) return null;
+  const recent = valid.slice(-period);
+  const minRSI = Math.min(...recent);
+  const maxRSI = Math.max(...recent);
+  if (maxRSI === minRSI) return 50;
+  return ((valid[valid.length - 1] - minRSI) / (maxRSI - minRSI)) * 100;
+}
+
+// ─────────────────────────────────────────
+// PADRÕES DE CANDLESTICK
+// ─────────────────────────────────────────
+function detectCandlePatterns(candles) {
+  const patterns = [];
+  const n = candles.length;
+  if (n < 4) return patterns;
+
+  const c  = candles[n-1]; // vela atual (fechada)
+  const p  = candles[n-2]; // anterior
+  const pp = candles[n-3]; // duas atrás
+
+  const cBody  = Math.abs(c.close - c.open);
+  const cRange = c.high - c.low || 0.0001;
+  const pBody  = Math.abs(p.close - p.open);
+  const pRange = p.high - p.low || 0.0001;
+  const ppBody = Math.abs(pp.close - pp.open);
+
+  const cBull = c.close > c.open;
+  const cBear = c.close < c.open;
+  const pBull = p.close > p.open;
+  const pBear = p.close < p.open;
+  const ppBear = pp.close < pp.open;
+  const ppBull = pp.close > pp.open;
+
+  const cLow  = Math.min(c.open, c.close);
+  const cHigh = Math.max(c.open, c.close);
+  const pLow  = Math.min(p.open, p.close);
+  const pHigh = Math.max(p.open, p.close);
+
+  const cLowerWick = cLow  - c.low;
+  const cUpperWick = c.high - cHigh;
+
+  // ── Doji ──
+  if (cBody / cRange < 0.1 && cRange > 0) {
+    patterns.push({ name:'Doji', type:'neutral', score:0,
+      desc:'Indecisão total — compradores e vendedores empatados. Aguardar próximo candle para definir direção.',
+      triggerPrice: null });
+  }
+
+  // ── Hammer (altista) ──
+  if (cBull && cLowerWick > cBody * 2 && cUpperWick < cBody * 0.5 && cBody > 0) {
+    patterns.push({ name:'Martelo ↑', type:'positive', score:+10,
+      desc:'Reversão altista. Vendedores tentaram mas foram absorvidos.',
+      triggerPrice: c.high, triggerCond:'fechamento acima de' });
+  }
+
+  // ── Hanging Man (baixista) ──
+  if (cBear && cLowerWick > cBody * 2 && cUpperWick < cBody * 0.5 && cBody > 0) {
+    patterns.push({ name:'Homem Enforcado ↓', type:'negative', score:-10,
+      desc:'Possível reversão baixista em topo. Confirmar com próxima vela.',
+      triggerPrice: c.low, triggerCond:'fechamento abaixo de' });
+  }
+
+  // ── Inverted Hammer (altista) ──
+  if (cBull && cUpperWick > cBody * 2 && cLowerWick < cBody * 0.5 && cBody > 0) {
+    patterns.push({ name:'Martelo Invertido ↑', type:'positive', score:+8,
+      desc:'Compradores testaram resistência. Aguardar confirmação.',
+      triggerPrice: c.high, triggerCond:'fechamento acima de' });
+  }
+
+  // ── Shooting Star (baixista) ──
+  if (cBear && cUpperWick > cBody * 2 && cLowerWick < cBody * 0.5 && cBody > 0) {
+    patterns.push({ name:'Estrela Cadente ↓', type:'negative', score:-10,
+      desc:'Rejeição forte de topo. Vendedores dominaram a sessão.',
+      triggerPrice: c.low, triggerCond:'fechamento abaixo de' });
+  }
+
+  // ── Pinbar Altista ──
+  if (cLowerWick > cRange * 0.62 && cHigh > c.low + cRange * 0.6) {
+    patterns.push({ name:'Pinbar Altista ↑', type:'positive', score:+12,
+      desc:'Rejeição forte de preços baixos — cauda longa inferior. Sinal de alta confiabilidade.',
+      triggerPrice: cHigh, triggerCond:'fechamento acima de' });
+  }
+
+  // ── Pinbar Baixista ──
+  if (cUpperWick > cRange * 0.62 && cLow < c.high - cRange * 0.6) {
+    patterns.push({ name:'Pinbar Baixista ↓', type:'negative', score:-12,
+      desc:'Rejeição forte de preços altos — cauda longa superior. Pressão vendedora dominante.',
+      triggerPrice: cLow, triggerCond:'fechamento abaixo de' });
+  }
+
+  // ── Engolfo Altista ──
+  if (cBull && pBear && c.open <= p.close && c.close >= p.open && cBody > pBody * 0.9) {
+    patterns.push({ name:'Engolfo Altista ↑', type:'positive', score:+15,
+      desc:'Compradores engolfaram completamente os vendedores. Alta confiabilidade de reversão.',
+      triggerPrice: null });
+  }
+
+  // ── Engolfo Baixista ──
+  if (cBear && pBull && c.open >= p.close && c.close <= p.open && cBody > pBody * 0.9) {
+    patterns.push({ name:'Engolfo Baixista ↓', type:'negative', score:-15,
+      desc:'Vendedores engolfaram completamente os compradores. Alta confiabilidade de reversão.',
+      triggerPrice: null });
+  }
+
+  // ── Estrela da Manhã (3 velas, altista) ──
+  if (ppBear && ppBody > 0 && pBody < ppBody * 0.35 && cBull && cBody > ppBody * 0.5 &&
+      c.close > (pp.open + pp.close) / 2) {
+    patterns.push({ name:'Estrela da Manhã ↑', type:'positive', score:+18,
+      desc:'Reversão altista de 3 velas. Um dos padrões mais confiáveis após tendência de queda.',
+      triggerPrice: null });
+  }
+
+  // ── Estrela da Tarde (3 velas, baixista) ──
+  if (ppBull && ppBody > 0 && pBody < ppBody * 0.35 && cBear && cBody > ppBody * 0.5 &&
+      c.close < (pp.open + pp.close) / 2) {
+    patterns.push({ name:'Estrela da Tarde ↓', type:'negative', score:-18,
+      desc:'Reversão baixista de 3 velas. Sinal muito confiável após tendência de alta.',
+      triggerPrice: null });
+  }
+
+  // ── Harami Altista ──
+  if (pBear && cBull && c.open > p.close && c.close < p.open && cBody < pBody * 0.5) {
+    patterns.push({ name:'Harami Altista ↑', type:'positive', score:+8,
+      desc:'Momentum baixista desacelerando. Aguardar confirmação na próxima sessão.',
+      triggerPrice: c.high, triggerCond:'fechamento acima de' });
+  }
+
+  // ── Harami Baixista ──
+  if (pBull && cBear && c.open < p.close && c.close > p.open && cBody < pBody * 0.5) {
+    patterns.push({ name:'Harami Baixista ↓', type:'negative', score:-8,
+      desc:'Momentum altista desacelerando. Aguardar confirmação para short.',
+      triggerPrice: c.low, triggerCond:'fechamento abaixo de' });
+  }
+
+  // Retornar apenas os padrões mais relevantes (evitar stacking excessivo)
+  // Se há Engolfo ou Estrela (score ±15/18), ignora padrões menores de mesma direção
+  const strong = patterns.filter(x => Math.abs(x.score) >= 15);
+  if (strong.length > 0) {
+    const dirs = strong.map(x => x.score > 0 ? 'bull' : 'bear');
+    return strong.concat(patterns.filter(x =>
+      Math.abs(x.score) < 15 &&
+      !dirs.includes(x.score > 0 ? 'bull' : 'bear')
+    ));
+  }
+  return patterns;
+}
+
+// ─────────────────────────────────────────
+// DIVERGÊNCIAS — RSI e MACD
+// ─────────────────────────────────────────
+function detectDivergences(candles, rsiArr, macdHist) {
+  const divergences = [];
+  const n = candles.length;
+  const lb = Math.min(35, n - 3);
+
+  // Encontrar swing lows e highs recentes
+  const priceLows  = [];
+  const priceHighs = [];
+  for (let i = n - lb; i < n - 2; i++) {
+    if (i < 1) continue;
+    if (candles[i].low  < candles[i-1].low  && candles[i].low  < candles[i+1].low) {
+      if (rsiArr[i] !== null) priceLows.push({ i, price: candles[i].low, rsi: rsiArr[i] });
+    }
+    if (candles[i].high > candles[i-1].high && candles[i].high > candles[i+1].high) {
+      if (rsiArr[i] !== null) priceHighs.push({ i, price: candles[i].high, rsi: rsiArr[i] });
+    }
+  }
+
+  // ── Divergência Altista RSI (preço: mínima mais baixa, RSI: mínima mais alta) ──
+  if (priceLows.length >= 2) {
+    const prev = priceLows[priceLows.length - 2];
+    const curr = priceLows[priceLows.length - 1];
+    const priceDiff = (curr.price - prev.price) / prev.price;
+    const rsiDiff   = curr.rsi - prev.rsi;
+    if (priceDiff < -0.005 && rsiDiff > 3) {
+      divergences.push({ type:'bullish', indicator:'RSI', score:+20,
+        name:'Divergência Altista RSI',
+        desc:`Preço fez mínima mais baixa, RSI não confirmou (+${rsiDiff.toFixed(1)} pontos). Exaustão vendedora — reversão provável.` });
+    }
+  }
+
+  // ── Divergência Baixista RSI (preço: máxima mais alta, RSI: máxima mais baixa) ──
+  if (priceHighs.length >= 2) {
+    const prev = priceHighs[priceHighs.length - 2];
+    const curr = priceHighs[priceHighs.length - 1];
+    const priceDiff = (curr.price - prev.price) / prev.price;
+    const rsiDiff   = curr.rsi - prev.rsi;
+    if (priceDiff > 0.005 && rsiDiff < -3) {
+      divergences.push({ type:'bearish', indicator:'RSI', score:-20,
+        name:'Divergência Baixista RSI',
+        desc:`Preço fez máxima mais alta, RSI não confirmou (${rsiDiff.toFixed(1)} pontos). Momentum comprador se esgotando.` });
+    }
+  }
+
+  // ── Divergência MACD histogram ──
+  if (macdHist && macdHist.length >= 10) {
+    const mh = macdHist;
+    const mLen = mh.length;
+    // Busca dois fundos/topos recentes no histograma
+    let mLows = [], mHighs = [];
+    for (let i = mLen - 15; i < mLen - 1; i++) {
+      if (i < 1) continue;
+      if (mh[i] < mh[i-1] && mh[i] < mh[i+1] && mh[i] < 0)  mLows.push({ i, v: mh[i] });
+      if (mh[i] > mh[i-1] && mh[i] > mh[i+1] && mh[i] > 0) mHighs.push({ i, v: mh[i] });
+    }
+    if (mLows.length >= 2) {
+      const [prev, curr] = mLows.slice(-2);
+      const histDiff = curr.v - prev.v;
+      const pIdx1 = n - mLen + prev.i;
+      const pIdx2 = n - mLen + curr.i;
+      if (pIdx1 >= 0 && pIdx2 >= 0 && candles[pIdx2].low < candles[pIdx1].low && histDiff > 0) {
+        divergences.push({ type:'bullish', indicator:'MACD', score:+15,
+          name:'Divergência Altista MACD',
+          desc:'Histograma MACD formando fundo mais alto enquanto preço ainda cai. Reversão se aproximando.' });
+      }
+    }
+    if (mHighs.length >= 2) {
+      const [prev, curr] = mHighs.slice(-2);
+      const histDiff = curr.v - prev.v;
+      const pIdx1 = n - mLen + prev.i;
+      const pIdx2 = n - mLen + curr.i;
+      if (pIdx1 >= 0 && pIdx2 >= 0 && candles[pIdx2].high > candles[pIdx1].high && histDiff < 0) {
+        divergences.push({ type:'bearish', indicator:'MACD', score:-15,
+          name:'Divergência Baixista MACD',
+          desc:'Histograma MACD formando topo mais baixo enquanto preço ainda sobe. Enfraquecimento do rally.' });
+      }
+    }
+  }
+
+  return divergences;
+}
+
+// ─────────────────────────────────────────
 // RETORNO ALAVANCADO — CÁLCULO REAL
 // ─────────────────────────────────────────
 function capReturn(entry, target, dir, lev) {
@@ -839,34 +1141,20 @@ function calcMetas(dir, entry, stop) {
 // ─────────────────────────────────────────
 // MOTOR DE ANÁLISE
 // ─────────────────────────────────────────
-// Score máximo dos 4 indicadores principais (RSI+MACD+EMA+BB = 74).
-// Bônus (divergência, golden cross, volume, F&G) podem empurrar além — capped em 100.
-const SCORE_MAX = 74;
-
-function isScalpTF(tf) { return tf === '1m' || tf === '3m'; }
-
 function analyzeCandles(coin, tf, candles, fg) {
   if (!candles || candles.length < 50) return null;
   const closes = candles.map(c=>c.close);
   const last   = candles[candles.length-1];
   const price  = last.close;
 
-  const scalp = isScalpTF(tf);
-  // Scalp: RSI9 + EMA50 (mais responsivos); demais: RSI14 + EMA200
-  const rsiPeriod = scalp ? 9 : 14;
-  const emaSlowP  = scalp ? 50 : 200;
-
-  const rsiArr  = calcRSI(closes, rsiPeriod);
+  const rsiArr  = calcRSI(closes);
   const rsi     = rsiArr[rsiArr.length-1];
-
-  const e9arr   = calcEMA(closes,9);
-  const e21arr  = calcEMA(closes,21);
-  const eSlowArr= calcEMA(closes, emaSlowP);
-  const ema9    = e9arr[e9arr.length-1];
-  const ema21   = e21arr[e21arr.length-1];
-  const emaSlow = eSlowArr[eSlowArr.length-1];
-  const ema9p   = e9arr[e9arr.length-2];   // período anterior (para golden/death cross)
-  const ema21p  = e21arr[e21arr.length-2];
+  const e9      = calcEMA(closes,9);
+  const e21     = calcEMA(closes,21);
+  const e200    = calcEMA(closes,200);
+  const ema9    = e9[e9.length-1];
+  const ema21   = e21[e21.length-1];
+  const ema200  = e200[e200.length-1];
 
   const {macdLine,signal,hist} = calcMACD(closes);
   const macdNow  = macdLine[macdLine.length-1], macdPrev = macdLine[macdLine.length-2];
@@ -878,123 +1166,119 @@ function analyzeCandles(coin, tf, candles, fg) {
   const atrs = calcATR(candles);
   const atr  = atrs[atrs.length-1];
   const volAvg  = avgVol(candles);
-  const volRatio= volAvg > 0 ? last.volume / volAvg : 1;
+  const volRatio= last.volume / volAvg;
   const levels  = findLevels(candles);
 
-  // Divergência de RSI simples (5 períodos atrás)
-  const rsiBack5  = rsiArr[rsiArr.length-6];
-  const priceBack5= closes[closes.length-6];
-  const bullDiv   = rsiBack5 !== null && price < priceBack5 && rsi > rsiBack5;
-  const bearDiv   = rsiBack5 !== null && price > priceBack5 && rsi < rsiBack5;
+  // ── NOVOS INDICADORES ──
+  const vwap     = calcVWAP(candles);
+  const obvTrend = calcOBVTrend(candles);
+  const stochRSI = calcStochRSI(rsiArr);
+  const patterns    = detectCandlePatterns(candles);
+  const divergences = detectDivergences(candles, rsiArr, hist);
 
   let score=0;
   const reasons=[], indicators=[];
 
-  // ── RSI (max ±30) ──────────────────────
+  // RSI
   if (rsi !== null) {
-    // Scalp usa limiares menos extremos para gerar mais sinais
-    const ob  = scalp ? 65 : 70;
-    const os  = scalp ? 35 : 30;
-    const ob2 = scalp ? 58 : 60;
-    const os2 = scalp ? 42 : 40;
-
-    if      (rsi < os)  { score += 22; reasons.push({text:`RSI(${rsiPeriod}) ${rsi.toFixed(1)} — Sobrevendido`,type:'positive'}); }
-    else if (rsi < os2) { score += 10; reasons.push({text:`RSI(${rsiPeriod}) ${rsi.toFixed(1)} — Zona de compra`,type:'positive'}); }
-    else if (rsi > ob)  { score -= 22; reasons.push({text:`RSI(${rsiPeriod}) ${rsi.toFixed(1)} — Sobrecomprado`,type:'negative'}); }
-    else if (rsi > ob2) { score -= 10; reasons.push({text:`RSI(${rsiPeriod}) ${rsi.toFixed(1)} — Zona de venda`,type:'negative'}); }
-    else {
-      // Neutro: inclina levemente pelo lado do RSI
-      score += rsi > 50 ? 3 : -3;
-      reasons.push({text:`RSI(${rsiPeriod}) ${rsi.toFixed(1)} — Neutro`,type:'neutral'});
-    }
-    // Bônus divergência
-    if (bullDiv)      { score += 8; reasons.push({text:'Divergência altista RSI',type:'positive'}); }
-    else if (bearDiv) { score -= 8; reasons.push({text:'Divergência baixista RSI',type:'negative'}); }
-    indicators.push({
-      name:`RSI (${rsiPeriod})`,
-      reading: rsi.toFixed(1) + (bullDiv?' ↗div': bearDiv?' ↘div':''),
-      color: rsi<(os+5)?'var(--accent)':rsi>(ob-5)?'var(--danger)':'var(--warn)'
-    });
+    if      (rsi < 30) { score += 20; reasons.push({text:`RSI ${rsi.toFixed(1)} — Sobrevendido`,type:'positive'}); }
+    else if (rsi < 40) { score += 10; reasons.push({text:`RSI ${rsi.toFixed(1)} — Zona de compra`,type:'positive'}); }
+    else if (rsi > 70) { score -= 20; reasons.push({text:`RSI ${rsi.toFixed(1)} — Sobrecomprado`,type:'negative'}); }
+    else if (rsi > 60) { score -= 10; reasons.push({text:`RSI ${rsi.toFixed(1)} — Zona de venda`,type:'negative'}); }
+    else               { reasons.push({text:`RSI ${rsi.toFixed(1)} — Neutro`,type:'neutral'}); }
+    indicators.push({name:'RSI (14)',reading:rsi.toFixed(1),color:rsi<35?'var(--accent)':rsi>65?'var(--danger)':'var(--warn)'});
   }
 
-  // ── MACD (max ±27) ─────────────────────
+  // Stochastic RSI
+  if (stochRSI !== null) {
+    if      (stochRSI < 20) { score += 8;  reasons.push({text:`StochRSI ${stochRSI.toFixed(0)} — Sobrevendido`,type:'positive'}); }
+    else if (stochRSI > 80) { score -= 8;  reasons.push({text:`StochRSI ${stochRSI.toFixed(0)} — Sobrecomprado`,type:'negative'}); }
+    indicators.push({name:'Stochastic RSI',reading:stochRSI.toFixed(1),color:stochRSI<20?'var(--accent)':stochRSI>80?'var(--danger)':'var(--muted)'});
+  }
+
+  // MACD
   const mxUp   = macdNow > sigNow && macdPrev <= sigPrev;
   const mxDown = macdNow < sigNow && macdPrev >= sigPrev;
   const mAbove = macdNow > sigNow;
-  if      (mxUp)   { score += 22; reasons.push({text:'MACD Cruzamento ↑',type:'positive'}); }
-  else if (mxDown) { score -= 22; reasons.push({text:'MACD Cruzamento ↓',type:'negative'}); }
-  else if (mAbove) { score += 8;  reasons.push({text:'MACD acima da signal',type:'positive'}); }
-  else             { score -= 8;  reasons.push({text:'MACD abaixo da signal',type:'negative'}); }
-  if (histNow > histPrev && histNow > 0) score += 5;
-  if (histNow < histPrev && histNow < 0) score -= 5;
-  indicators.push({name:'MACD (12/26/9)',reading:mxUp?'Cruzamento altista ✓':mxDown?'Cruzamento baixista ✓':mAbove?'Acima da signal':'Abaixo da signal',color:mxUp||mAbove?'var(--accent)':'var(--danger)'});
+  if      (mxUp)   { score += 20; reasons.push({text:'MACD Cruzamento ↑',type:'positive'}); }
+  else if (mxDown) { score -= 20; reasons.push({text:'MACD Cruzamento ↓',type:'negative'}); }
+  else if (mAbove) { score += 7;  reasons.push({text:'MACD acima da signal',type:'positive'}); }
+  else             { score -= 7;  reasons.push({text:'MACD abaixo da signal',type:'negative'}); }
+  if (histNow > histPrev && histNow > 0) score += 4;
+  if (histNow < histPrev && histNow < 0) score -= 4;
+  indicators.push({name:'MACD',reading:mxUp?'Cruzamento altista ✓':mxDown?'Cruzamento baixista ✓':mAbove?'Acima da signal':'Abaixo da signal',color:mxUp||mAbove?'var(--accent)':'var(--danger)'});
 
-  // ── EMAs (max ±24) ─────────────────────
-  const emaLabel = scalp ? `EMA9/21/${emaSlowP}` : 'EMA 9/21/200';
-  if      (price > ema9 && ema9 > ema21 && ema21 > emaSlow) { score += 18; reasons.push({text:`${emaLabel} alinhadas ↑`,type:'positive'}); }
-  else if (price < ema9 && ema9 < ema21 && ema21 < emaSlow) { score -= 18; reasons.push({text:`${emaLabel} alinhadas ↓`,type:'negative'}); }
-  else if (price > emaSlow && ema9 > ema21) { score += 10; reasons.push({text:`Tendência alta (EMA${emaSlowP})`,type:'positive'}); }
-  else if (price < emaSlow && ema9 < ema21) { score -= 10; reasons.push({text:`Tendência baixa (EMA${emaSlowP})`,type:'negative'}); }
-  else if (price > emaSlow) { score += 5; reasons.push({text:`Acima da EMA${emaSlowP}`,type:'positive'}); }
-  else                      { score -= 5; reasons.push({text:`Abaixo da EMA${emaSlowP}`,type:'negative'}); }
-  // Golden / Death cross EMA9×21
-  if      (ema9 > ema21 && ema9p <= ema21p) { score += 6; reasons.push({text:'Golden Cross EMA9×21 ✦',type:'positive'}); }
-  else if (ema9 < ema21 && ema9p >= ema21p) { score -= 6; reasons.push({text:'Death Cross EMA9×21',type:'negative'}); }
-  indicators.push({name:emaLabel,reading:`${ema9.toFixed(2)} / ${ema21.toFixed(2)} / ${emaSlow.toFixed(2)}`,color:price>emaSlow?'var(--accent)':'var(--danger)'});
+  // EMAs
+  if      (price > ema9 && ema9 > ema21 && ema21 > ema200) { score += 16; reasons.push({text:'EMAs alinhadas ↑',type:'positive'}); }
+  else if (price < ema9 && ema9 < ema21 && ema21 < ema200) { score -= 16; reasons.push({text:'EMAs alinhadas ↓',type:'negative'}); }
+  else if (price > ema200) { score += 7; reasons.push({text:'Acima da EMA200',type:'positive'}); }
+  else                     { score -= 7; reasons.push({text:'Abaixo da EMA200',type:'negative'}); }
+  indicators.push({name:'EMA 9 / 21 / 200',reading:`${ema9.toFixed(2)} / ${ema21.toFixed(2)} / ${ema200.toFixed(2)}`,color:price>ema200?'var(--accent)':'var(--danger)'});
 
-  // ── Bollinger (max ±12) ────────────────
+  // Bollinger
   if (bb) {
-    const bbRange = bb.upper - bb.lower;
-    const bbPos   = bbRange > 0 ? (price - bb.lower) / bbRange : 0.5;
-    if      (bbPos <= 0.1)  { score += 12; reasons.push({text:'Bollinger — Banda inferior',type:'positive'}); }
-    else if (bbPos <= 0.25) { score += 5;  reasons.push({text:'Bollinger — Zona inferior',type:'positive'}); }
-    else if (bbPos >= 0.9)  { score -= 12; reasons.push({text:'Bollinger — Banda superior',type:'negative'}); }
-    else if (bbPos >= 0.75) { score -= 5;  reasons.push({text:'Bollinger — Zona superior',type:'negative'}); }
-    indicators.push({name:'Bollinger Bands (20)',reading:`L:${bb.lower.toFixed(2)} M:${bb.mid.toFixed(2)} H:${bb.upper.toFixed(2)}`,color:bbPos<=0.2?'var(--accent)':bbPos>=0.8?'var(--danger)':'var(--muted)'});
+    if      (price <= bb.lower) { score += 10; reasons.push({text:'Bollinger — Banda inferior',type:'positive'}); }
+    else if (price >= bb.upper) { score -= 10; reasons.push({text:'Bollinger — Banda superior',type:'negative'}); }
+    indicators.push({name:'Bollinger Bands',reading:`L:${bb.lower.toFixed(2)} M:${bb.mid.toFixed(2)} H:${bb.upper.toFixed(2)}`,color:price<=bb.lower?'var(--accent)':price>=bb.upper?'var(--danger)':'var(--muted)'});
   }
 
-  // ── Volume (max ±8) ────────────────────
+  // VWAP
+  if (vwap) {
+    if      (price > vwap * 1.002) { score += 7; reasons.push({text:'Acima do VWAP',type:'positive'}); }
+    else if (price < vwap * 0.998) { score -= 7; reasons.push({text:'Abaixo do VWAP',type:'negative'}); }
+    indicators.push({name:'VWAP',reading:'$'+vwap.toFixed(vwap>=1?2:4),color:price>vwap?'var(--accent)':'var(--danger)'});
+  }
+
+  // OBV
+  if (obvTrend === 'rising')  { score += 6; reasons.push({text:'OBV em ascensão (acumulação)',type:'positive'}); }
+  if (obvTrend === 'falling') { score -= 6; reasons.push({text:'OBV em queda (distribuição)',type:'negative'}); }
+  indicators.push({name:'OBV (tendência)',reading:obvTrend==='rising'?'Acumulação ↑':obvTrend==='falling'?'Distribuição ↓':'Neutro',color:obvTrend==='rising'?'var(--accent)':obvTrend==='falling'?'var(--danger)':'var(--muted)'});
+
+  // Volume
   const vp = ((volRatio-1)*100).toFixed(0);
-  if      (volRatio > 1.5) { const vd=score>=0?8:-8; score+=vd; reasons.push({text:`Volume +${vp}% acima da média`,type:vd>0?'positive':'negative'}); }
-  else if (volRatio > 1.2) { score += score>=0?3:-3; }
-  indicators.push({name:'Volume (20 períodos)',reading:`${vp>0?'+':''}${vp}% vs. média`,color:volRatio>1.3?'var(--accent)':'var(--muted)'});
+  if (volRatio > 1.5) { score += (score>0?7:-7); reasons.push({text:`Volume +${vp}% acima da média`,type:score>0?'positive':'negative'}); }
+  indicators.push({name:'Volume (20p média)',reading:`${vp>0?'+':''}${vp}% vs. média`,color:volRatio>1.3?'var(--accent)':'var(--muted)'});
   indicators.push({name:'ATR (14)',reading:atr>1?atr.toFixed(2):atr.toFixed(4),color:'var(--muted)'});
 
-  // ── Fear & Greed (max ±12) ─────────────
-  if      (fg.value < 25) { score += 12; reasons.push({text:`F&G ${fg.value} — Medo Extremo`,type:'positive'}); }
-  else if (fg.value < 40) { score += 5;  reasons.push({text:`F&G ${fg.value} — Medo`,type:'positive'}); }
-  else if (fg.value > 75) { score -= 12; reasons.push({text:`F&G ${fg.value} — Ganância Extrema`,type:'negative'}); }
-  else if (fg.value > 60) { score -= 5;  reasons.push({text:`F&G ${fg.value} — Ganância Moderada`,type:'negative'}); }
+  // Fear & Greed
+  if      (fg.value < 25) { score += 10; reasons.push({text:`F&G ${fg.value} — Medo Extremo`,type:'positive'}); }
+  else if (fg.value > 75) { score -= 10; reasons.push({text:`F&G ${fg.value} — Ganância Extrema`,type:'negative'}); }
   else                    { reasons.push({text:`F&G ${fg.value} — ${fg.label}`,type:'neutral'}); }
   indicators.push({name:'Fear & Greed Index',reading:`${fg.value} — ${fg.label}`,color:fg.value<30?'var(--accent)':fg.value>70?'var(--danger)':'var(--warn)'});
 
-  const dir = score >= 0 ? 'buy' : 'sell';
+  // ── PADRÕES DE CANDLESTICK — adicionar ao score ──
+  patterns.forEach(pat => {
+    if (pat.score !== 0) {
+      score += pat.score;
+      reasons.push({text:pat.name, type: pat.score > 0 ? 'positive' : pat.score < 0 ? 'negative' : 'neutral', isPattern: true});
+    }
+  });
 
-  // ── Normalizar score para 0-100 ─────────
-  const normScore = Math.min(100, Math.round((Math.abs(score) / SCORE_MAX) * 100));
+  // ── DIVERGÊNCIAS — adicionar ao score ──
+  divergences.forEach(div => {
+    score += div.score;
+    reasons.push({text:div.name, type: div.score > 0 ? 'positive' : 'negative', isDivergence: true});
+  });
+
+  const dir = score >= 0 ? 'buy' : 'sell';
+  const normScore = Math.min(100, Math.round(Math.abs(score) / 1.3)); // divisor para evitar inflação
   if (normScore < parseInt(state.score)) return null;
 
-  // ── Stop Loss ──────────────────────────
-  // Scalp usa ATR menor para stops mais ajustados
-  const atrMult = scalp ? 0.8 : 1.2;
-  const atrFall = scalp ? 1.0 : 1.5;
+  // Stop Loss
   let entry, stop;
   if (dir === 'buy') {
     const sups = levels.filter(l=>l.type==='support'&&l.price<price).sort((a,b)=>b.price-a.price);
     entry = price;
-    stop  = Math.min(sups.length ? sups[0].price : price-atr*atrFall, price-atr*atrMult);
+    stop  = Math.min(sups.length ? sups[0].price : price-atr*1.5, price-atr*1.2);
   } else {
     const ress = levels.filter(l=>l.type==='resistance'&&l.price>price).sort((a,b)=>a.price-b.price);
     entry = price;
-    stop  = Math.max(ress.length ? ress[0].price : price+atr*atrFall, price+atr*atrMult);
+    stop  = Math.max(ress.length ? ress[0].price : price+atr*1.5, price+atr*1.2);
   }
 
-  // ── Metas Fibonacci ────────────────────
+  // Metas Fibonacci
   const {m1:m1p, m2:m2p, m3:m3p} = calcMetas(dir, entry, stop);
-
-  // Alavancagem sugerida automaticamente com base no stop e perfil de risco
-  const stopDistancePct = Math.abs((stop - entry) / entry * 100);
-  const lev = suggestLeverage(stopDistancePct);
+  const lev = state.leverage;
 
   const stopPctRaw = ((stop-entry)/entry*100);
   const m1PctRaw   = ((m1p-entry)/entry*100);
@@ -1003,17 +1287,32 @@ function analyzeCandles(coin, tf, candles, fg) {
 
   const fmtPct = v => (v>0?'+':'')+v.toFixed(2)+'%';
 
-  const capStop = capReturn(entry, stop, dir, lev);
-  const capM1   = capReturn(entry, m1p,  dir, lev);
-  const capM2   = capReturn(entry, m2p,  dir, lev);
-  const capM3   = capReturn(entry, m3p,  dir, lev);
-
+  const capStop = capReturn(entry, stop,  dir, lev);
+  const capM1   = capReturn(entry, m1p,   dir, lev);
+  const capM2   = capReturn(entry, m2p,   dir, lev);
+  const capM3   = capReturn(entry, m3p,   dir, lev);
   const feePctCap = (ROUND_TRIP_FEE * lev * 100).toFixed(2);
 
-  const rriWord  = state.rr==='fib'?'Fibonacci':state.rr==='max'?'Máximo':`1:${state.rr} fixo`;
-  const scaleTag = scalp?'⚡ Scalp':tf==='4h'||tf==='1D'?'Swing':'Day trade';
-  const divNote  = bullDiv?' Divergência altista RSI.':bearDiv?' Divergência baixista RSI.':'';
-  const summary  = `${scaleTag} ${dir==='buy'?'LONG':'SHORT'} em ${coin} · ${tf}. RSI(${rsiPeriod}) ${rsi?.toFixed(1)??'N/A'}, MACD ${mxUp?'cruzamento altista':mxDown?'cruzamento baixista':mAbove?'acima da signal':'abaixo da signal'}.${divNote} Preço ${price>emaSlow?'acima':'abaixo'} da EMA${emaSlowP}. Alvos via ${rriWord}. ${lev}x → Meta 3 = ${dir==='buy'?'+':'-'}${capM3.netPct}% no capital líquido. Fee: ${feePctCap}% do capital.`;
+  // ── ENTRADA CONDICIONAL — maior prioridade ao padrão com trigger ──
+  let conditionalEntry = null;
+  const triggerPatterns = patterns.filter(p => p.triggerPrice != null)
+    .sort((a,b) => Math.abs(b.score) - Math.abs(a.score));
+  if (triggerPatterns.length > 0) {
+    const best = triggerPatterns[0];
+    conditionalEntry = {
+      patternName:  best.name,
+      triggerCond:  best.triggerCond,
+      triggerPrice: best.triggerPrice,
+      score:        best.score,
+    };
+  }
+
+  // Resumo
+  const rriWord = state.rr === 'fib' ? 'Fibonacci' : state.rr === 'max' ? 'Máximo' : `1:${state.rr} fixo`;
+  const divSummary = divergences.length > 0 ? ` ${divergences.map(d=>d.name).join(' + ')}.` : '';
+  const patSummary = patterns.filter(p=>p.score!==0).length > 0 ? ` Padrão: ${patterns.filter(p=>p.score!==0).map(p=>p.name).join(', ')}.` : '';
+  const condSummary = conditionalEntry ? ` Aguardar ${conditionalEntry.triggerCond} $${conditionalEntry.triggerPrice.toFixed(conditionalEntry.triggerPrice>=1?2:4)} para confirmar.` : '';
+  const summary = `${coin} setup ${dir==='buy'?'LONG':'SHORT'} no ${tf}. RSI ${rsi?.toFixed(1)??'N/A'}, MACD ${mxUp?'cruzamento altista':mxDown?'cruzamento baixista':mAbove?'acima':'abaixo'} da signal. Preço ${price>ema200?'acima':'abaixo'} da EMA200.${divSummary}${patSummary}${condSummary} Alvos ${rriWord}. Com ${lev}x: M3 = ${dir==='buy'?'+':'-'}${capM3.netPct}% no capital líquido.`;
 
   return {
     coin, pair:`${coin}/USDT`, dir,
@@ -1025,6 +1324,9 @@ function analyzeCandles(coin, tf, candles, fg) {
     m3:{ price:m3p, pct:fmtPct(m3PctRaw), cap:capM3 },
     capStop, feePctCap,
     reasons, indicators, summary,
+    patterns, divergences, conditionalEntry,
+    vwap, obvTrend, stochRSI,
+    mtfConfluence: null, // preenchido depois em runRealAnalysis
   };
 }
 
@@ -1047,10 +1349,10 @@ function startScan() {
   const LOGS = [
     'Conectando à Bybit Futures (category=linear)...',
     'Buscando Fear & Greed Index...',
-    ...tfs.flatMap(tf => coins.map(c => `${c}USDT — ${tf}`)),
+    ...tfs.flatMap(tf => coins.map(c => `${c}USDT — ${tf} [${state.leverage}x]`)),
     'Calculando RSI, MACD, EMAs, Bollinger, ATR...',
     `Projetando metas via ${state.rr==='fib'?'Fibonacci':state.rr==='max'?'Fibonacci Máximo':'R/R fixo'}...`,
-    `Calculando alavancagem sugerida (perfil: ${RISK_PROFILES[state.riskProfile||'moderate'].label})...`,
+    `Calculando retorno no capital (${state.leverage}x) e descontando fees...`,
     `Filtrando Score ≥ ${state.score}, ordenando por retorno...`,
     'Concluído ✓',
   ];
@@ -1093,7 +1395,7 @@ async function runRealAnalysis() {
   for (const coin of coins) {
     for (const tf of tfs) {
       try {
-        addLog(`${coin}/USDT — ${tf}...`);
+        addLog(`${coin}/USDT — ${tf} [${state.leverage}x]...`);
         document.getElementById('progressText').textContent = `${coin}/USDT — ${tf}`;
         const candles = await fetchCandles(coin, tf);
         const result  = candles ? analyzeCandles(coin, tf, candles, fg) : null;
@@ -1124,6 +1426,40 @@ async function runRealAnalysis() {
     const ethC = await fetchCandles('ETH','1h');
     if (ethC) document.getElementById('ethPrice').textContent = '$'+ethC[ethC.length-1].close.toLocaleString('en-US',{maximumFractionDigits:0});
   } catch {}
+
+  // ── CONFLUÊNCIA MULTI-TIMEFRAME ──
+  // Após coletar todos os resultados, agrupa por moeda e aplica bônus de score
+  const coinGroups = {};
+  results.forEach(r => { if (!coinGroups[r.coin]) coinGroups[r.coin]=[]; coinGroups[r.coin].push(r); });
+  Object.entries(coinGroups).forEach(([coin, setups]) => {
+    const buySetups  = setups.filter(s => s.dir === 'buy');
+    const sellSetups = setups.filter(s => s.dir === 'sell');
+
+    // Long confluente em 2+ timeframes
+    if (buySetups.length >= 2) {
+      const tfs = buySetups.map(s => s.timeframe);
+      const bonus = Math.min(12, buySetups.length * 6);
+      buySetups.forEach(s => {
+        s.score = Math.min(100, s.score + bonus);
+        s.mtfConfluence = { dir:'buy', count:buySetups.length, tfs };
+        // Adiciona reason de destaque no topo
+        if (!s.reasons.find(r=>r.text.includes('Confluência')))
+          s.reasons.unshift({ text:`Confluência ${buySetups.length} TFs ↑ (${tfs.join('+')})', type:'positive', isMTF:true });
+      });
+    }
+
+    // Short confluente em 2+ timeframes
+    if (sellSetups.length >= 2) {
+      const tfs = sellSetups.map(s => s.timeframe);
+      const bonus = Math.min(12, sellSetups.length * 6);
+      sellSetups.forEach(s => {
+        s.score = Math.min(100, s.score + bonus);
+        s.mtfConfluence = { dir:'sell', count:sellSetups.length, tfs };
+        if (!s.reasons.find(r=>r.text.includes('Confluência')))
+          s.reasons.unshift({ text:`Confluência ${sellSetups.length} TFs ↓ (${tfs.join('+')})', type:'negative', isMTF:true });
+      });
+    }
+  });
 
   // Ordenar por retorno no capital (M3 net) desc
   results.sort((a,b) => parseFloat(b.m3.cap.netPct) - parseFloat(a.m3.cap.netPct));
@@ -1165,23 +1501,38 @@ const MOCK_DATA = [
   { coin:'INJ', pair:'INJ/USDT', dir:'buy', score:84, entry:24.80, stop:23.00, timeframe:'1h', leverage:10,
     m1:{price:27.71,pct:'+11.73%',cap:mkCap('+11.73%',10)}, m2:{price:29.51,pct:'+18.99%',cap:mkCap('+18.99%',10)}, m3:{price:32.42,pct:'+30.72%',cap:mkCap('+30.72%',10)},
     stopPct:'-7.26%', capStop:mkCap('-7.26%',10), feePctCap:'1.10',
-    reasons:[{text:'RSI 29 — Sobrevendido',type:'positive'},{text:'MACD Cruzamento ↑',type:'positive'},{text:'Bollinger inferior',type:'positive'},{text:'Volume +92%',type:'positive'}],
-    indicators:[{name:'RSI (14)',reading:'29.1',color:'var(--accent)'},{name:'MACD',reading:'Cruzamento altista ✓',color:'var(--accent)'},{name:'EMA 9/21/200',reading:'Suporte EMA200',color:'var(--warn)'},{name:'Bollinger Bands',reading:'Abaixo da banda inferior',color:'var(--accent)'},{name:'Volume',reading:'+92% vs. média',color:'var(--accent)'},{name:'ATR (14)',reading:'0.82',color:'var(--muted)'},{name:'Fear & Greed Index',reading:'42 — Medo',color:'var(--warn)'}],
-    summary:'INJ setup LONG 1h. RSI sobrevendido + cruzamento MACD. Altcoin volátil — alvos Fibonacci alargados. Com 10x, Meta 3 projeta +297% líquido no capital.',
+    reasons:[{text:'Confluência 2 TFs ↑ (1h+15m)',type:'positive',isMTF:true},{text:'RSI 29 — Sobrevendido',type:'positive'},{text:'MACD Cruzamento ↑',type:'positive'},{text:'Bollinger inferior',type:'positive'},{text:'Volume +92%',type:'positive'},{text:'Martelo ↑',type:'positive',isPattern:true},{text:'Divergência Altista RSI',type:'positive',isDivergence:true}],
+    indicators:[{name:'RSI (14)',reading:'29.1',color:'var(--accent)'},{name:'Stochastic RSI',reading:'12.4',color:'var(--accent)'},{name:'MACD',reading:'Cruzamento altista ✓',color:'var(--accent)'},{name:'EMA 9/21/200',reading:'Suporte EMA200',color:'var(--warn)'},{name:'Bollinger Bands',reading:'Abaixo da banda inferior',color:'var(--accent)'},{name:'VWAP',reading:'$23.92',color:'var(--accent)'},{name:'OBV (tendência)',reading:'Acumulação ↑',color:'var(--accent)'},{name:'Volume',reading:'+92% vs. média',color:'var(--accent)'},{name:'ATR (14)',reading:'0.82',color:'var(--muted)'},{name:'Fear & Greed Index',reading:'42 — Medo',color:'var(--warn)'}],
+    summary:'INJ setup LONG 1h. RSI sobrevendido + cruzamento MACD. Martelo detectado com divergência altista de RSI. Confluência 2 TFs. Aguardar fechamento acima de $24.95 para confirmar. Com 10x, Meta 3 = +297% no capital.',
+    patterns:[{name:'Martelo ↑',type:'positive',score:+10,desc:'Reversão altista. Vendedores tentaram mas foram absorvidos.',triggerPrice:24.95,triggerCond:'fechamento acima de'}],
+    divergences:[{type:'bullish',indicator:'RSI',score:+20,name:'Divergência Altista RSI',desc:'Preço fez mínima mais baixa, RSI não confirmou (+5.2 pontos). Exaustão vendedora — reversão provável.'}],
+    conditionalEntry:{patternName:'Martelo ↑',triggerCond:'fechamento acima de',triggerPrice:24.95,score:+10},
+    mtfConfluence:{dir:'buy',count:2,tfs:['1h','15m']},
+    vwap:23.92, obvTrend:'rising', stochRSI:12.4,
   },
   { coin:'SOL', pair:'SOL/USDT', dir:'buy', score:88, entry:142.50, stop:136.20, timeframe:'1h', leverage:10,
     m1:{price:152.69,pct:'+7.15%',cap:mkCap('+7.15%',10)}, m2:{price:158.97,pct:'+11.56%',cap:mkCap('+11.56%',10)}, m3:{price:169.17,pct:'+18.71%',cap:mkCap('+18.71%',10)},
     stopPct:'-4.42%', capStop:mkCap('-4.42%',10), feePctCap:'1.10',
-    reasons:[{text:'RSI 28 — Sobrevendido',type:'positive'},{text:'MACD Cruzamento ↑',type:'positive'},{text:'Suporte EMA200',type:'positive'},{text:'Volume +80%',type:'positive'}],
-    indicators:[{name:'RSI (14)',reading:'28.4',color:'var(--accent)'},{name:'MACD',reading:'Cruzamento altista ✓',color:'var(--accent)'},{name:'EMA 9/21/200',reading:'Preço no suporte EMA200',color:'var(--warn)'},{name:'Bollinger Bands',reading:'Banda inferior ativada',color:'var(--accent)'},{name:'Volume',reading:'+80% vs. média',color:'var(--accent)'},{name:'ATR (14)',reading:'3.24',color:'var(--muted)'},{name:'Fear & Greed Index',reading:'42 — Medo',color:'var(--warn)'}],
-    summary:'SOL LONG 1h. RSI sobrevendido com cruzamento MACD e volume confirmando. Suporte EMA200. Com 10x, Meta 3 = +176% no capital líquido.',
+    reasons:[{text:'RSI 28 — Sobrevendido',type:'positive'},{text:'MACD Cruzamento ↑',type:'positive'},{text:'Suporte EMA200',type:'positive'},{text:'Volume +80%',type:'positive'},{text:'Engolfo Altista ↑',type:'positive',isPattern:true}],
+    indicators:[{name:'RSI (14)',reading:'28.4',color:'var(--accent)'},{name:'Stochastic RSI',reading:'8.1',color:'var(--accent)'},{name:'MACD',reading:'Cruzamento altista ✓',color:'var(--accent)'},{name:'EMA 9/21/200',reading:'Preço no suporte EMA200',color:'var(--warn)'},{name:'Bollinger Bands',reading:'Banda inferior ativada',color:'var(--accent)'},{name:'VWAP',reading:'$139.80',color:'var(--accent)'},{name:'OBV (tendência)',reading:'Acumulação ↑',color:'var(--accent)'},{name:'Volume',reading:'+80% vs. média',color:'var(--accent)'},{name:'ATR (14)',reading:'3.24',color:'var(--muted)'},{name:'Fear & Greed Index',reading:'42 — Medo',color:'var(--warn)'}],
+    summary:'SOL LONG 1h. RSI sobrevendido com cruzamento MACD e volume confirmando. Engolfo Altista na EMA200 — entrada direta válida. Com 10x, Meta 3 = +176% no capital líquido.',
+    patterns:[{name:'Engolfo Altista ↑',type:'positive',score:+15,desc:'Compradores engolfaram completamente os vendedores. Alta confiabilidade de reversão.',triggerPrice:null}],
+    divergences:[],
+    conditionalEntry:null,
+    mtfConfluence:null,
+    vwap:139.80, obvTrend:'rising', stochRSI:8.1,
   },
   { coin:'BTC', pair:'BTC/USDT', dir:'sell', score:74, entry:67420, stop:69100, timeframe:'1h', leverage:10,
     m1:{price:64700,pct:'-4.03%',cap:mkCap('4.03',10)}, m2:{price:63100,pct:'-6.41%',cap:mkCap('6.41',10)}, m3:{price:60290,pct:'-10.57%',cap:mkCap('10.57',10)},
     stopPct:'+2.49%', capStop:mkCap('2.49',10), feePctCap:'1.10',
-    reasons:[{text:'RSI 71 — Sobrecomprado',type:'negative'},{text:'MACD divergência ↓',type:'negative'},{text:'Resistência $67.5k',type:'negative'},{text:'Volume fraco no topo',type:'neutral'}],
-    indicators:[{name:'RSI (14)',reading:'71.2',color:'var(--danger)'},{name:'MACD',reading:'Divergência negativa',color:'var(--danger)'},{name:'EMA 9/21/200',reading:'Acima das 3 EMAs',color:'var(--warn)'},{name:'Bollinger Bands',reading:'Banda superior testada',color:'var(--danger)'},{name:'Volume',reading:'-12% vs. média',color:'var(--warn)'},{name:'ATR (14)',reading:'980',color:'var(--muted)'},{name:'Fear & Greed Index',reading:'42',color:'var(--warn)'}],
-    summary:'BTC SHORT 1h. Resistência $67.5k com RSI sobrecomprado e volume caindo. Com 10x, Meta 3 projeta +95% líquido no capital.',
+    reasons:[{text:'RSI 71 — Sobrecomprado',type:'negative'},{text:'MACD divergência ↓',type:'negative'},{text:'Resistência $67.5k',type:'negative'},{text:'Volume fraco no topo',type:'neutral'},{text:'Divergência Baixista RSI',type:'negative',isDivergence:true},{text:'Estrela Cadente ↓',type:'negative',isPattern:true}],
+    indicators:[{name:'RSI (14)',reading:'71.2',color:'var(--danger)'},{name:'Stochastic RSI',reading:'88.5',color:'var(--danger)'},{name:'MACD',reading:'Divergência negativa',color:'var(--danger)'},{name:'EMA 9/21/200',reading:'Acima das 3 EMAs',color:'var(--warn)'},{name:'Bollinger Bands',reading:'Banda superior testada',color:'var(--danger)'},{name:'VWAP',reading:'$65.200',color:'var(--danger)'},{name:'OBV (tendência)',reading:'Distribuição ↓',color:'var(--danger)'},{name:'Volume',reading:'-12% vs. média',color:'var(--warn)'},{name:'ATR (14)',reading:'980',color:'var(--muted)'},{name:'Fear & Greed Index',reading:'42',color:'var(--warn)'}],
+    summary:'BTC SHORT 1h. Resistência $67.5k com RSI sobrecomprado. Divergência Baixista RSI + Estrela Cadente. Aguardar fechamento abaixo de $67.100 para confirmar. Com 10x, Meta 3 = +95% no capital.',
+    patterns:[{name:'Estrela Cadente ↓',type:'negative',score:-10,desc:'Rejeição forte de topo. Vendedores dominaram a sessão.',triggerPrice:67100,triggerCond:'fechamento abaixo de'}],
+    divergences:[{type:'bearish',indicator:'RSI',score:-20,name:'Divergência Baixista RSI',desc:'Preço fez máxima mais alta, RSI não confirmou (-4.8 pontos). Momentum comprador se esgotando.'}],
+    conditionalEntry:{patternName:'Estrela Cadente ↓',triggerCond:'fechamento abaixo de',triggerPrice:67100,score:-10},
+    mtfConfluence:null,
+    vwap:65200, obvTrend:'falling', stochRSI:88.5,
   },
 ];
 
@@ -1237,7 +1588,7 @@ function renderGroupCard(coin, setups) {
   const idx   = groupActiveIndex[coin];
   const d     = setups[idx];
   const total = setups.length;
-  const lev   = d.leverage || 10;
+  const lev   = d.leverage || state.leverage;
   const isLong= d.dir==='buy';
   const sc    = d.score>=80?'high':d.score>=65?'mid':'low';
   const capM3 = d.m3.cap;
@@ -1285,13 +1636,26 @@ function renderGroupCard(coin, setups) {
       </div>
 
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <div class="direction-badge ${d.dir}">${isLong?'▲ LONG':'▼ SHORT'}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div class="direction-badge ${d.dir}">${isLong?'▲ LONG':'▼ SHORT'}</div>
+          ${d.mtfConfluence ? `<span class="mtf-badge ${d.mtfConfluence.dir==='sell'?'mtf-sell':''}">⊕ MTF ${d.mtfConfluence.count}×</span>` : ''}
+        </div>
         <div class="score-row" style="flex:1;margin:0 12px">
           <span class="score-label">SCORE</span>
           <div class="score-track"><div class="score-fill ${sc}" style="width:${d.score}%"></div></div>
           <span class="score-num ${sc}">${d.score}</span>
         </div>
       </div>
+
+      ${d.conditionalEntry ? `
+      <div class="conditional-entry-block">
+        <div class="ceb-icon">⏳</div>
+        <div>
+          <div class="ceb-label">Entrada Condicional</div>
+          <div class="ceb-main">Aguardar <em>${d.conditionalEntry.triggerCond} $${d.conditionalEntry.triggerPrice >= 1 ? d.conditionalEntry.triggerPrice.toFixed(2) : d.conditionalEntry.triggerPrice.toFixed(4)}</em> para confirmar</div>
+          <div class="ceb-pattern">${d.conditionalEntry.patternName}</div>
+        </div>
+      </div>` : ''}
 
       <div class="levels">
         <div class="level-item">
@@ -1365,7 +1729,7 @@ function filterCards(type, el) {
 function openModal(d) {
   const overlay = document.getElementById('modalOverlay');
   const content = document.getElementById('modalContent');
-  const lev     = d.leverage || 10;
+  const lev     = d.leverage || state.leverage;
   const isLong  = d.dir === 'buy';
   const sign    = isLong ? '+' : '-';
   const feeCapPct = (ROUND_TRIP_FEE * lev * 100).toFixed(2);
@@ -1421,6 +1785,45 @@ function openModal(d) {
       <h4>Resumo da oportunidade</h4>
       <p style="font-family:var(--mono);font-size:12px;color:var(--text);line-height:1.8">${d.summary}</p>
     </div>
+
+    ${d.conditionalEntry ? `
+    <div style="background:linear-gradient(135deg,rgba(255,184,0,0.08),rgba(255,184,0,0.04));border:1px solid rgba(255,184,0,0.3);border-radius:12px;padding:16px;margin-bottom:12px;">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--warn);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">⏳ Entrada Condicional — Aguardar Confirmação</div>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--text);line-height:1.8;">
+        Padrão <strong style="color:var(--warn)">${d.conditionalEntry.patternName}</strong> detectado.<br>
+        <strong>Não entrar agora.</strong> Aguardar <span style="color:var(--warn);font-weight:700">${d.conditionalEntry.triggerCond} $${d.conditionalEntry.triggerPrice >= 1 ? d.conditionalEntry.triggerPrice.toFixed(2) : d.conditionalEntry.triggerPrice.toFixed(4)}</span> para confirmar a reversão.<br>
+        <span style="color:var(--muted);font-size:11px;">Entrada antes da confirmação aumenta o risco de falso sinal.</span>
+      </div>
+    </div>` : ''}
+
+    ${(d.patterns && d.patterns.filter(p=>p.score!==0).length > 0) || (d.divergences && d.divergences.length > 0) ? `
+    <div class="modal-section">
+      <h4>Padrões de Candlestick &amp; Divergências</h4>
+      ${(d.patterns || []).filter(p=>p.score!==0).map(pat => `
+        <div class="pattern-row">
+          <div class="pattern-row-badge"><span class="pattern-tag ${pat.type==='positive'?'bull':pat.type==='negative'?'bear':'neut'}">${pat.name}</span></div>
+          <div class="pattern-row-text">${pat.desc}${pat.triggerPrice ? `<br><span class="ptrig">→ Gatilho: ${pat.triggerCond} $${pat.triggerPrice >= 1 ? pat.triggerPrice.toFixed(2) : pat.triggerPrice.toFixed(4)}</span>` : ''}</div>
+        </div>`).join('')}
+      ${(d.divergences || []).map(div => `
+        <div class="pattern-row">
+          <div class="pattern-row-badge"><span class="div-tag">${div.name}</span></div>
+          <div class="pattern-row-text">${div.desc}</div>
+        </div>`).join('')}
+    </div>` : ''}
+
+    ${d.mtfConfluence ? `
+    <div class="modal-section">
+      <h4>Confluência Multi-Timeframe ⊕</h4>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--text);line-height:1.8;margin-bottom:10px;">
+        Sinal <strong style="color:${d.mtfConfluence.dir==='buy'?'var(--accent)':'var(--danger)'}">
+        ${d.mtfConfluence.dir==='buy'?'▲ LONG':'▼ SHORT'}</strong> confirmado em
+        <strong>${d.mtfConfluence.count} timeframes simultaneamente</strong> — setup de alta convicção.
+        Score bônus aplicado: <span style="color:var(--accent2)">+${Math.min(12,d.mtfConfluence.count*6)} pts</span>
+      </p>
+      <div class="mtf-grid">
+        ${d.mtfConfluence.tfs.map(tf=>`<span class="mtf-tf-pill ${d.mtfConfluence.dir==='sell'?'sell':''}">${tf.toUpperCase()}</span>`).join('')}
+      </div>
+    </div>` : ''}
 
     <div class="analysis-block">
       <h4>Indicadores técnicos</h4>
@@ -1531,7 +1934,7 @@ function saveToJournal(d) {
     dir:       d.dir,
     score:     d.score,
     timeframe: d.timeframe,
-    leverage:  d.leverage || 10,
+    leverage:  d.leverage || state.leverage,
     entry:     d.entry,
     stop:      d.stop,
     stopPct:   d.stopPct,
