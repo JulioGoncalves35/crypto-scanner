@@ -228,7 +228,7 @@
   .progress-label { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 12px; display: flex; justify-content: space-between; }
   .progress-bar-bg { background: var(--surface2); border-radius: 4px; height: 4px; overflow: hidden; }
   .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 4px; transition: width 0.3s; width: 0%; }
-  .progress-log { margin-top: 12px; font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.8; max-height: 80px; overflow: hidden; }
+  .progress-log { margin-top: 12px; font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.8; max-height: 160px; overflow-y: auto; }
   .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
   .results-header h2 { font-size: 16px; font-weight: 700; }
   .results-header h2 span { font-family: var(--mono); font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 8px; }
@@ -733,28 +733,48 @@ const TIMEFRAMES_BY_MODE = {
 // ─────────────────────────────────────────
 // API + PROXIES
 // ─────────────────────────────────────────
-const PROXIES = [
-  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
-  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-  u => u,
+// FETCH — Bybit direto primeiro, proxies como fallback
+// ─────────────────────────────────────────
+const CORS_PROXIES = [
+  u => u,                                                              // 1. Direto (Bybit v5 suporta CORS em HTTPS)
+  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,              // 2. corsproxy.io
+  u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`, // 3. allorigins
+  u => `https://thingproxy.freeboard.io/fetch/${u}`,                  // 4. thingproxy
 ];
 const TF_MAP = { '5m':'5','15m':'15','1h':'60','4h':'240','1D':'D' };
 
-async function fetchWithProxy(url) {
-  for (const proxy of PROXIES) {
-    try {
-      const r = await fetch(proxy(url), { signal: AbortSignal.timeout(8000) });
-      if (!r.ok) continue;
-      return await r.json();
-    } catch { /* próximo proxy */ }
+async function fetchJSON(url, timeoutMs = 10000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const r = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+    clearTimeout(timer);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
+  } catch(e) {
+    clearTimeout(timer);
+    throw e;
   }
-  throw new Error('Proxies falharam: ' + url);
+}
+
+async function fetchWithFallback(url) {
+  let lastErr = null;
+  for (const makeUrl of CORS_PROXIES) {
+    const target = makeUrl(url);
+    try {
+      const data = await fetchJSON(target, 10000);
+      return data;
+    } catch(e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error('Todos os métodos falharam: ' + url);
 }
 
 async function fetchCandles(symbol, tf) {
   const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${symbol}USDT&interval=${TF_MAP[tf]}&limit=220`;
-  const j = await fetchWithProxy(url);
-  if (j.retCode !== 0 || !j.result?.list?.length) return null;
+  const j = await fetchWithFallback(url);
+  if (!j || j.retCode !== 0 || !j.result?.list?.length) return null;
   return j.result.list.reverse().map(c => ({
     time: parseInt(c[0]), open: parseFloat(c[1]),
     high: parseFloat(c[2]), low: parseFloat(c[3]),
@@ -764,7 +784,7 @@ async function fetchCandles(symbol, tf) {
 
 async function fetchFearGreed() {
   try {
-    const j = await fetchWithProxy('https://api.alternative.me/fng/?limit=1');
+    const j = await fetchWithFallback('https://api.alternative.me/fng/?limit=1');
     return { value: parseInt(j.data[0].value), label: j.data[0].value_classification };
   } catch { return { value: 50, label: 'Neutro' }; }
 }
@@ -1394,7 +1414,7 @@ async function runRealAnalysis() {
   for (const coin of coins) {
     for (const tf of tfs) {
       try {
-        addLog(`${coin}/USDT — ${tf} [${state.leverage}x]...`);
+        addLog(`Buscando ${coin}/USDT — ${tf}...`);
         document.getElementById('progressText').textContent = `${coin}/USDT — ${tf}`;
         const candles = await fetchCandles(coin, tf);
         if (candles) {
@@ -1403,30 +1423,24 @@ async function runRealAnalysis() {
           if (result) {
             results.push(result);
             const sign = result.dir==='buy' ? '+' : '-';
-            addLog(`✓ ${coin} ${tf} · Score ${result.score} · Capital M3: ${sign}${result.m3.cap.netPct}%`, 'var(--accent)');
+            addLog(`✓ ${coin} ${tf} · Score ${result.score} · M3: ${sign}${result.m3.cap.netPct}%`, 'var(--accent)');
           } else {
-            addLog(`◌ ${coin} ${tf} — score abaixo do filtro`, 'var(--muted)');
+            addLog(`◌ ${coin} ${tf} — score abaixo do filtro (${state.score}+)`, 'var(--muted)');
           }
         } else {
           fail++;
-          addLog(`✗ ${coin} ${tf} — sem dados`, 'var(--danger)');
+          addLog(`✗ ${coin} ${tf} — par não encontrado na Bybit`, 'var(--danger)');
         }
       } catch(e) {
         fail++;
-        addLog(`✗ ${coin} ${tf} — erro na API`, 'var(--danger)');
+        addLog(`✗ ${coin} ${tf} — ${e.message || 'erro de conexão'}`, 'var(--danger)');
       }
     }
   }
 
-  // Fallback 1: API completamente inacessível
-  if (ok === 0 && fail > 0) {
-    addLog('⚠ API inacessível. Usando dados de demonstração...', 'var(--warn)');
-    return MOCK_DATA;
-  }
-
-  // Fallback 2: API funcionou mas nada passou o filtro de score → usar demo para não ficar vazio
-  if (ok > 0 && results.length === 0) {
-    addLog(`⚠ Nenhum setup acima do score ${state.score} encontrado. Exibindo demonstração...`, 'var(--warn)');
+  // Fallback só se API completamente inacessível (zero candles obtidos)
+  if (ok === 0) {
+    addLog('⚠ API inacessível. Exibindo dados de demonstração.', 'var(--warn)');
     return MOCK_DATA;
   }
 
