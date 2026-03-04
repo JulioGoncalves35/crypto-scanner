@@ -1444,7 +1444,7 @@ async function runRealAnalysis() {
         s.mtfConfluence = { dir:'buy', count:buySetups.length, tfs };
         // Adiciona reason de destaque no topo
         if (!s.reasons.find(r=>r.text.includes('Confluência')))
-          s.reasons.unshift({ text:`Confluência ${buySetups.length} TFs ↑ (${tfs.join('+')})', type:'positive', isMTF:true });
+          s.reasons.unshift({ text:`Confluência ${buySetups.length} TFs ↑ (${tfs.join('+')})`, type:'positive', isMTF:true });
       });
     }
 
@@ -1456,7 +1456,7 @@ async function runRealAnalysis() {
         s.score = Math.min(100, s.score + bonus);
         s.mtfConfluence = { dir:'sell', count:sellSetups.length, tfs };
         if (!s.reasons.find(r=>r.text.includes('Confluência')))
-          s.reasons.unshift({ text:`Confluência ${sellSetups.length} TFs ↓ (${tfs.join('+')})', type:'negative', isMTF:true });
+          s.reasons.unshift({ text:`Confluência ${sellSetups.length} TFs ↓ (${tfs.join('+')})`, type:'negative', isMTF:true });
       });
     }
   });
