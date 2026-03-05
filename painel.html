@@ -404,6 +404,56 @@ display: flex; align-items: center; justify-content: space-between;
 .je-delete-btn:hover { background: rgba(255,61,107,0.1); color: var(--danger); border-color: var(--danger); }
 .je-chevron { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-left: 8px; }
 .je-chevron.open { transform: rotate(180deg); }
+
+/* ─── FICHA DE TRADE — bloco de notas ─── */
+.je-pair { font-size: 13px; font-weight: 400; color: var(--muted); }
+.je-long  { color: var(--accent); }
+.je-short { color: var(--danger); }
+
+/* Seções internas da ficha */
+.jf-section { padding: 12px 0; border-top: 1px solid var(--border); }
+.jf-section:first-child { border-top: none; }
+.jf-section-title {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+}
+
+/* Metas com cor de destaque */
+.jl-m1 .jl-val { color: var(--warn); }
+.jl-m2 .jl-val { color: var(--accent); }
+.jl-m3 .jl-val { color: var(--accent); font-weight: 800; }
+
+/* Grid de sinais */
+.jf-signals-grid { display: flex; flex-direction: column; gap: 5px; }
+.jf-signal {
+  font-family: var(--mono); font-size: 11px; line-height: 1.5;
+  padding: 5px 10px; border-radius: 6px;
+}
+.jf-sig-pos { background: rgba(0,229,160,0.07); color: var(--accent); border-left: 2px solid var(--accent); }
+.jf-sig-neg { background: rgba(255,61,107,0.07); color: var(--danger); border-left: 2px solid var(--danger); }
+.jf-sig-contra-label {
+  font-family: var(--mono); font-size: 9px; color: var(--muted);
+  letter-spacing: 1px; text-transform: uppercase; margin: 8px 0 4px;
+}
+.jf-legend {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  font-family: var(--mono); font-size: 9px; color: var(--muted);
+  margin-top: 8px; opacity: 0.7;
+}
+
+/* Plano de saída */
+.jf-plan { display: flex; flex-direction: column; gap: 6px; }
+.jf-plan-step {
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+  display: flex; align-items: flex-start; gap: 8px; line-height: 1.5;
+}
+.jf-plan-step strong { color: var(--text); }
+.jf-step-num {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 50%; width: 18px; height: 18px; min-width: 18px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; color: var(--accent); flex-shrink: 0; margin-top: 1px;
+}
 .page-title-j { margin-bottom: 32px; }
 .page-title-j h1 { font-size: clamp(24px, 4vw, 38px); font-weight: 800; line-height: 1.1; letter-spacing: -1px; }
 .page-title-j h1 em { font-style: normal; color: var(--accent); }
@@ -2127,8 +2177,9 @@ function updateJournalCount() {
   if (el) el.textContent = loadJournal().length;
 }
 
-// Salva apenas os campos essenciais — sem objetos complexos
+// Salva os campos essenciais + lista de sinais para exibição na ficha
 function saveToJournal(d) {
+  if (!d) return; // _currentModalData pode estar null se modal não foi aberto via openModal
   const entries = loadJournal();
   const dup = entries.find(e =>
     e.coin === d.coin &&
@@ -2143,6 +2194,12 @@ function saveToJournal(d) {
 
   const fp = p => p >= 1000 ? p.toFixed(0) : p >= 1 ? p.toFixed(3) : p.toFixed(5);
   const sign = d.dir === 'buy' ? '+' : '-';
+  const lev = d.leverage || state.leverage;
+
+  // Montar lista de sinais legível para a ficha
+  const signals = (d.reasons || [])
+    .filter(r => r.type !== 'neutral' || r.isMTF)
+    .map(r => ({ text: r.text, type: r.type, isMTF: !!r.isMTF, isPat: !!r.isPattern, isDiv: !!r.isDivergence }));
 
   entries.unshift({
     id:        Date.now(),
@@ -2150,17 +2207,17 @@ function saveToJournal(d) {
     coin:      d.coin,
     dir:       d.dir,
     timeframe: d.timeframe,
-    leverage:  d.leverage || state.leverage,
+    leverage:  lev,
     entry:     fp(d.entry),
     stop:      fp(d.stop),
     stopPct:   d.stopPct,
     liqPrice:  d.liqPrice ? fp(d.liqPrice) : '—',
     stopAdj:   d.stopAdjusted || false,
-    m1:        fp(d.m1.price) + ' (' + sign + d.m1.cap.netPct + '% cap)',
-    m2:        fp(d.m2.price) + ' (' + sign + d.m2.cap.netPct + '% cap)',
-    m3:        fp(d.m3.price) + ' (' + sign + d.m3.cap.netPct + '% cap)',
+    m1p:       fp(d.m1.price), m1cap: sign + d.m1.cap.netPct,
+    m2p:       fp(d.m2.price), m2cap: sign + d.m2.cap.netPct,
+    m3p:       fp(d.m3.price), m3cap: sign + d.m3.cap.netPct,
     score:     d.score,
-    summary:   d.summary || '',
+    signals,
     notes:     '',
   });
 
@@ -2188,14 +2245,22 @@ function renderJournal(filter) {
 function renderJournalStats(entries) {
   const el = document.getElementById('journalStats');
   if (!entries.length) { el.innerHTML = ''; return; }
+  const longs  = entries.filter(e => e.dir === 'buy').length;
+  const shorts = entries.filter(e => e.dir === 'sell').length;
+  const withNotes = entries.filter(e => e.notes && e.notes.trim()).length;
   el.innerHTML = `
     <div class="stat-card">
-      <div class="stat-label">Operações salvas</div>
+      <div class="stat-label">Total de fichas</div>
       <div class="stat-val">${entries.length}</div>
-      <div class="stat-sub">no diário</div>
+      <div class="stat-sub">${longs} long · ${shorts} short</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Última entrada</div>
+      <div class="stat-label">Com anotações</div>
+      <div class="stat-val ${withNotes>0?'green':''}">${withNotes}</div>
+      <div class="stat-sub">de ${entries.length} fichas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Última salva</div>
       <div class="stat-val" style="font-size:14px">${entries[0].coin}</div>
       <div class="stat-sub">${entries[0].dir === 'buy' ? '▲ LONG' : '▼ SHORT'} · ${entries[0].timeframe}</div>
     </div>
@@ -2230,60 +2295,111 @@ function renderEntryHTML(e) {
     hour:'2-digit', minute:'2-digit'
   });
 
+  // Separar sinais por categoria para a ficha
+  const sigs = e.signals || [];
+  const bullSigs = sigs.filter(s => s.type === 'positive');
+  const bearSigs = sigs.filter(s => s.type === 'negative');
+  const mainSigs = isLong ? bullSigs : bearSigs;
+  const contraSigs = isLong ? bearSigs : bullSigs;
+
+  // Labels iconográficos por tipo de sinal
+  const sigIcon = s => s.isMTF ? '⊕' : s.isDiv ? '◈' : s.isPat ? '◆' : '•';
+
+  const sigHTML = (list, cls) => list.map(s =>
+    `<div class="jf-signal ${cls}">${sigIcon(s)} ${s.text}</div>`
+  ).join('');
+
+  // Montagem das metas (suporte retrocompatível com entradas antigas que usam m1/m2/m3)
+  const m1txt = e.m1p ? `$${e.m1p} · <strong>${e.m1cap}% cap</strong>` : e.m1 || '—';
+  const m2txt = e.m2p ? `$${e.m2p} · <strong>${e.m2cap}% cap</strong>` : e.m2 || '—';
+  const m3txt = e.m3p ? `$${e.m3p} · <strong>${e.m3cap}% cap</strong>` : e.m3 || '—';
+
   return `<div class="journal-entry je-${e.dir}" id="je-${e.id}">
 
+    <!-- CABEÇALHO -->
     <div class="je-header">
       <div class="je-header-left">
-        <div class="je-coin">${e.coin}</div>
+        <div class="je-coin">${e.coin}<span class="je-pair">/USDT</span></div>
         <div class="je-meta">
-          <strong>${isLong ? '▲ LONG' : '▼ SHORT'}</strong> &nbsp;·&nbsp;
-          ${e.timeframe.toUpperCase()} &nbsp;·&nbsp;
-          ${e.leverage}x &nbsp;·&nbsp;
-          Score <strong>${e.score}</strong>
+          <strong class="${isLong ? 'je-long' : 'je-short'}">${isLong ? '▲ LONG' : '▼ SHORT'}</strong>
+          &nbsp;·&nbsp; ${e.timeframe.toUpperCase()} &nbsp;·&nbsp; ${e.leverage}x
+          &nbsp;·&nbsp; Score <strong>${e.score}</strong>
         </div>
       </div>
-      <span class="je-date" style="font-size:10px">${date}</span>
+      <span class="je-date">${date}</span>
     </div>
 
+    <!-- CORPO DA FICHA -->
     <div class="je-body">
-      <div class="je-levels-row">
-        <div class="je-level">
-          <div class="jl-lbl">Entrada</div>
-          <div class="jl-val">$${e.entry}</div>
-        </div>
-        <div class="je-level">
-          <div class="jl-lbl">Stop ${e.stopAdj ? '⚠' : ''}</div>
-          <div class="jl-val" style="color:var(--danger)">$${e.stop}</div>
-          <div class="jl-cap" style="font-size:9px;color:var(--muted)">Liq: $${e.liqPrice}</div>
-        </div>
-        <div class="je-level">
-          <div class="jl-lbl">Meta 1</div>
-          <div class="jl-val" style="font-size:11px">${e.m1}</div>
-        </div>
-        <div class="je-level">
-          <div class="jl-lbl">Meta 2</div>
-          <div class="jl-val" style="font-size:11px">${e.m2}</div>
-        </div>
-        <div class="je-level" style="border:1px solid rgba(0,229,160,0.2)">
-          <div class="jl-lbl">Meta 3</div>
-          <div class="jl-val" style="font-size:11px">${e.m3}</div>
+
+      <!-- BLOCO: PREÇOS -->
+      <div class="jf-section">
+        <div class="jf-section-title">Preços</div>
+        <div class="je-levels-row">
+          <div class="je-level">
+            <div class="jl-lbl">Entrada</div>
+            <div class="jl-val">$${e.entry}</div>
+          </div>
+          <div class="je-level">
+            <div class="jl-lbl">Stop Loss${e.stopAdj ? ' ⚠' : ''}</div>
+            <div class="jl-val" style="color:var(--danger)">$${e.stop}</div>
+            <div class="jl-cap">${e.stopPct || ''} &nbsp;·&nbsp; Liq: $${e.liqPrice}</div>
+          </div>
+          <div class="je-level jl-m1">
+            <div class="jl-lbl">Meta 1</div>
+            <div class="jl-val">${m1txt}</div>
+          </div>
+          <div class="je-level jl-m2">
+            <div class="jl-lbl">Meta 2</div>
+            <div class="jl-val">${m2txt}</div>
+          </div>
+          <div class="je-level jl-m3">
+            <div class="jl-lbl">Meta 3</div>
+            <div class="jl-val">${m3txt}</div>
+          </div>
         </div>
       </div>
 
-      ${e.summary ? `<div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.7;padding:10px 0 8px;border-top:1px solid var(--border)">${e.summary}</div>` : ''}
+      <!-- BLOCO: SINAIS (só renderiza se tiver signals) -->
+      ${mainSigs.length > 0 ? `
+      <div class="jf-section">
+        <div class="jf-section-title">Por que ${isLong ? 'LONG' : 'SHORT'}?</div>
+        <div class="jf-signals-grid">
+          ${sigHTML(mainSigs, 'jf-sig-pos')}
+          ${contraSigs.length > 0 ? `<div class="jf-sig-contra-label">Alertas contrários</div>${sigHTML(contraSigs, 'jf-sig-neg')}` : ''}
+        </div>
+        <div class="jf-legend">
+          <span>◆ padrão de candle</span>
+          <span>◈ divergência</span>
+          <span>⊕ confluência multi-TF</span>
+        </div>
+      </div>` : ''}
 
-      <div class="je-notes-wrap" style="margin-top:8px">
-        <label>Minhas notas</label>
+      <!-- BLOCO: PLANO -->
+      <div class="jf-section">
+        <div class="jf-section-title">Plano de saída</div>
+        <div class="jf-plan">
+          <div class="jf-plan-step"><span class="jf-step-num">1</span> Atingiu <strong>Meta 1</strong> → fechar ⅓ da posição. Mover stop para entrada.</div>
+          <div class="jf-plan-step"><span class="jf-step-num">2</span> Atingiu <strong>Meta 2</strong> → fechar mais ⅓. Mover stop para Meta 1.</div>
+          <div class="jf-plan-step"><span class="jf-step-num">3</span> Atingiu <strong>Meta 3</strong> → fechar o ⅓ final. Trade encerrado.</div>
+        </div>
+      </div>
+
+      <!-- BLOCO: MINHAS ANOTAÇÕES -->
+      <div class="jf-section">
+        <div class="jf-section-title">Minhas anotações</div>
         <textarea class="je-notes"
-          placeholder="Anote aqui seus motivos, observações, o que aprendeu..."
+          placeholder="O que me levou a salvar esse setup? O que aconteceu? O que aprendi?"
           onblur="updateNotes(${e.id}, this.value)">${e.notes || ''}</textarea>
       </div>
 
       <div class="je-footer">
-        <span></span>
+        <span class="je-date" style="font-size:10px;color:var(--muted)">Salvo em ${date}</span>
         <button class="je-delete-btn" onclick="deleteEntry(${e.id})">✕ Remover</button>
       </div>
-    </div>`;
+
+    </div>
+  </div>`;
 }
 
 function updateNotes(id, notes) {
