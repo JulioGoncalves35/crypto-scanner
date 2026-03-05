@@ -440,8 +440,8 @@ main { padding: 20px 14px 60px; }
 
 <header>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="switchTab('scanner')">Scanner</button>
-    <button class="nav-tab" onclick="switchTab('journal')" id="journalTab">Diário <span class="tab-count" id="journalCount">0</span></button>
+    <button class="nav-tab active" onclick="switchTab('scanner', this)">Scanner</button>
+    <button class="nav-tab" onclick="switchTab('journal', this)" id="journalTab">Diário <span class="tab-count" id="journalCount">0</span></button>
   </div>
   <div class="header-status">
     <div class="dot"></div>
@@ -562,6 +562,12 @@ main { padding: 20px 14px 60px; }
   </div>
 
   <!-- RESULTS -->
+
+  <!-- Banner de aviso: dados de demonstração (visível apenas quando API falha) -->
+  <div id="demoBanner" style="display:none;align-items:center;gap:12px;background:rgba(255,184,0,0.12);border:1px solid rgba(255,184,0,0.5);border-radius:10px;padding:12px 18px;margin:0 28px 16px;font-family:var(--mono);font-size:12px;color:var(--warn)">
+    <span style="font-size:20px">⚠</span>
+    <span><strong>DADOS DE DEMONSTRAÇÃO</strong> — A API Bybit estava inacessível. Os valores exibidos são fictícios e <strong>não devem ser usados para operar</strong>. Verifique sua conexão e rode um novo scan.</span>
+  </div>
 
   <div id="resultsSection">
     <div class="results-header" id="resultsHeader" style="display:none">
@@ -743,7 +749,7 @@ async function loadMarketBar() {
       el.textContent = '$'+p.toLocaleString('en-US',{maximumFractionDigits:0});
       el.className = 'val ' + (p >= prev ? 'up' : 'down');
     }
-  } catch {}
+  } catch(e) { console.warn('loadMarketBar: erro ao buscar BTC', e.message); }
   try {
     const ethC = await fetchCandles('ETH','1h');
     if (ethC) {
@@ -753,13 +759,13 @@ async function loadMarketBar() {
       el.textContent = '$'+p.toLocaleString('en-US',{maximumFractionDigits:0});
       el.className = 'val ' + (p >= prev ? 'up' : 'down');
     }
-  } catch {}
+  } catch(e) { console.warn('loadMarketBar: erro ao buscar ETH', e.message); }
   try {
     const fg = await fetchFearGreed();
     const el = document.getElementById('fgVal');
     el.textContent = `${fg.value} — ${fg.label}`;
     el.className = 'val ' + (fg.value<30?'up':fg.value>70?'down':'warn');
-  } catch {}
+  } catch(e) { console.warn('loadMarketBar: erro ao buscar Fear & Greed', e.message); }
 }
 
 // ─────────────────────────────────────────
@@ -769,9 +775,11 @@ function toggleGroup(el) {
   el.closest('.toggle-group').querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
 }
-function toggleMode(el,v)  { state.mode = v; toggleGroup(el); }
-function toggleScore(el,v) { state.score = v; toggleGroup(el); }
-function toggleDir(el,v)   { state.dir = v; toggleGroup(el); }
+// Função genérica para atualizar qualquer chave do state e ativar o botão
+function toggleState(el, key, v) { state[key] = v; toggleGroup(el); }
+function toggleMode(el, v)  { toggleState(el, 'mode', v); }
+function toggleScore(el, v) { toggleState(el, 'score', v); }
+function toggleDir(el, v)   { toggleState(el, 'dir', v); }
 
 function toggleLeverage(el, v) {
   state.leverage = v;
@@ -816,37 +824,50 @@ const CORS_PROXIES = [
 ];
 const TF_MAP = { '5m':'5','15m':'15','30m':'30','1h':'60','4h':'240','1D':'D' };
 
-async function fetchJSON(url, timeoutMs = 10000) {
+// Controlador global do scan em execução — permite cancelar requests ao iniciar novo scan
+let _scanController = null;
+
+async function fetchJSON(url, timeoutMs = 10000, externalSignal = null) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  // Propaga o sinal externo (cancelamento de scan) para o fetch interno
+  const onExternalAbort = () => controller.abort();
+  if (externalSignal) {
+    if (externalSignal.aborted) { clearTimeout(timer); throw new DOMException('Scan cancelado', 'AbortError'); }
+    externalSignal.addEventListener('abort', onExternalAbort);
+  }
   try {
     const r = await fetch(url, { signal: controller.signal, cache: 'no-store' });
     clearTimeout(timer);
+    if (externalSignal) externalSignal.removeEventListener('abort', onExternalAbort);
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     return await r.json();
   } catch(e) {
     clearTimeout(timer);
+    if (externalSignal) externalSignal.removeEventListener('abort', onExternalAbort);
     throw e;
   }
 }
 
-async function fetchWithFallback(url) {
+async function fetchWithFallback(url, signal = null) {
   let lastErr = null;
   for (const makeUrl of CORS_PROXIES) {
+    if (signal?.aborted) throw new DOMException('Scan cancelado', 'AbortError');
     const target = makeUrl(url);
     try {
-      const data = await fetchJSON(target, 10000);
+      const data = await fetchJSON(target, 10000, signal);
       return data;
     } catch(e) {
+      if (e.name === 'AbortError') throw e; // Propaga cancelamento imediatamente
       lastErr = e;
     }
   }
   throw lastErr || new Error('Todos os métodos falharam: ' + url);
 }
 
-async function fetchCandles(symbol, tf) {
+async function fetchCandles(symbol, tf, signal = null) {
   const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${symbol}USDT&interval=${TF_MAP[tf]}&limit=220`;
-  const j = await fetchWithFallback(url);
+  const j = await fetchWithFallback(url, signal);
   if (!j || j.retCode !== 0 || !j.result?.list?.length) return null;
   return j.result.list.reverse().map(c => ({
     time: parseInt(c[0]), open: parseFloat(c[1]),
@@ -855,11 +876,14 @@ async function fetchCandles(symbol, tf) {
   }));
 }
 
-async function fetchFearGreed() {
+async function fetchFearGreed(signal = null) {
   try {
-    const j = await fetchWithFallback('https://api.alternative.me/fng/?limit=1');
+    const j = await fetchWithFallback('https://api.alternative.me/fng/?limit=1', signal);
     return { value: parseInt(j.data[0].value), label: j.data[0].value_classification };
-  } catch { return { value: 50, label: 'Neutro' }; }
+  } catch(e) {
+    if (e.name === 'AbortError') throw e;
+    return { value: 50, label: 'Neutro' };
+  }
 }
 
 // ─────────────────────────────────────────
@@ -1210,12 +1234,13 @@ function calcLiqPrice(entry, dir, lev) {
 // RETORNO ALAVANCADO — CÁLCULO REAL
 // ─────────────────────────────────────────
 function capReturn(entry, target, dir, lev) {
+  const safeLev = Math.max(1, parseFloat(lev) || 1); // Garantir leverage positivo e válido
   // Movimento no preço em termos absolutos
   const priceMoveAbs = Math.abs(target - entry) / entry;
   // Com alavancagem: retorno bruto no capital
-  const gross  = priceMoveAbs * lev;
+  const gross  = priceMoveAbs * safeLev;
   // Fee round-trip sobre o capital
-  const feeCap = ROUND_TRIP_FEE * lev;
+  const feeCap = ROUND_TRIP_FEE * safeLev;
   // Retorno líquido
   const net    = gross - feeCap;
   return {
@@ -1244,45 +1269,57 @@ function calcMetas(dir, entry, stop) {
 }
 
 // ─────────────────────────────────────────
-// MOTOR DE ANÁLISE
+// MOTOR DE ANÁLISE — sub-funções
 // ─────────────────────────────────────────
-function analyzeCandles(coin, tf, candles, fg) {
-  if (!candles || candles.length < 50) return null;
-  const closes = candles.map(c=>c.close);
-  const last   = candles[candles.length-1];
-  const price  = last.close;
 
-  const rsiArr  = calcRSI(closes);
-  const rsi     = rsiArr[rsiArr.length-1];
-  const e9      = calcEMA(closes,9);
-  const e21     = calcEMA(closes,21);
-  const e200    = calcEMA(closes,200);
-  const ema9    = e9[e9.length-1];
-  const ema21   = e21[e21.length-1];
-  const ema200  = e200[e200.length-1];
+// Fase 1: calcular todos os indicadores técnicos
+function _calcTechIndicators(candles, closes) {
+  const last     = candles[candles.length-1];
+  const price    = last.close;
 
-  const {macdLine,signal,hist} = calcMACD(closes);
-  const macdNow  = macdLine[macdLine.length-1], macdPrev = macdLine[macdLine.length-2];
-  const sigNow   = signal[signal.length-1],     sigPrev  = signal[signal.length-2];
-  const histNow  = hist[hist.length-1],         histPrev = hist[hist.length-2];
+  const rsiArr   = calcRSI(closes);
+  const rsi      = rsiArr[rsiArr.length-1];
+  const e9       = calcEMA(closes,9);
+  const e21      = calcEMA(closes,21);
+  const e200     = calcEMA(closes,200);
+  const ema9     = e9[e9.length-1];
+  const ema21    = e21[e21.length-1];
+  const ema200   = e200[e200.length-1];
 
-  const bbs  = calcBollinger(closes);
-  const bb   = bbs[bbs.length-1];
-  const atrs = calcATR(candles);
-  const atr  = atrs[atrs.length-1];
-  const volAvg  = avgVol(candles);
-  const volRatio= last.volume / volAvg;
-  const levels  = findLevels(candles);
+  const {macdLine, signal: macdSignal, hist} = calcMACD(closes);
+  const macdNow  = macdLine[macdLine.length-1];
+  const macdPrev = macdLine[macdLine.length-2];
+  const sigNow   = macdSignal[macdSignal.length-1];
+  const sigPrev  = macdSignal[macdSignal.length-2];
+  const histNow  = hist[hist.length-1];
+  const histPrev = hist[hist.length-2];
 
-  // ── NOVOS INDICADORES ──
-  const vwap     = calcVWAP(candles);
-  const obvTrend = calcOBVTrend(candles);
-  const stochRSI = calcStochRSI(rsiArr);
-  const patterns    = detectCandlePatterns(candles);
+  const bbs      = calcBollinger(closes);
+  const bb       = bbs[bbs.length-1];
+  const atrs     = calcATR(candles);
+  const atr      = atrs[atrs.length-1];
+  const volAvg   = avgVol(candles);
+  const volRatio = last.volume / volAvg;
+  const levels   = findLevels(candles);
+
+  const vwap      = calcVWAP(candles);
+  const obvTrend  = calcOBVTrend(candles);
+  const stochRSI  = calcStochRSI(rsiArr);
+  const patterns  = detectCandlePatterns(candles);
   const divergences = detectDivergences(candles, rsiArr, hist);
 
-  let score=0;
-  const reasons=[], indicators=[];
+  return { price, rsiArr, rsi, ema9, ema21, ema200,
+    macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
+    bb, atr, volRatio, levels, vwap, obvTrend, stochRSI, patterns, divergences };
+}
+
+// Fase 2: calcular score e razões com base nos indicadores
+function _computeScore(price, ind, fg) {
+  const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
+    ema9, ema21, ema200, bb, vwap, obvTrend, volRatio, patterns, divergences } = ind;
+
+  let score = 0;
+  const reasons = [], indicators = [];
 
   // RSI
   if (rsi !== null) {
@@ -1343,7 +1380,7 @@ function analyzeCandles(coin, tf, candles, fg) {
   const vp = ((volRatio-1)*100).toFixed(0);
   if (volRatio > 1.5) { score += (score>0?7:-7); reasons.push({text:`Volume +${vp}% acima da média`,type:score>0?'positive':'negative'}); }
   indicators.push({name:'Volume (20p média)',reading:`${vp>0?'+':''}${vp}% vs. média`,color:volRatio>1.3?'var(--accent)':'var(--muted)'});
-  indicators.push({name:'ATR (14)',reading:atr>1?atr.toFixed(2):atr.toFixed(4),color:'var(--muted)'});
+  indicators.push({name:'ATR (14)',reading:ind.atr>1?ind.atr.toFixed(2):ind.atr.toFixed(4),color:'var(--muted)'});
 
   // Fear & Greed
   if      (fg.value < 25) { score += 10; reasons.push({text:`F&G ${fg.value} — Medo Extremo`,type:'positive'}); }
@@ -1351,7 +1388,7 @@ function analyzeCandles(coin, tf, candles, fg) {
   else                    { reasons.push({text:`F&G ${fg.value} — ${fg.label}`,type:'neutral'}); }
   indicators.push({name:'Fear & Greed Index',reading:`${fg.value} — ${fg.label}`,color:fg.value<30?'var(--accent)':fg.value>70?'var(--danger)':'var(--warn)'});
 
-  // ── PADRÕES DE CANDLESTICK — adicionar ao score ──
+  // Padrões de candlestick
   patterns.forEach(pat => {
     if (pat.score !== 0) {
       score += pat.score;
@@ -1359,14 +1396,31 @@ function analyzeCandles(coin, tf, candles, fg) {
     }
   });
 
-  // ── DIVERGÊNCIAS — adicionar ao score ──
+  // Divergências
   divergences.forEach(div => {
     score += div.score;
     reasons.push({text:div.name, type: div.score > 0 ? 'positive' : 'negative', isDivergence: true});
   });
 
-  const dir = score >= 0 ? 'buy' : 'sell';
-  const normScore = Math.min(100, Math.round(Math.abs(score)));
+  return { score, reasons, indicators, mxUp, mxDown, mAbove };
+}
+
+// ─────────────────────────────────────────
+// MOTOR DE ANÁLISE — função principal
+// ─────────────────────────────────────────
+function analyzeCandles(coin, tf, candles, fg) {
+  if (!candles || candles.length < 50) return null;
+  const closes = candles.map(c => c.close);
+
+  // Fase 1: indicadores
+  const ind = _calcTechIndicators(candles, closes);
+  const { price, rsi, ema200, atr, levels, vwap, obvTrend, stochRSI, patterns, divergences } = ind;
+
+  // Fase 2: score
+  const { score: rawScore, reasons, indicators, mxUp, mxDown, mAbove } = _computeScore(price, ind, fg);
+
+  const dir       = rawScore >= 0 ? 'buy' : 'sell';
+  const normScore = Math.min(100, Math.round(Math.abs(rawScore)));
   if (normScore < parseInt(state.score)) return null;
 
   // Stop Loss
@@ -1381,16 +1435,14 @@ function analyzeCandles(coin, tf, candles, fg) {
     stop  = Math.max(ress.length ? ress[0].price : price+atr*1.5, price+atr*1.2);
   }
 
-  // ── PREÇO DE LIQUIDAÇÃO — verificar se stop é seguro ──
+  // Preço de liquidação — verificar se stop é seguro
   const lev = state.leverage;
   const liqPrice = calcLiqPrice(entry, dir, lev);
   let stopAdjusted = false;
   if (dir === 'buy' && stop <= liqPrice) {
-    // Stop abaixo da liquidação → ajustar para 2% acima do preço de liq
     stop = liqPrice * 1.02;
     stopAdjusted = true;
   } else if (dir === 'sell' && stop >= liqPrice) {
-    // Stop acima da liquidação → ajustar para 2% abaixo do preço de liq
     stop = liqPrice * 0.98;
     stopAdjusted = true;
   }
@@ -1398,35 +1450,27 @@ function analyzeCandles(coin, tf, candles, fg) {
   // Metas Fibonacci
   const {m1:m1p, m2:m2p, m3:m3p} = calcMetas(dir, entry, stop);
 
+  const fmtPct = v => { const n = parseFloat(v); return (n > 0 ? '+' : '') + n.toFixed(2) + '%'; };
+
   const stopPctRaw = ((stop-entry)/entry*100);
-  const m1PctRaw   = ((m1p-entry)/entry*100);
-  const m2PctRaw   = ((m2p-entry)/entry*100);
-  const m3PctRaw   = ((m3p-entry)/entry*100);
-
-  const fmtPct = v => (v>0?'+':'')+v.toFixed(2)+'%';
-
   const capStop = capReturn(entry, stop,  dir, lev);
   const capM1   = capReturn(entry, m1p,   dir, lev);
   const capM2   = capReturn(entry, m2p,   dir, lev);
   const capM3   = capReturn(entry, m3p,   dir, lev);
   const feePctCap = (ROUND_TRIP_FEE * lev * 100).toFixed(2);
 
-  // ── ENTRADA CONDICIONAL — maior prioridade ao padrão com trigger ──
+  // Entrada condicional — maior prioridade ao padrão com trigger
   let conditionalEntry = null;
   const triggerPatterns = patterns.filter(p => p.triggerPrice != null)
     .sort((a,b) => Math.abs(b.score) - Math.abs(a.score));
   if (triggerPatterns.length > 0) {
     const best = triggerPatterns[0];
-    conditionalEntry = {
-      patternName:  best.name,
-      triggerCond:  best.triggerCond,
-      triggerPrice: best.triggerPrice,
-      score:        best.score,
-    };
+    conditionalEntry = { patternName: best.name, triggerCond: best.triggerCond,
+      triggerPrice: best.triggerPrice, score: best.score };
   }
 
-  // Resumo
-  const rriWord = state.rr === 'fib' ? 'Fibonacci' : state.rr === 'max' ? 'Máximo' : `1:${state.rr} fixo`;
+  // Resumo textual
+  const rriWord    = state.rr === 'fib' ? 'Fibonacci' : state.rr === 'max' ? 'Máximo' : `1:${state.rr} fixo`;
   const divSummary = divergences.length > 0 ? ` ${divergences.map(d=>d.name).join(' + ')}.` : '';
   const patSummary = patterns.filter(p=>p.score!==0).length > 0 ? ` Padrão: ${patterns.filter(p=>p.score!==0).map(p=>p.name).join(', ')}.` : '';
   const condSummary = conditionalEntry ? ` Aguardar ${conditionalEntry.triggerCond} $${conditionalEntry.triggerPrice.toFixed(conditionalEntry.triggerPrice>=1?2:4)} para confirmar.` : '';
@@ -1437,9 +1481,9 @@ function analyzeCandles(coin, tf, candles, fg) {
     score: normScore, timeframe: tf, leverage: lev,
     entry, stop, liqPrice, stopAdjusted,
     stopPct: fmtPct(stopPctRaw),
-    m1:{ price:m1p, pct:fmtPct(m1PctRaw), cap:capM1 },
-    m2:{ price:m2p, pct:fmtPct(m2PctRaw), cap:capM2 },
-    m3:{ price:m3p, pct:fmtPct(m3PctRaw), cap:capM3 },
+    m1:{ price:m1p, pct:fmtPct((m1p-entry)/entry*100), cap:capM1 },
+    m2:{ price:m2p, pct:fmtPct((m2p-entry)/entry*100), cap:capM2 },
+    m3:{ price:m3p, pct:fmtPct((m3p-entry)/entry*100), cap:capM3 },
     capStop, feePctCap,
     reasons, indicators, summary,
     patterns, divergences, conditionalEntry,
@@ -1452,6 +1496,11 @@ function analyzeCandles(coin, tf, candles, fg) {
 // SCAN
 // ─────────────────────────────────────────
 function startScan() {
+  // Cancela qualquer scan anterior ainda em andamento
+  if (_scanController) _scanController.abort();
+  _scanController = new AbortController();
+  const signal = _scanController.signal;
+
   const btn = document.getElementById('scanBtn');
   btn.disabled = true;
   btn.textContent = '⟳  ANALISANDO...';
@@ -1483,26 +1532,43 @@ function startScan() {
     document.getElementById('progressFill').style.width = pct + '%';
     document.getElementById('progressPct').textContent = pct + '%';
     document.getElementById('progressText').textContent = LOGS[step];
-    logEl.innerHTML += `<div style="color:var(--accent);opacity:0.6">› ${LOGS[step]}</div>`;
+    const logDiv = document.createElement('div');
+    logDiv.style.cssText = 'color:var(--accent);opacity:0.6';
+    logDiv.textContent = `› ${LOGS[step]}`;
+    logEl.appendChild(logDiv);
     logEl.scrollTop = logEl.scrollHeight;
     step++;
     setTimeout(tickLog, 180 + Math.random()*160);
   }
   tickLog();
 
-  runRealAnalysis().then(results => finishScan(results));
+  runRealAnalysis(signal).then(results => {
+    if (signal.aborted) return; // Scan foi substituído por um mais recente
+    finishScan(results);
+  }).catch(e => {
+    if (e.name === 'AbortError') {
+      // Scan foi cancelado — restaurar botão silenciosamente
+      btn.disabled = false;
+      btn.textContent = '▶  NOVO SCAN';
+      document.getElementById('statusText').textContent = 'SCAN CANCELADO';
+      document.getElementById('progressWrap').classList.remove('visible');
+    }
+  });
 }
 
-async function runRealAnalysis() {
+async function runRealAnalysis(signal = null) {
   const tfs   = TIMEFRAMES_BY_MODE[state.mode];
   const coins = [...state.coins];
   const logEl = document.getElementById('progressLog');
   function addLog(msg, color='var(--accent)') {
-    logEl.innerHTML += `<div style="color:${color};opacity:0.8">› ${msg}</div>`;
+    const div = document.createElement('div');
+    div.style.cssText = `color:${color};opacity:0.8`;
+    div.textContent = `› ${msg}`;
+    logEl.appendChild(div);
     logEl.scrollTop = logEl.scrollHeight;
   }
 
-  const fg = await fetchFearGreed();
+  const fg = await fetchFearGreed(signal);
   addLog(`Fear & Greed: ${fg.value} — ${fg.label}`);
   document.getElementById('fgVal').textContent = `${fg.value} — ${fg.label}`;
   document.getElementById('fgVal').className = 'val ' + (fg.value<30?'up':fg.value>70?'down':'warn');
@@ -1512,10 +1578,11 @@ async function runRealAnalysis() {
 
   for (const coin of coins) {
     for (const tf of tfs) {
+      if (signal?.aborted) throw new DOMException('Scan cancelado', 'AbortError');
       try {
         addLog(`Buscando ${coin}/USDT — ${tf}...`);
         document.getElementById('progressText').textContent = `${coin}/USDT — ${tf}`;
-        const candles = await fetchCandles(coin, tf);
+        const candles = await fetchCandles(coin, tf, signal);
         if (candles) {
           ok++;
           const result = analyzeCandles(coin, tf, candles, fg);
@@ -1540,16 +1607,22 @@ async function runRealAnalysis() {
   // Fallback só se API completamente inacessível (zero candles obtidos)
   if (ok === 0) {
     addLog('⚠ API inacessível. Exibindo dados de demonstração.', 'var(--warn)');
+    // Exibir banner de aviso bem visível para o usuário não confundir com dados reais
+    const demoBar = document.getElementById('demoBanner');
+    if (demoBar) demoBar.style.display = 'flex';
     return MOCK_DATA;
   }
+  // Garantir que o banner não apareça se a API funcionou
+  const demoBar = document.getElementById('demoBanner');
+  if (demoBar) demoBar.style.display = 'none';
 
   // Atualizar preços no header
   try {
-    const btcC = await fetchCandles('BTC','1h');
+    const btcC = await fetchCandles('BTC','1h', signal);
     if (btcC) document.getElementById('btcPrice').textContent = '$'+btcC[btcC.length-1].close.toLocaleString('en-US',{maximumFractionDigits:0});
-    const ethC = await fetchCandles('ETH','1h');
+    const ethC = await fetchCandles('ETH','1h', signal);
     if (ethC) document.getElementById('ethPrice').textContent = '$'+ethC[ethC.length-1].close.toLocaleString('en-US',{maximumFractionDigits:0});
-  } catch {}
+  } catch(e) { if (e.name === 'AbortError') throw e; console.warn('Erro ao atualizar preços do header', e.message); }
 
   // ── CONFLUÊNCIA MULTI-TIMEFRAME ──
   // Após coletar todos os resultados, agrupa por moeda e aplica bônus de score
@@ -1858,7 +1931,11 @@ function filterCards(type, el) {
 // ─────────────────────────────────────────
 // MODAL COMPLETO
 // ─────────────────────────────────────────
+// Variável global para guardar o dado do modal aberto — evita serializar objetos em onclick
+let _currentModalData = null;
+
 function openModal(d) {
+  _currentModalData = d;
   const overlay = document.getElementById('modalOverlay');
   const content = document.getElementById('modalContent');
   const lev     = d.leverage || state.leverage;
@@ -2000,13 +2077,13 @@ function openModal(d) {
       Confirme o setup no gráfico Bybit antes de entrar. Análise de apoio — não é recomendação financeira.
     </div>
 
-    <button class="save-to-journal-btn" id="saveJournalBtn" onclick="saveToJournal(${JSON.stringify(d).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026')})">
+    <button class="save-to-journal-btn" id="saveJournalBtn" onclick="saveToJournal(_currentModalData)">
       📓 &nbsp; SALVAR NO DIÁRIO DE TRADES
     </button>
   `;
 
   // Marcar como já salvo se existir no diário
-  const existing = loadJournal().find(e => e.coin===d.coin && e.timeframe===d.timeframe && Math.abs(e.entry - d.entry) < 0.001);
+  const existing = loadJournal().find(e => e.coin===d.coin && e.timeframe===d.timeframe && Math.abs(parseFloat(e.entry) - d.entry) < 0.001);
   if (existing) {
     const btn = document.getElementById('saveJournalBtn');
     if (btn) { btn.textContent = '✓  JÁ SALVO NO DIÁRIO'; btn.disabled = true; }
@@ -2023,11 +2100,11 @@ function closeModal(e) {
 // ─────────────────────────────────────────
 // TAB NAVIGATION
 // ─────────────────────────────────────────
-function switchTab(tab) {
+function switchTab(tab, el) {
   document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('section-' + tab).classList.add('active');
-  event.currentTarget.classList.add('active');
+  if (el) el.classList.add('active');
   if (tab === 'journal') renderJournal();
 }
 
@@ -2056,7 +2133,7 @@ function saveToJournal(d) {
   const dup = entries.find(e =>
     e.coin === d.coin &&
     e.timeframe === d.timeframe &&
-    Math.abs(e.entry - d.entry) < 0.001
+    Math.abs(parseFloat(e.entry) - d.entry) < 0.001
   );
   if (dup) {
     const btn = document.getElementById('saveJournalBtn');
