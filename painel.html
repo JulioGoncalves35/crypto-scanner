@@ -982,6 +982,36 @@ function calcATR(candles,p=14) {
   for(let i=p;i<trs.length;i++){atr=(atr*(p-1)+trs[i])/p;atrs.push(atr);}
   return atrs;
 }
+function calcADX(candles, p=14) {
+  if (candles.length < p * 2 + 1) return null;
+  const trs=[], pDMs=[], mDMs=[];
+  for (let i=1; i<candles.length; i++) {
+    const c=candles[i], prev=candles[i-1];
+    const tr=Math.max(c.high-c.low, Math.abs(c.high-prev.close), Math.abs(c.low-prev.close));
+    const upMove=c.high-prev.high, downMove=prev.low-c.low;
+    trs.push(tr);
+    pDMs.push(upMove>downMove && upMove>0 ? upMove : 0);
+    mDMs.push(downMove>upMove && downMove>0 ? downMove : 0);
+  }
+  // Wilder smoothing
+  let atr14=trs.slice(0,p).reduce((a,b)=>a+b,0);
+  let pDM14=pDMs.slice(0,p).reduce((a,b)=>a+b,0);
+  let mDM14=mDMs.slice(0,p).reduce((a,b)=>a+b,0);
+  const dxArr=[];
+  for (let i=p; i<trs.length; i++) {
+    atr14=atr14-atr14/p+trs[i];
+    pDM14=pDM14-pDM14/p+pDMs[i];
+    mDM14=mDM14-mDM14/p+mDMs[i];
+    const pDI=atr14>0?(pDM14/atr14)*100:0;
+    const mDI=atr14>0?(mDM14/atr14)*100:0;
+    const diSum=pDI+mDI;
+    dxArr.push(diSum>0?Math.abs(pDI-mDI)/diSum*100:0);
+  }
+  if (dxArr.length < p) return null;
+  let adx=dxArr.slice(0,p).reduce((a,b)=>a+b,0)/p;
+  for (let i=p; i<dxArr.length; i++) adx=(adx*(p-1)+dxArr[i])/p;
+  return adx;
+}
 function avgVol(candles,p=20) {
   const v=candles.map(c=>c.volume);
   return v.slice(-p-1,-1).reduce((a,b)=>a+b,0)/p;
@@ -1357,16 +1387,17 @@ function _calcTechIndicators(candles, closes) {
   const stochRSI  = calcStochRSI(rsiArr);
   const patterns  = detectCandlePatterns(candles);
   const divergences = detectDivergences(candles, rsiArr, hist);
+  const adx       = calcADX(candles);
 
   return { price, rsiArr, rsi, ema9, ema21, ema200,
     macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
-    bb, atr, volRatio, levels, vwap, obvTrend, stochRSI, patterns, divergences };
+    bb, atr, volRatio, levels, vwap, obvTrend, stochRSI, patterns, divergences, adx };
 }
 
 // Fase 2: calcular score e razões com base nos indicadores
 function _computeScore(price, ind, fg) {
   const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
-    ema9, ema21, ema200, bb, vwap, obvTrend, volRatio, patterns, divergences } = ind;
+    ema9, ema21, ema200, bb, vwap, obvTrend, volRatio, patterns, divergences, adx } = ind;
 
   let score = 0;
   const reasons = [], indicators = [];
@@ -1431,6 +1462,14 @@ function _computeScore(price, ind, fg) {
   if (volRatio > 1.5) { score += (score>0?7:-7); reasons.push({text:`Volume +${vp}% acima da média`,type:score>0?'positive':'negative'}); }
   indicators.push({name:'Volume (20p média)',reading:`${vp>0?'+':''}${vp}% vs. média`,color:volRatio>1.3?'var(--accent)':'var(--muted)'});
   indicators.push({name:'ATR (14)',reading:ind.atr>1?ind.atr.toFixed(2):ind.atr.toFixed(4),color:'var(--muted)'});
+
+  // ADX
+  if (adx !== null) {
+    if      (adx > 25) { score += (score>=0?8:-8); reasons.push({text:`ADX ${adx.toFixed(1)} — Tendência forte`,type:score>=0?'positive':'negative'}); }
+    else if (adx < 20) { score -= 5; reasons.push({text:`ADX ${adx.toFixed(1)} — Mercado lateral`,type:'negative'}); }
+    const adxColor = adx > 25 ? 'var(--accent)' : adx < 20 ? 'var(--danger)' : 'var(--warn)';
+    indicators.push({name:'ADX (14)',reading:`${adx.toFixed(1)} — ${adx>25?'Tendência forte':adx<20?'Mercado lateral':'Tendência moderada'}`,color:adxColor});
+  }
 
   // Fear & Greed
   if      (fg.value < 25) { score += 10; reasons.push({text:`F&G ${fg.value} — Medo Extremo`,type:'positive'}); }
