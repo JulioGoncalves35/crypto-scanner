@@ -698,7 +698,7 @@ const ALL_COINS = [
   'OP','IMX','JUP','ONDO','STRK','BLUR','MANTA',
   'ORDI','BOME','WIF','ENA','ETHFI','PENDLE',
   // Populares 2024-2025
-  'PEPE','FET','NEAR','RENDER','TRX','FIL',
+  'PEPE','HBAR','NEAR','RENDER','TRX','FIL',
 ];
 
 // ─────────────────────────────────────────
@@ -707,7 +707,8 @@ const ALL_COINS = [
 // ─────────────────────────────────────────
 // COIN LOGOS — CDN com fallback para letra
 // ─────────────────────────────────────────
-const LOGO_CDN = c => `https://assets.coincap.io/assets/icons/${c.toLowerCase()}@2x.png`;
+const LOGO_CDN  = c => `https://assets.coincap.io/assets/icons/${c.toLowerCase()}@2x.png`;
+const LOGO_CDN2 = c => `https://cdn.jsdelivr.net/npm/cryptocurrency-icons@latest/svg/color/${c.toLowerCase()}.svg`;
 
 function createCoinIcon(coin, isCustom = false) {
   const el = document.createElement('div');
@@ -721,11 +722,16 @@ function createCoinIcon(coin, isCustom = false) {
   img.src = LOGO_CDN(coin);
   img.alt = coin;
   img.onerror = () => {
-    img.remove();
-    const fb = document.createElement('div');
-    fb.className = 'coin-fb';
-    fb.textContent = coin.length > 4 ? coin.slice(0,4) : coin;
-    ring.appendChild(fb);
+    if (!img.dataset.fallback) {
+      img.dataset.fallback = '1';
+      img.src = LOGO_CDN2(coin);
+    } else {
+      img.remove();
+      const fb = document.createElement('div');
+      fb.className = 'coin-fb';
+      fb.textContent = coin.length > 4 ? coin.slice(0,4) : coin;
+      ring.appendChild(fb);
+    }
   };
   ring.appendChild(img);
 
@@ -787,6 +793,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Carregar preços BTC/ETH e Fear & Greed ao abrir a página ──
   loadMarketBar();
+  // ── Auto-refresh do header a cada 60 segundos ──
+  setInterval(loadMarketBar, 60_000);
 });
 
 async function loadMarketBar() {
@@ -1891,7 +1899,7 @@ function renderGroupCard(coin, setups) {
     <div class="group-header">
       <div class="group-header-left">
         <img src="${LOGO_CDN(coin)}"
-             onerror="this.outerHTML='<div class=gcl-fb>${coin.slice(0,4)}</div>'"
+             onerror="if(!this.dataset.f){this.dataset.f='1';this.src=LOGO_CDN2('${coin}');}else{this.outerHTML='<div class=gcl-fb>${coin.slice(0,4)}</div>';}"
              style="width:42px;height:42px;border-radius:50%;object-fit:contain;background:var(--surface2);border:2px solid var(--border);flex-shrink:0">
         <div>
           <div class="group-coin-name">${coin}</div>
