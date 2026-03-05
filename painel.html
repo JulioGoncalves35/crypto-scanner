@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -35,38 +36,38 @@ body::before {
 
 /* ─── HEADER ─── */
 header {
-  position: sticky; top: 0; z-index: 100;
-  background: rgba(9,12,16,0.95); backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  padding: 0 28px;
-  display: flex; align-items: center; justify-content: space-between;
-  height: 52px;
+position: sticky; top: 0; z-index: 100;
+background: rgba(9,12,16,0.95); backdrop-filter: blur(20px);
+border-bottom: 1px solid var(–border);
+padding: 0 28px;
+display: flex; align-items: center; justify-content: space-between;
+height: 52px;
 }
 .nav-tabs {
-  display: flex; gap: 2px;
-  background: var(--surface2); border-radius: 10px; padding: 3px;
-  border: 1px solid var(--border);
+display: flex; gap: 2px;
+background: var(–surface2); border-radius: 10px; padding: 3px;
+border: 1px solid var(–border);
 }
 .nav-tab {
-  font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px;
-  padding: 6px 20px; border-radius: 8px;
-  cursor: pointer; border: none; background: transparent;
-  color: var(--muted); transition: all 0.15s; text-transform: uppercase;
+font-family: var(–mono); font-size: 11px; letter-spacing: 1.5px;
+padding: 6px 20px; border-radius: 8px;
+cursor: pointer; border: none; background: transparent;
+color: var(–muted); transition: all 0.15s; text-transform: uppercase;
 }
-.nav-tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 6px rgba(0,0,0,0.5); }
+.nav-tab.active { background: var(–surface); color: var(–text); box-shadow: 0 1px 6px rgba(0,0,0,0.5); }
 .tab-count {
-  display: inline-block; margin-left: 6px;
-  background: rgba(0,229,160,0.2); color: var(--accent);
-  font-size: 10px; padding: 1px 6px; border-radius: 10px;
+display: inline-block; margin-left: 6px;
+background: rgba(0,229,160,0.2); color: var(–accent);
+font-size: 10px; padding: 1px 6px; border-radius: 10px;
 }
 .header-status {
-  display: flex; align-items: center; gap: 8px;
-  font-family: var(--mono); font-size: 11px; color: var(--muted);
+display: flex; align-items: center; gap: 8px;
+font-family: var(–mono); font-size: 11px; color: var(–muted);
 }
 .dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--accent); box-shadow: 0 0 8px var(--accent);
-  animation: pulse 2s infinite;
+width: 7px; height: 7px; border-radius: 50%;
+background: var(–accent); box-shadow: 0 0 8px var(–accent);
+animation: pulse 2s infinite;
 }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
@@ -80,86 +81,86 @@ main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; paddin
 /* ─── PAGE TITLE ─── */
 .page-title { text-align: center; margin-bottom: 32px; }
 .page-title h1 { font-size: clamp(32px, 5vw, 52px); font-weight: 800; letter-spacing: -2px; line-height: 1; }
-.page-title h1 em { font-style: normal; color: var(--accent); }
-.page-title p { margin-top: 8px; color: var(--muted); font-size: 13px; font-family: var(--mono); letter-spacing: 0.5px; }
+.page-title h1 em { font-style: normal; color: var(–accent); }
+.page-title p { margin-top: 8px; color: var(–muted); font-size: 13px; font-family: var(–mono); letter-spacing: 0.5px; }
 
 /* ─── MARKET BAR ─── */
 .market-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
 .market-pill {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 14px; padding: 14px 18px;
-  display: flex; align-items: center; gap: 12px;
-  flex: 1; min-width: 120px;
-  transition: border-color 0.2s;
+background: var(–surface); border: 1px solid var(–border);
+border-radius: 14px; padding: 14px 18px;
+display: flex; align-items: center; gap: 12px;
+flex: 1; min-width: 120px;
+transition: border-color 0.2s;
 }
 .market-pill:hover { border-color: rgba(255,255,255,0.12); }
 .market-pill img.pill-icon { width: 28px; height: 28px; border-radius: 50%; object-fit: contain; flex-shrink: 0; }
 .pill-info { display: flex; flex-direction: column; gap: 3px; }
-.pill-label { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
-.pill-val { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--text); }
-.pill-val.up   { color: var(--accent); }
-.pill-val.down { color: var(--danger); }
-.pill-val.warn { color: var(--warn); }
+.pill-label { font-family: var(–mono); font-size: 9px; color: var(–muted); letter-spacing: 1.5px; text-transform: uppercase; }
+.pill-val { font-family: var(–mono); font-size: 15px; font-weight: 700; color: var(–text); }
+.pill-val.up   { color: var(–accent); }
+.pill-val.down { color: var(–danger); }
+.pill-val.warn { color: var(–warn); }
 
 /* ─── CONFIG PANEL ─── */
 .config-panel {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 20px; padding: 28px 32px 32px; margin-bottom: 28px;
+background: var(–surface); border: 1px solid var(–border);
+border-radius: 20px; padding: 28px 32px 32px; margin-bottom: 28px;
 }
 .config-panel-title {
-  font-family: var(--mono); font-size: 10px; color: var(--muted);
-  letter-spacing: 2.5px; text-transform: uppercase;
-  margin-bottom: 24px; padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 10px;
+font-family: var(–mono); font-size: 10px; color: var(–muted);
+letter-spacing: 2.5px; text-transform: uppercase;
+margin-bottom: 24px; padding-bottom: 16px;
+border-bottom: 1px solid var(–border);
+display: flex; align-items: center; gap: 10px;
 }
 .config-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 24px; margin-bottom: 28px;
+display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+gap: 24px; margin-bottom: 28px;
 }
 .config-group label {
-  display: block; font-family: var(--mono); font-size: 10px;
-  color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase;
-  margin-bottom: 10px;
+display: block; font-family: var(–mono); font-size: 10px;
+color: var(–muted); letter-spacing: 1.5px; text-transform: uppercase;
+margin-bottom: 10px;
 }
 .toggle-group { display: flex; gap: 6px; flex-wrap: wrap; }
 .toggle-btn {
-  background: var(--surface2); border: 1px solid var(--border);
-  color: var(--muted); font-family: var(--mono); font-size: 11px;
-  padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: all 0.15s;
+background: var(–surface2); border: 1px solid var(–border);
+color: var(–muted); font-family: var(–mono); font-size: 11px;
+padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: all 0.15s;
 }
 .toggle-btn.active {
-  background: rgba(0,229,160,0.1); border-color: rgba(0,229,160,0.5);
-  color: var(--accent); box-shadow: 0 0 12px rgba(0,229,160,0.1);
+background: rgba(0,229,160,0.1); border-color: rgba(0,229,160,0.5);
+color: var(–accent); box-shadow: 0 0 12px rgba(0,229,160,0.1);
 }
-.toggle-btn:hover:not(.active) { border-color: rgba(255,255,255,0.15); color: var(--text); }
+.toggle-btn:hover:not(.active) { border-color: rgba(255,255,255,0.15); color: var(–text); }
 .fee-note {
-  font-family: var(--mono); font-size: 10px; color: var(--muted);
-  margin-top: 8px; padding: 8px 12px;
-  background: rgba(255,184,0,0.05); border: 1px solid rgba(255,184,0,0.15);
-  border-radius: 8px; line-height: 1.7;
+font-family: var(–mono); font-size: 10px; color: var(–muted);
+margin-top: 8px; padding: 8px 12px;
+background: rgba(255,184,0,0.05); border: 1px solid rgba(255,184,0,0.15);
+border-radius: 8px; line-height: 1.7;
 }
-.rr-mode-note { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 8px; }
+.rr-mode-note { font-family: var(–mono); font-size: 10px; color: var(–muted); margin-top: 8px; }
 
 /* ─── COIN SECTION ─── */
 .coin-section-label {
-  font-family: var(--mono); font-size: 10px; color: var(--muted);
-  letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px;
+font-family: var(–mono); font-size: 10px; color: var(–muted);
+letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px;
 }
 .custom-coin-row { display: flex; gap: 8px; margin-bottom: 18px; }
 .custom-coin-input {
-  flex: 1; background: var(--surface2); border: 1px solid var(--border);
-  color: var(--text); font-family: var(--mono); font-size: 13px;
-  padding: 9px 14px; border-radius: 10px; outline: none;
-  text-transform: uppercase; transition: border-color 0.15s;
+flex: 1; background: var(–surface2); border: 1px solid var(–border);
+color: var(–text); font-family: var(–mono); font-size: 13px;
+padding: 9px 14px; border-radius: 10px; outline: none;
+text-transform: uppercase; transition: border-color 0.15s;
 }
-.custom-coin-input::placeholder { color: var(--muted); text-transform: none; }
-.custom-coin-input:focus { border-color: var(--accent2); }
+.custom-coin-input::placeholder { color: var(–muted); text-transform: none; }
+.custom-coin-input:focus { border-color: var(–accent2); }
 .add-coin-btn {
-  background: var(--accent2); color: #fff; border: none;
-  font-family: var(--mono); font-size: 12px; font-weight: 700;
-  padding: 9px 18px; border-radius: 10px; cursor: pointer;
-  transition: all 0.15s; white-space: nowrap;
+background: var(–accent2); color: #fff; border: none;
+font-family: var(–mono); font-size: 12px; font-weight: 700;
+padding: 9px 18px; border-radius: 10px; cursor: pointer;
+transition: all 0.15s; white-space: nowrap;
 }
 .add-coin-btn:hover { background: #33aaff; }
 
@@ -167,311 +168,312 @@ main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; paddin
 .coin-grid { display: flex; gap: 14px; flex-wrap: wrap; }
 
 .coin-icon {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  cursor: pointer; user-select: none; transition: transform 0.15s;
-  position: relative; width: 64px;
+display: flex; flex-direction: column; align-items: center; gap: 6px;
+cursor: pointer; user-select: none; transition: transform 0.15s;
+position: relative; width: 64px;
 }
 .coin-icon:hover { transform: translateY(-3px); }
 
 .coin-icon-ring {
-  width: 52px; height: 52px; border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.08);
-  background: var(--surface2);
-  display: flex; align-items: center; justify-content: center;
-  overflow: hidden; transition: all 0.2s;
-  position: relative;
+width: 52px; height: 52px; border-radius: 50%;
+border: 2px solid rgba(255,255,255,0.08);
+background: var(–surface2);
+display: flex; align-items: center; justify-content: center;
+overflow: hidden; transition: all 0.2s;
+position: relative;
 }
 .coin-icon-ring img {
-  width: 36px; height: 36px; border-radius: 50%;
-  object-fit: contain; display: block;
+width: 36px; height: 36px; border-radius: 50%;
+object-fit: contain; display: block;
 }
 .coin-fb {
-  font-family: var(--mono); font-size: 10px; font-weight: 700;
-  color: var(--muted); text-align: center; padding: 0 3px;
-  line-height: 1.1;
+font-family: var(–mono); font-size: 10px; font-weight: 700;
+color: var(–muted); text-align: center; padding: 0 3px;
+line-height: 1.1;
 }
 .coin-icon-label {
-  font-family: var(--mono); font-size: 10px; color: var(--muted);
-  text-align: center; line-height: 1; letter-spacing: 0.3px;
-  width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+font-family: var(–mono); font-size: 10px; color: var(–muted);
+text-align: center; line-height: 1; letter-spacing: 0.3px;
+width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
 /* Selecionado */
 .coin-icon.selected .coin-icon-ring {
-  border-color: var(--accent2);
-  box-shadow: 0 0 0 3px rgba(0,136,255,0.18), 0 0 18px rgba(0,136,255,0.3);
-  background: rgba(0,136,255,0.1);
+border-color: var(–accent2);
+box-shadow: 0 0 0 3px rgba(0,136,255,0.18), 0 0 18px rgba(0,136,255,0.3);
+background: rgba(0,136,255,0.1);
 }
-.coin-icon.selected .coin-icon-label { color: var(--accent2); font-weight: 700; }
+.coin-icon.selected .coin-icon-label { color: var(–accent2); font-weight: 700; }
 
 /* Remove button (custom) */
 .coin-rm {
-  position: absolute; top: -2px; right: -2px;
-  width: 17px; height: 17px; border-radius: 50%;
-  background: var(--danger); color: #fff; font-size: 9px; font-weight: 700;
-  border: none; cursor: pointer; display: none;
-  align-items: center; justify-content: center;
-  box-shadow: 0 0 6px rgba(255,61,107,0.5); z-index: 2;
+position: absolute; top: -2px; right: -2px;
+width: 17px; height: 17px; border-radius: 50%;
+background: var(–danger); color: #fff; font-size: 9px; font-weight: 700;
+border: none; cursor: pointer; display: none;
+align-items: center; justify-content: center;
+box-shadow: 0 0 6px rgba(255,61,107,0.5); z-index: 2;
 }
 .coin-icon.custom:hover .coin-rm { display: flex; }
 
-.coin-hint { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 12px; opacity: 0.7; }
+.coin-hint { font-family: var(–mono); font-size: 10px; color: var(–muted); margin-top: 12px; opacity: 0.7; }
 
 /* ─── SCAN BUTTON ─── */
 .scan-btn {
-  width: 100%; background: var(--accent); color: #000;
-  font-family: var(--mono); font-weight: 700; font-size: 15px;
-  letter-spacing: 3px; text-transform: uppercase; border: none;
-  border-radius: 14px; padding: 18px; cursor: pointer; transition: all 0.2s;
-  box-shadow: 0 4px 28px rgba(0,229,160,0.3);
+width: 100%; background: var(–accent); color: #000;
+font-family: var(–mono); font-weight: 700; font-size: 15px;
+letter-spacing: 3px; text-transform: uppercase; border: none;
+border-radius: 14px; padding: 18px; cursor: pointer; transition: all 0.2s;
+box-shadow: 0 4px 28px rgba(0,229,160,0.3);
 }
 .scan-btn:hover { background: #00ffb3; transform: translateY(-2px); box-shadow: 0 8px 36px rgba(0,229,160,0.4); }
 .scan-btn:active { transform: translateY(0); }
-.scan-btn:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
+.scan-btn:disabled { background: var(–surface2); color: var(–muted); cursor: not-allowed; transform: none; box-shadow: none; }
 
 /* ─── PROGRESS ─── */
-.progress-wrap { display: none; margin-bottom: 28px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 26px; }
+.progress-wrap { display: none; margin-bottom: 28px; background: var(–surface); border: 1px solid var(–border); border-radius: 14px; padding: 22px 26px; }
 .progress-wrap.visible { display: block; }
-.progress-label { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 12px; display: flex; justify-content: space-between; }
-.progress-bar-bg { background: var(--surface2); border-radius: 4px; height: 4px; overflow: hidden; }
-.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 4px; transition: width 0.3s; width: 0%; }
-.progress-log { margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.9; max-height: 160px; overflow-y: auto; }
+.progress-label { font-family: var(–mono); font-size: 12px; color: var(–muted); margin-bottom: 12px; display: flex; justify-content: space-between; }
+.progress-bar-bg { background: var(–surface2); border-radius: 4px; height: 4px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(–accent), var(–accent2)); border-radius: 4px; transition: width 0.3s; width: 0%; }
+.progress-log { margin-top: 14px; font-family: var(–mono); font-size: 11px; color: var(–muted); line-height: 1.9; max-height: 160px; overflow-y: auto; }
 
 /* ─── RESULTS ─── */
 .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 12px; }
 .results-header h2 { font-size: 17px; font-weight: 800; }
-.results-header h2 span { font-family: var(--mono); font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 8px; }
+.results-header h2 span { font-family: var(–mono); font-size: 12px; color: var(–muted); font-weight: 400; margin-left: 8px; }
 .filter-row { display: flex; gap: 6px; }
-.filter-btn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 6px 14px; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
-.filter-btn.active { border-color: rgba(255,255,255,0.3); color: var(--text); }
+.filter-btn { background: var(–surface); border: 1px solid var(–border); color: var(–muted); font-family: var(–mono); font-size: 11px; padding: 6px 14px; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+.filter-btn.active { border-color: rgba(255,255,255,0.3); color: var(–text); }
 .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
 
 /* ─── ANIMATIONS ─── */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ─── EMPTY STATE ─── */
-.empty-state { text-align: center; padding: 80px 20px; color: var(--muted); }
+.empty-state { text-align: center; padding: 80px 20px; color: var(–muted); }
 .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
-.empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--text); }
-.empty-state p { font-family: var(--mono); font-size: 12px; line-height: 1.8; }
+.empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(–text); }
+.empty-state p { font-family: var(–mono); font-size: 12px; line-height: 1.8; }
 
 /* ─── CAPITAL RETURN BLOCK ─── */
 .capital-return-block {
-  background: linear-gradient(135deg, rgba(0,229,160,0.07), rgba(0,136,255,0.05));
-  border: 1px solid rgba(0,229,160,0.22); border-radius: 12px;
-  padding: 14px 18px; margin-bottom: 16px;
-  display: flex; align-items: center; justify-content: space-between;
+background: linear-gradient(135deg, rgba(0,229,160,0.07), rgba(0,136,255,0.05));
+border: 1px solid rgba(0,229,160,0.22); border-radius: 12px;
+padding: 14px 18px; margin-bottom: 16px;
+display: flex; align-items: center; justify-content: space-between;
 }
 .capital-return-block.sell-block { background: linear-gradient(135deg, rgba(255,61,107,0.08), rgba(255,61,107,0.04)); border-color: rgba(255,61,107,0.22); }
-.capital-return-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
-.capital-return-main { font-family: var(--mono); font-size: 26px; font-weight: 700; color: var(--accent); line-height: 1; }
-.capital-return-main.sell-ret { color: var(--danger); }
-.capital-return-sub { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 3px; }
-.fee-tag { color: var(--warn); }
+.capital-return-label { font-family: var(–mono); font-size: 10px; color: var(–muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+.capital-return-main { font-family: var(–mono); font-size: 26px; font-weight: 700; color: var(–accent); line-height: 1; }
+.capital-return-main.sell-ret { color: var(–danger); }
+.capital-return-sub { font-family: var(–mono); font-size: 10px; color: var(–muted); margin-top: 3px; }
+.fee-tag { color: var(–warn); }
 .capital-return-right { text-align: right; }
-.lev-badge { background: rgba(255,184,0,0.12); border: 1px solid rgba(255,184,0,0.3); color: var(--warn); font-family: var(--mono); font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 6px; display: inline-block; margin-bottom: 4px; }
-.breakeven-note { font-family: var(--mono); font-size: 9px; color: var(--muted); }
-.hot-badge { font-size: 10px; color: var(--warn); margin-top: 2px; font-family: var(--mono); }
+.lev-badge { background: rgba(255,184,0,0.12); border: 1px solid rgba(255,184,0,0.3); color: var(–warn); font-family: var(–mono); font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 6px; display: inline-block; margin-bottom: 4px; }
+.breakeven-note { font-family: var(–mono); font-size: 9px; color: var(–muted); }
+.hot-badge { font-size: 10px; color: var(–warn); margin-top: 2px; font-family: var(–mono); }
 
 /* ─── SCORE ─── */
 .score-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-.score-label { font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
-.score-track { flex: 1; height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+.score-label { font-family: var(–mono); font-size: 11px; color: var(–muted); white-space: nowrap; }
+.score-track { flex: 1; height: 5px; background: var(–surface2); border-radius: 3px; overflow: hidden; }
 .score-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(.22,.68,0,1.2); }
-.score-fill.high { background: var(--accent); }
-.score-fill.mid  { background: var(--warn); }
-.score-fill.low  { background: var(--danger); }
-.score-num { font-family: var(--mono); font-size: 13px; font-weight: 700; min-width: 36px; text-align: right; }
-.score-num.high { color: var(--accent); }
-.score-num.mid  { color: var(--warn); }
-.direction-badge { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 2px; padding: 5px 12px; border-radius: 6px; text-transform: uppercase; }
-.direction-badge.buy  { background: rgba(0,229,160,0.15); color: var(--accent); }
-.direction-badge.sell { background: rgba(255,61,107,0.15); color: var(--danger); }
+.score-fill.high { background: var(–accent); }
+.score-fill.mid  { background: var(–warn); }
+.score-fill.low  { background: var(–danger); }
+.score-num { font-family: var(–mono); font-size: 13px; font-weight: 700; min-width: 36px; text-align: right; }
+.score-num.high { color: var(–accent); }
+.score-num.mid  { color: var(–warn); }
+.direction-badge { font-family: var(–mono); font-size: 11px; font-weight: 700; letter-spacing: 2px; padding: 5px 12px; border-radius: 6px; text-transform: uppercase; }
+.direction-badge.buy  { background: rgba(0,229,160,0.15); color: var(–accent); }
+.direction-badge.sell { background: rgba(255,61,107,0.15); color: var(–danger); }
 
 /* ─── LEVELS ─── */
 .levels { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-.level-item { background: var(--surface2); border-radius: 8px; padding: 10px 12px; }
-.level-item .lbl { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
-.level-item .val { font-family: var(--mono); font-size: 14px; font-weight: 700; }
-.level-item .val.entry { color: var(--text); }
-.level-item .val.stop  { color: var(--danger); }
+.level-item { background: var(–surface2); border-radius: 8px; padding: 10px 12px; }
+.level-item .lbl { font-family: var(–mono); font-size: 10px; color: var(–muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+.level-item .val { font-family: var(–mono); font-size: 14px; font-weight: 700; }
+.level-item .val.entry { color: var(–text); }
+.level-item .val.stop  { color: var(–danger); }
 
 /* ─── METAS ─── */
-.metas-title { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.metas-title { font-family: var(–mono); font-size: 10px; color: var(–muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
 .metas-track { position: relative; margin-bottom: 16px; }
-.metas-line { position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: var(--surface2); transform: translateY(-50%); }
+.metas-line { position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: var(–surface2); transform: translateY(-50%); }
 .metas-points { position: relative; display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
 .meta-dot-wrap { text-align: center; position: relative; z-index: 1; }
-.meta-dot { width: 28px; height: 28px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 10px; font-weight: 700; margin: 0 auto 4px; }
-.meta-dot.m1 { border-color: rgba(0,229,160,0.4); color: var(--accent); }
-.meta-dot.m2 { border-color: rgba(0,229,160,0.6); color: var(--accent); }
-.meta-dot.m3 { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(0,229,160,0.3); }
-.meta-val  { font-family: var(--mono); font-size: 10px; color: var(--muted); }
-.meta-rr   { font-family: var(--mono); font-size: 9px; color: var(--accent); opacity: 0.7; }
-.meta-cap  { font-family: var(--mono); font-size: 9px; color: var(--warn); font-weight: 700; margin-top: 1px; }
+.meta-dot { width: 28px; height: 28px; border-radius: 50%; background: var(–surface2); border: 2px solid var(–border); display: flex; align-items: center; justify-content: center; font-family: var(–mono); font-size: 10px; font-weight: 700; margin: 0 auto 4px; }
+.meta-dot.m1 { border-color: rgba(0,229,160,0.4); color: var(–accent); }
+.meta-dot.m2 { border-color: rgba(0,229,160,0.6); color: var(–accent); }
+.meta-dot.m3 { border-color: var(–accent); color: var(–accent); box-shadow: 0 0 12px rgba(0,229,160,0.3); }
+.meta-val  { font-family: var(–mono); font-size: 10px; color: var(–muted); }
+.meta-rr   { font-family: var(–mono); font-size: 9px; color: var(–accent); opacity: 0.7; }
+.meta-cap  { font-family: var(–mono); font-size: 9px; color: var(–warn); font-weight: 700; margin-top: 1px; }
 
 /* ─── REASONS ─── */
 .reasons { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
-.reason-tag { background: var(--surface2); border: 1px solid var(--border); font-family: var(--mono); font-size: 10px; color: var(--muted); padding: 3px 8px; border-radius: 4px; }
-.reason-tag.positive { border-color: rgba(0,229,160,0.3); color: var(--accent); }
-.reason-tag.negative { border-color: rgba(255,61,107,0.3); color: var(--danger); }
-.reason-tag.neutral  { border-color: rgba(255,184,0,0.3); color: var(--warn); }
+.reason-tag { background: var(–surface2); border: 1px solid var(–border); font-family: var(–mono); font-size: 10px; color: var(–muted); padding: 3px 8px; border-radius: 4px; }
+.reason-tag.positive { border-color: rgba(0,229,160,0.3); color: var(–accent); }
+.reason-tag.negative { border-color: rgba(255,61,107,0.3); color: var(–danger); }
+.reason-tag.neutral  { border-color: rgba(255,184,0,0.3); color: var(–warn); }
 
-.card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 10px; color: var(--muted); }
-.timeframe-badge { background: var(--surface2); padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border); }
+.card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(–border); font-family: var(–mono); font-size: 10px; color: var(–muted); }
+.timeframe-badge { background: var(–surface2); padding: 3px 8px; border-radius: 4px; border: 1px solid var(–border); }
 
 /* ─── GROUP CARD ─── */
-.group-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; animation: fadeUp 0.4s both; transition: border-color 0.2s; }
+.group-card { background: var(–surface); border: 1px solid var(–border); border-radius: 16px; overflow: hidden; animation: fadeUp 0.4s both; transition: border-color 0.2s; }
 .group-card:hover { border-color: rgba(255,255,255,0.14); }
-.group-card.buy   { border-top: 2px solid var(--accent); }
-.group-card.sell  { border-top: 2px solid var(--danger); }
-.group-card.mixed { border-top: 2px solid var(--warn); }
-.group-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 12px; border-bottom: 1px solid var(--border); }
+.group-card.buy   { border-top: 2px solid var(–accent); }
+.group-card.sell  { border-top: 2px solid var(–danger); }
+.group-card.mixed { border-top: 2px solid var(–warn); }
+.group-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 12px; border-bottom: 1px solid var(–border); }
 .group-header-left { display: flex; align-items: center; gap: 12px; }
-.group-coin-logo img { width: 42px; height: 42px; border-radius: 50%; object-fit: contain; background: var(--surface2); border: 2px solid var(--border); display: block; }
-.gcl-fb { width:42px;height:42px;border-radius:50%;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--muted); }
+.group-coin-logo img { width: 42px; height: 42px; border-radius: 50%; object-fit: contain; background: var(–surface2); border: 2px solid var(–border); display: block; }
+.gcl-fb { width:42px;height:42px;border-radius:50%;background:var(–surface2);border:2px solid var(–border);display:flex;align-items:center;justify-content:center;font-family:var(–mono);font-size:11px;font-weight:700;color:var(–muted); }
 .group-coin-name { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
-.group-coin-pair { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.group-coin-pair { font-family: var(–mono); font-size: 11px; color: var(–muted); }
 .group-badges { display: flex; gap: 6px; flex-wrap: wrap; }
-.group-tf-badge { font-family: var(--mono); font-size: 10px; padding: 3px 8px; border-radius: 5px; border: 1px solid var(--border); color: var(--muted); background: var(--surface2); cursor: pointer; transition: all 0.15s; }
-.group-tf-badge.active-tf { background: rgba(0,229,160,0.12); border-color: var(--accent); color: var(--accent); }
-.group-tf-badge.sell-tf.active-tf { background: rgba(255,61,107,0.12); border-color: var(--danger); color: var(--danger); }
+.group-tf-badge { font-family: var(–mono); font-size: 10px; padding: 3px 8px; border-radius: 5px; border: 1px solid var(–border); color: var(–muted); background: var(–surface2); cursor: pointer; transition: all 0.15s; }
+.group-tf-badge.active-tf { background: rgba(0,229,160,0.12); border-color: var(–accent); color: var(–accent); }
+.group-tf-badge.sell-tf.active-tf { background: rgba(255,61,107,0.12); border-color: var(–danger); color: var(–danger); }
 .tf-nav { display: flex; align-items: center; gap: 8px; }
-.tf-nav-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); font-size: 14px; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-.tf-nav-btn:hover:not(:disabled) { color: var(--text); border-color: rgba(255,255,255,0.2); }
+.tf-nav-btn { background: var(–surface2); border: 1px solid var(–border); color: var(–muted); font-size: 14px; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.tf-nav-btn:hover:not(:disabled) { color: var(–text); border-color: rgba(255,255,255,0.2); }
 .tf-nav-btn:disabled { opacity: 0.3; cursor: default; }
-.tf-counter { font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
+.tf-counter { font-family: var(–mono); font-size: 11px; color: var(–muted); white-space: nowrap; }
 .group-body { padding: 16px 20px 20px; }
 
 /* ─── MTF BADGE / CONDITIONAL ENTRY ─── */
-.mtf-badge { background: rgba(0,136,255,0.15); border: 1px solid rgba(0,136,255,0.35); color: var(--accent2); font-family: var(--mono); font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 5px; display: inline-flex; align-items: center; gap: 4px; }
+.mtf-badge { background: rgba(0,136,255,0.15); border: 1px solid rgba(0,136,255,0.35); color: var(–accent2); font-family: var(–mono); font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 5px; display: inline-flex; align-items: center; gap: 4px; }
 .conditional-entry-block { background: rgba(255,184,0,0.07); border: 1px solid rgba(255,184,0,0.25); border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; }
-.cond-label { font-family: var(--mono); font-size: 9px; color: var(--warn); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
-.cond-text { font-family: var(--mono); font-size: 12px; color: var(--text); line-height: 1.5; }
-.cond-text strong { color: var(--warn); }
-.cond-pattern { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 4px; }
+.cond-label { font-family: var(–mono); font-size: 9px; color: var(–warn); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+.cond-text { font-family: var(–mono); font-size: 12px; color: var(–text); line-height: 1.5; }
+.cond-text strong { color: var(–warn); }
+.cond-pattern { font-family: var(–mono); font-size: 10px; color: var(–muted); margin-top: 4px; }
 
 /* ─── MODAL ─── */
 .modal-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 20px; }
 .modal-overlay.open { display: flex; }
-.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 28px; animation: modalIn 0.25s cubic-bezier(.22,.68,0,1.2); }
+.modal { background: var(–surface); border: 1px solid var(–border); border-radius: 20px; max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 28px; animation: modalIn 0.25s cubic-bezier(.22,.68,0,1.2); }
 @keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
-.modal-close { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); font-size: 18px; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-.modal-close:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
-.analysis-block { background: var(--surface2); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
-.analysis-block h4 { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
-.indicator-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 12px; }
+.modal-close { background: var(–surface2); border: 1px solid var(–border); color: var(–muted); font-size: 18px; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.modal-close:hover { color: var(–text); border-color: rgba(255,255,255,0.2); }
+.analysis-block { background: var(–surface2); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+.analysis-block h4 { font-family: var(–mono); font-size: 10px; color: var(–muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+.indicator-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(–border); font-family: var(–mono); font-size: 12px; }
 .indicator-row:last-child { border-bottom: none; }
-.indicator-row .name { color: var(--muted); }
+.indicator-row .name { color: var(–muted); }
 .indicator-row .reading { font-weight: 700; }
 .capital-summary-modal { background: linear-gradient(135deg, rgba(0,229,160,0.06), rgba(0,136,255,0.04)); border: 1px solid rgba(0,229,160,0.18); border-radius: 12px; padding: 18px; margin-bottom: 12px; }
-.capital-summary-modal h4 { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; }
+.capital-summary-modal h4 { font-family: var(–mono); font-size: 10px; color: var(–muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; }
 .cap-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-.cap-item { text-align: center; background: var(--surface2); border-radius: 8px; padding: 10px 6px; }
-.cap-item .cap-lbl { font-family: var(--mono); font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-.cap-item .cap-price { font-family: var(--mono); font-size: 11px; color: var(--text); font-weight: 700; margin-bottom: 2px; }
-.cap-item .cap-pct-price { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 4px; }
-.cap-item .cap-ret { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--accent); }
-.cap-item .cap-net { font-family: var(--mono); font-size: 9px; color: var(--warn); margin-top: 2px; }
-.fee-breakdown { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 10px; color: var(--muted); line-height: 1.8; }
-.fee-breakdown em { color: var(--warn); font-style: normal; }
-.stop-guide { background: var(--surface2); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
-.stop-guide h4 { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
-.stop-step { display: flex; gap: 12px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.cap-item { text-align: center; background: var(–surface2); border-radius: 8px; padding: 10px 6px; }
+.cap-item .cap-lbl { font-family: var(–mono); font-size: 9px; color: var(–muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+.cap-item .cap-price { font-family: var(–mono); font-size: 11px; color: var(–text); font-weight: 700; margin-bottom: 2px; }
+.cap-item .cap-pct-price { font-family: var(–mono); font-size: 10px; color: var(–muted); margin-bottom: 4px; }
+.cap-item .cap-ret { font-family: var(–mono); font-size: 15px; font-weight: 700; color: var(–accent); }
+.cap-item .cap-net { font-family: var(–mono); font-size: 9px; color: var(–warn); margin-top: 2px; }
+.fee-breakdown { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(–border); font-family: var(–mono); font-size: 10px; color: var(–muted); line-height: 1.8; }
+.fee-breakdown em { color: var(–warn); font-style: normal; }
+.stop-guide { background: var(–surface2); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+.stop-guide h4 { font-family: var(–mono); font-size: 10px; color: var(–muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+.stop-step { display: flex; gap: 12px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(–border); }
 .stop-step:last-child { border-bottom: none; }
-.step-num { width: 22px; height: 22px; border-radius: 50%; background: rgba(0,229,160,0.15); border: 1px solid rgba(0,229,160,0.3); color: var(--accent); font-family: var(--mono); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.step-text { font-family: var(--mono); font-size: 12px; color: var(--text); line-height: 1.6; }
-.step-text em { color: var(--accent); font-style: normal; }
-.modal-section { background: var(--surface2); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
-.modal-section h4 { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
-.pattern-row { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 11px; }
+.step-num { width: 22px; height: 22px; border-radius: 50%; background: rgba(0,229,160,0.15); border: 1px solid rgba(0,229,160,0.3); color: var(–accent); font-family: var(–mono); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-text { font-family: var(–mono); font-size: 12px; color: var(–text); line-height: 1.6; }
+.step-text em { color: var(–accent); font-style: normal; }
+.modal-section { background: var(–surface2); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+.modal-section h4 { font-family: var(–mono); font-size: 10px; color: var(–muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+.pattern-row { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(–border); font-family: var(–mono); font-size: 11px; }
 .pattern-row:last-child { border-bottom: none; }
 .pattern-tag { font-size: 10px; padding: 2px 8px; border-radius: 4px; white-space: nowrap; font-weight: 700; }
-.pattern-tag.bull { background: rgba(0,229,160,0.15); color: var(--accent); }
-.pattern-tag.bear { background: rgba(255,61,107,0.15); color: var(--danger); }
-.div-tag { background: rgba(160,100,255,0.15); border: 1px solid rgba(160,100,255,0.3); color: #c084fc; font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 4px; }
+.pattern-tag.bull { background: rgba(0,229,160,0.15); color: var(–accent); }
+.pattern-tag.bear { background: rgba(255,61,107,0.15); color: var(–danger); }
+.div-tag { background: rgba(160,100,255,0.15); border: 1px solid rgba(160,100,255,0.3); color: #c084fc; font-family: var(–mono); font-size: 10px; padding: 2px 8px; border-radius: 4px; }
 .mtf-grid { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
-.mtf-tf-pill { background: rgba(0,136,255,0.12); border: 1px solid rgba(0,136,255,0.3); color: var(--accent2); font-family: var(--mono); font-size: 10px; padding: 3px 10px; border-radius: 5px; font-weight: 700; }
-.save-to-journal-btn { width: 100%; margin-top: 12px; background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.3); color: var(--accent); font-family: var(--mono); font-size: 13px; font-weight: 700; padding: 14px; border-radius: 10px; cursor: pointer; letter-spacing: 1px; transition: all 0.2s; }
-.save-to-journal-btn:hover { background: rgba(0,229,160,0.18); border-color: var(--accent); }
+.mtf-tf-pill { background: rgba(0,136,255,0.12); border: 1px solid rgba(0,136,255,0.3); color: var(–accent2); font-family: var(–mono); font-size: 10px; padding: 3px 10px; border-radius: 5px; font-weight: 700; }
+.save-to-journal-btn { width: 100%; margin-top: 12px; background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.3); color: var(–accent); font-family: var(–mono); font-size: 13px; font-weight: 700; padding: 14px; border-radius: 10px; cursor: pointer; letter-spacing: 1px; transition: all 0.2s; }
+.save-to-journal-btn:hover { background: rgba(0,229,160,0.18); border-color: var(–accent); }
 .save-to-journal-btn:disabled { opacity: 0.4; cursor: default; }
 
 /* ─── JOURNAL ─── */
 .journal-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 28px; }
-.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
-.stat-card .stat-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
-.stat-card .stat-val   { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--text); }
-.stat-card .stat-val.green  { color: var(--accent); }
-.stat-card .stat-val.red    { color: var(--danger); }
-.stat-card .stat-val.yellow { color: var(--warn); }
-.stat-card .stat-sub   { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 3px; }
+.stat-card { background: var(–surface); border: 1px solid var(–border); border-radius: 12px; padding: 16px 18px; }
+.stat-card .stat-label { font-family: var(–mono); font-size: 10px; color: var(–muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.stat-card .stat-val   { font-family: var(–mono); font-size: 22px; font-weight: 700; color: var(–text); }
+.stat-card .stat-val.green  { color: var(–accent); }
+.stat-card .stat-val.red    { color: var(–danger); }
+.stat-card .stat-val.yellow { color: var(–warn); }
+.stat-card .stat-sub   { font-family: var(–mono); font-size: 10px; color: var(–muted); margin-top: 3px; }
 .journal-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
-.journal-filter-btn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
-.journal-filter-btn.active { border-color: rgba(255,255,255,0.3); color: var(--text); }
-.journal-empty { text-align: center; padding: 80px 20px; color: var(--muted); }
+.journal-filter-btn { background: var(–surface); border: 1px solid var(–border); color: var(–muted); font-family: var(–mono); font-size: 11px; padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+.journal-filter-btn.active { border-color: rgba(255,255,255,0.3); color: var(–text); }
+.journal-empty { text-align: center; padding: 80px 20px; color: var(–muted); }
 .journal-empty .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
-.journal-empty h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
-.journal-empty p { font-family: var(--mono); font-size: 12px; line-height: 1.8; }
+.journal-empty h3 { font-size: 18px; color: var(–text); margin-bottom: 8px; }
+.journal-empty p { font-family: var(–mono); font-size: 12px; line-height: 1.8; }
 .journal-list { display: flex; flex-direction: column; gap: 12px; }
-.journal-entry { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; animation: fadeUp 0.3s both; transition: border-color 0.2s; }
+.journal-entry { background: var(–surface); border: 1px solid var(–border); border-radius: 14px; overflow: hidden; animation: fadeUp 0.3s both; transition: border-color 0.2s; }
 .journal-entry:hover { border-color: rgba(255,255,255,0.12); }
-.journal-entry.je-buy  { border-left: 3px solid var(--accent); }
-.journal-entry.je-sell { border-left: 3px solid var(--danger); }
+.journal-entry.je-buy  { border-left: 3px solid var(–accent); }
+.journal-entry.je-sell { border-left: 3px solid var(–danger); }
 .je-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 10px; cursor: pointer; user-select: none; }
 .je-header-left { display: flex; align-items: center; gap: 14px; }
 .je-coin  { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
-.je-meta  { font-family: var(--mono); font-size: 11px; color: var(--muted); }
-.je-meta strong { color: var(--text); }
-.je-result-badge { font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 6px; letter-spacing: 1px; cursor: pointer; border: none; transition: all 0.15s; }
-.je-result-badge.res-active  { background: rgba(0,136,255,0.15); color: var(--accent2); }
-.je-result-badge.res-stop    { background: rgba(255,61,107,0.15); color: var(--danger); }
-.je-result-badge.res-m1      { background: rgba(255,184,0,0.15); color: var(--warn); }
-.je-result-badge.res-m2      { background: rgba(0,229,160,0.12); color: var(--accent); }
-.je-result-badge.res-m3      { background: rgba(0,229,160,0.2); color: var(--accent); border: 1px solid rgba(0,229,160,0.4); }
-.je-body { padding: 0 18px 16px; border-top: 1px solid var(--border); }
+.je-meta  { font-family: var(–mono); font-size: 11px; color: var(–muted); }
+.je-meta strong { color: var(–text); }
+.je-result-badge { font-family: var(–mono); font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 6px; letter-spacing: 1px; cursor: pointer; border: none; transition: all 0.15s; }
+.je-result-badge.res-active  { background: rgba(0,136,255,0.15); color: var(–accent2); }
+.je-result-badge.res-stop    { background: rgba(255,61,107,0.15); color: var(–danger); }
+.je-result-badge.res-m1      { background: rgba(255,184,0,0.15); color: var(–warn); }
+.je-result-badge.res-m2      { background: rgba(0,229,160,0.12); color: var(–accent); }
+.je-result-badge.res-m3      { background: rgba(0,229,160,0.2); color: var(–accent); border: 1px solid rgba(0,229,160,0.4); }
+.je-body { padding: 0 18px 16px; border-top: 1px solid var(–border); }
 .je-levels-row { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 0; }
-.je-level { background: var(--surface2); border-radius: 7px; padding: 7px 12px; font-family: var(--mono); font-size: 11px; flex: 1; min-width: 80px; }
-.je-level .jl-lbl { color: var(--muted); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
-.je-level .jl-val { color: var(--text); font-weight: 700; }
-.je-level .jl-cap { color: var(--warn); font-size: 10px; margin-top: 1px; }
-.je-result-selector { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 0 12px; border-top: 1px solid var(--border); }
-.je-result-selector label { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px; width: 100%; }
-.res-btn { font-family: var(--mono); font-size: 11px; padding: 6px 14px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); transition: all 0.15s; }
-.res-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+.je-level { background: var(–surface2); border-radius: 7px; padding: 7px 12px; font-family: var(–mono); font-size: 11px; flex: 1; min-width: 80px; }
+.je-level .jl-lbl { color: var(–muted); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+.je-level .jl-val { color: var(–text); font-weight: 700; }
+.je-level .jl-cap { color: var(–warn); font-size: 10px; margin-top: 1px; }
+.je-result-selector { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 0 12px; border-top: 1px solid var(–border); }
+.je-result-selector label { font-family: var(–mono); font-size: 10px; color: var(–muted); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px; width: 100%; }
+.res-btn { font-family: var(–mono); font-size: 11px; padding: 6px 14px; border-radius: 6px; cursor: pointer; border: 1px solid var(–border); background: var(–surface2); color: var(–muted); transition: all 0.15s; }
+.res-btn:hover { border-color: rgba(255,255,255,0.2); color: var(–text); }
 .res-btn.active-res { font-weight: 700; }
-.res-btn.rb-active { border-color: var(--accent2); background: rgba(0,136,255,0.12); color: var(--accent2); }
-.res-btn.rb-stop   { border-color: var(--danger);  background: rgba(255,61,107,0.12); color: var(--danger); }
-.res-btn.rb-m1     { border-color: var(--warn);    background: rgba(255,184,0,0.12);  color: var(--warn); }
-.res-btn.rb-m2     { border-color: var(--accent);  background: rgba(0,229,160,0.10);  color: var(--accent); }
-.res-btn.rb-m3     { border-color: var(--accent);  background: rgba(0,229,160,0.18);  color: var(--accent); box-shadow: 0 0 8px rgba(0,229,160,0.15); }
+.res-btn.rb-active { border-color: var(–accent2); background: rgba(0,136,255,0.12); color: var(–accent2); }
+.res-btn.rb-stop   { border-color: var(–danger);  background: rgba(255,61,107,0.12); color: var(–danger); }
+.res-btn.rb-m1     { border-color: var(–warn);    background: rgba(255,184,0,0.12);  color: var(–warn); }
+.res-btn.rb-m2     { border-color: var(–accent);  background: rgba(0,229,160,0.10);  color: var(–accent); }
+.res-btn.rb-m3     { border-color: var(–accent);  background: rgba(0,229,160,0.18);  color: var(–accent); box-shadow: 0 0 8px rgba(0,229,160,0.15); }
 .je-notes-wrap { margin-top: 2px; }
-.je-notes-wrap label { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px; }
-.je-notes { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: var(--mono); font-size: 12px; padding: 10px 12px; border-radius: 8px; resize: vertical; min-height: 70px; outline: none; line-height: 1.6; transition: border-color 0.15s; }
-.je-notes:focus { border-color: var(--accent2); }
-.je-notes::placeholder { color: var(--muted); }
-.je-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; margin-top: 6px; border-top: 1px solid var(--border); }
-.je-date { font-family: var(--mono); font-size: 10px; color: var(--muted); }
-.je-delete-btn { background: transparent; border: 1px solid rgba(255,61,107,0.2); color: rgba(255,61,107,0.5); font-family: var(--mono); font-size: 10px; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.15s; }
-.je-delete-btn:hover { background: rgba(255,61,107,0.1); color: var(--danger); border-color: var(--danger); }
-.je-chevron { font-size: 16px; color: var(--muted); transition: transform 0.2s; margin-left: 8px; }
+.je-notes-wrap label { font-family: var(–mono); font-size: 10px; color: var(–muted); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px; }
+.je-notes { width: 100%; background: var(–surface2); border: 1px solid var(–border); color: var(–text); font-family: var(–mono); font-size: 12px; padding: 10px 12px; border-radius: 8px; resize: vertical; min-height: 70px; outline: none; line-height: 1.6; transition: border-color 0.15s; }
+.je-notes:focus { border-color: var(–accent2); }
+.je-notes::placeholder { color: var(–muted); }
+.je-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; margin-top: 6px; border-top: 1px solid var(–border); }
+.je-date { font-family: var(–mono); font-size: 10px; color: var(–muted); }
+.je-delete-btn { background: transparent; border: 1px solid rgba(255,61,107,0.2); color: rgba(255,61,107,0.5); font-family: var(–mono); font-size: 10px; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.15s; }
+.je-delete-btn:hover { background: rgba(255,61,107,0.1); color: var(–danger); border-color: var(–danger); }
+.je-chevron { font-size: 16px; color: var(–muted); transition: transform 0.2s; margin-left: 8px; }
 .je-chevron.open { transform: rotate(180deg); }
 .page-title-j { margin-bottom: 32px; }
 .page-title-j h1 { font-size: clamp(24px, 4vw, 38px); font-weight: 800; line-height: 1.1; letter-spacing: -1px; }
-.page-title-j h1 em { font-style: normal; color: var(--accent); }
-.page-title-j p { margin-top: 8px; color: var(--muted); font-size: 14px; font-family: var(--mono); }
+.page-title-j h1 em { font-style: normal; color: var(–accent); }
+.page-title-j p { margin-top: 8px; color: var(–muted); font-size: 14px; font-family: var(–mono); }
 
 @media (max-width: 600px) {
-  header { padding: 0 16px; }
-  main { padding: 20px 14px 60px; }
-  .cards-grid { grid-template-columns: 1fr; }
-  .cap-grid { grid-template-columns: 1fr 1fr 1fr; }
-  .coin-grid { gap: 10px; }
-  .coin-icon { width: 54px; }
-  .coin-icon-ring { width: 44px; height: 44px; }
-  .coin-icon-ring img { width: 30px; height: 30px; }
+header { padding: 0 16px; }
+main { padding: 20px 14px 60px; }
+.cards-grid { grid-template-columns: 1fr; }
+.cap-grid { grid-template-columns: 1fr 1fr 1fr; }
+.coin-grid { gap: 10px; }
+.coin-icon { width: 54px; }
+.coin-icon-ring { width: 44px; height: 44px; }
+.coin-icon-ring img { width: 30px; height: 30px; }
 }
 </style>
+
 </head>
 <body>
 
@@ -489,6 +491,7 @@ main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; paddin
 <main>
 
 <!-- ══════════════════ SCANNER ══════════════════ -->
+
 <div class="page-section active" id="section-scanner">
 
   <div class="page-title">
@@ -497,6 +500,7 @@ main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; paddin
   </div>
 
   <!-- MARKET BAR -->
+
   <div class="market-bar">
     <div class="market-pill">
       <img class="pill-icon" src="https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/128/color/btc.png" onerror="this.style.display='none'" alt="BTC">
@@ -518,82 +522,88 @@ main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; paddin
   </div>
 
   <!-- CONFIG PANEL -->
+
   <div class="config-panel">
     <div class="config-panel-title">// Configurar Scanner — Bybit Futures</div>
     <div class="config-grid">
 
-      <div class="config-group">
-        <label>Modo de operação</label>
-        <div class="toggle-group">
-          <button class="toggle-btn" onclick="toggleMode(this,'swing')">Swing (4h / 1D)</button>
-          <button class="toggle-btn active" onclick="toggleMode(this,'day')">Day Trade (5m / 15m / 1h)</button>
-          <button class="toggle-btn" onclick="toggleMode(this,'both')">Automático (todos)</button>
-        </div>
-      </div>
-
-      <div class="config-group">
-        <label>Alavancagem (Bybit Futures)</label>
-        <div class="toggle-group">
-          <button class="toggle-btn" onclick="toggleLeverage(this,5)">5x</button>
-          <button class="toggle-btn active" onclick="toggleLeverage(this,10)">10x</button>
-          <button class="toggle-btn" onclick="toggleLeverage(this,20)">20x</button>
-          <button class="toggle-btn" onclick="toggleLeverage(this,50)">50x</button>
-        </div>
-        <div class="fee-note">
-          Fee Bybit Taker: <strong style="color:var(--warn)">0.055%</strong> × 2 lados = <strong style="color:var(--warn)">0.11%</strong> sobre posição.<br>
-          Com <span id="feeCapText">10x → <strong style="color:var(--warn)">1.10%</strong> do capital por operação.</span>
-        </div>
-      </div>
-
-      <div class="config-group">
-        <label>Alvos de saída</label>
-        <div class="toggle-group">
-          <button class="toggle-btn" onclick="toggleRR(this,'2')">1:2 fixo</button>
-          <button class="toggle-btn" onclick="toggleRR(this,'3')">1:3 fixo</button>
-          <button class="toggle-btn active" onclick="toggleRR(this,'fib')">Fibonacci ✦</button>
-          <button class="toggle-btn" onclick="toggleRR(this,'max')">Máximo ◆</button>
-        </div>
-        <div class="rr-mode-note" id="rrModeNote">
-          <span style="color:var(--accent)">Fibonacci</span> — Metas em 1.618 / 2.618 / 4.236 × risco
-        </div>
-      </div>
-
-      <div class="config-group">
-        <label>Score mínimo</label>
-        <div class="toggle-group">
-          <button class="toggle-btn" onclick="toggleScore(this,'50')">50+</button>
-          <button class="toggle-btn active" onclick="toggleScore(this,'65')">65+</button>
-          <button class="toggle-btn" onclick="toggleScore(this,'80')">80+</button>
-        </div>
-      </div>
-
-      <div class="config-group">
-        <label>Direção</label>
-        <div class="toggle-group">
-          <button class="toggle-btn active" onclick="toggleDir(this,'both')">Long + Short</button>
-          <button class="toggle-btn" onclick="toggleDir(this,'buy')">Só Long</button>
-          <button class="toggle-btn" onclick="toggleDir(this,'sell')">Só Short</button>
-        </div>
-      </div>
-
+```
+  <div class="config-group">
+    <label>Modo de operação</label>
+    <div class="toggle-group">
+      <button class="toggle-btn" onclick="toggleMode(this,'scalp')">Scalp (5m / 15m / 30m)</button>
+      <button class="toggle-btn" onclick="toggleMode(this,'swing')">Swing (4h / 1D)</button>
+      <button class="toggle-btn active" onclick="toggleMode(this,'day')">Day Trade (5m / 15m / 1h)</button>
+      <button class="toggle-btn" onclick="toggleMode(this,'both')">Automático (todos)</button>
     </div>
+  </div>
 
-    <!-- COIN SELECTOR -->
-    <div class="coin-section-label">Moedas para escanear</div>
-    <div class="custom-coin-row">
-      <input type="text" id="customCoinInput" class="custom-coin-input"
-        placeholder="Adicionar moeda... ex: PEPE, WLD, ARB"
-        maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false">
-      <button class="add-coin-btn" onclick="addCustomCoin()">+ ADD</button>
+  <div class="config-group">
+    <label>Alavancagem (Bybit Futures)</label>
+    <div class="toggle-group">
+      <button class="toggle-btn" onclick="toggleLeverage(this,5)">5x</button>
+      <button class="toggle-btn active" onclick="toggleLeverage(this,10)">10x</button>
+      <button class="toggle-btn" onclick="toggleLeverage(this,20)">20x</button>
+      <button class="toggle-btn" onclick="toggleLeverage(this,50)">50x</button>
     </div>
-    <div class="coin-grid" id="coinGrid"></div>
-    <div class="coin-hint">Símbolos Bybit USDT Perpetual · Altcoins de médio cap têm maior potencial de 100%+ no capital</div>
+    <div class="fee-note">
+      Fee Bybit Taker: <strong style="color:var(--warn)">0.055%</strong> × 2 lados = <strong style="color:var(--warn)">0.11%</strong> sobre posição.<br>
+      Com <span id="feeCapText">10x → <strong style="color:var(--warn)">1.10%</strong> do capital por operação.</span>
+    </div>
+  </div>
 
-    <br>
-    <button class="scan-btn" id="scanBtn" onclick="startScan()">▶ &nbsp; INICIAR SCAN</button>
+  <div class="config-group">
+    <label>Alvos de saída</label>
+    <div class="toggle-group">
+      <button class="toggle-btn" onclick="toggleRR(this,'2')">1:2 fixo</button>
+      <button class="toggle-btn" onclick="toggleRR(this,'3')">1:3 fixo</button>
+      <button class="toggle-btn active" onclick="toggleRR(this,'fib')">Fibonacci ✦</button>
+      <button class="toggle-btn" onclick="toggleRR(this,'max')">Máximo ◆</button>
+    </div>
+    <div class="rr-mode-note" id="rrModeNote">
+      <span style="color:var(--accent)">Fibonacci</span> — Metas em 1.618 / 2.618 / 4.236 × risco
+    </div>
+  </div>
+
+  <div class="config-group">
+    <label>Score mínimo</label>
+    <div class="toggle-group">
+      <button class="toggle-btn" onclick="toggleScore(this,'50')">50+</button>
+      <button class="toggle-btn active" onclick="toggleScore(this,'65')">65+</button>
+      <button class="toggle-btn" onclick="toggleScore(this,'80')">80+</button>
+    </div>
+  </div>
+
+  <div class="config-group">
+    <label>Direção</label>
+    <div class="toggle-group">
+      <button class="toggle-btn active" onclick="toggleDir(this,'both')">Long + Short</button>
+      <button class="toggle-btn" onclick="toggleDir(this,'buy')">Só Long</button>
+      <button class="toggle-btn" onclick="toggleDir(this,'sell')">Só Short</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- COIN SELECTOR -->
+<div class="coin-section-label">Moedas para escanear</div>
+<div class="custom-coin-row">
+  <input type="text" id="customCoinInput" class="custom-coin-input"
+    placeholder="Adicionar moeda... ex: PEPE, WLD, ARB"
+    maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false">
+  <button class="add-coin-btn" onclick="addCustomCoin()">+ ADD</button>
+</div>
+<div class="coin-grid" id="coinGrid"></div>
+<div class="coin-hint">Símbolos Bybit USDT Perpetual · Altcoins de médio cap têm maior potencial de 100%+ no capital</div>
+
+<br>
+<button class="scan-btn" id="scanBtn" onclick="startScan()">▶ &nbsp; INICIAR SCAN</button>
+```
+
   </div>
 
   <!-- PROGRESS -->
+
   <div class="progress-wrap" id="progressWrap">
     <div class="progress-label">
       <span id="progressText">Iniciando...</span>
@@ -604,6 +614,7 @@ main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; paddin
   </div>
 
   <!-- RESULTS -->
+
   <div id="resultsSection">
     <div class="results-header" id="resultsHeader" style="display:none">
       <h2>Oportunidades encontradas <span id="countBadge"></span></h2>
@@ -624,8 +635,8 @@ main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; paddin
 
 </div><!-- /section-scanner -->
 
-
 <!-- ══════════════════ DIÁRIO ══════════════════ -->
+
 <div class="page-section" id="section-journal">
   <div class="page-title-j">
     <h1>Diário de <em>trades</em></h1>
@@ -635,9 +646,6 @@ main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; paddin
   <div class="journal-filters">
     <span style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-right:4px">FILTRAR:</span>
     <button class="journal-filter-btn active" onclick="filterJournal('all',this)">Todos</button>
-    <button class="journal-filter-btn" onclick="filterJournal('active',this)">Ativos</button>
-    <button class="journal-filter-btn" onclick="filterJournal('win',this)">Vitórias</button>
-    <button class="journal-filter-btn" onclick="filterJournal('loss',this)">Stops</button>
     <button class="journal-filter-btn" onclick="filterJournal('buy',this)">Long</button>
     <button class="journal-filter-btn" onclick="filterJournal('sell',this)">Short</button>
   </div>
@@ -807,9 +815,10 @@ function toggleRR(el, v) {
 // TIMEFRAMES
 // ─────────────────────────────────────────
 const TIMEFRAMES_BY_MODE = {
+  scalp:['5m','15m','30m'],
   day:  ['5m','15m','1h'],
   swing:['4h','1D'],
-  both: ['5m','15m','1h','4h','1D'],
+  both: ['5m','15m','30m','1h','4h','1D'],
 };
 
 // ─────────────────────────────────────────
@@ -823,7 +832,7 @@ const CORS_PROXIES = [
   u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`, // 3. allorigins
   u => `https://thingproxy.freeboard.io/fetch/${u}`,                  // 4. thingproxy
 ];
-const TF_MAP = { '5m':'5','15m':'15','1h':'60','4h':'240','1D':'D' };
+const TF_MAP = { '5m':'5','15m':'15','30m':'30','1h':'60','4h':'240','1D':'D' };
 
 async function fetchJSON(url, timeoutMs = 10000) {
   const controller = new AbortController();
@@ -1203,6 +1212,19 @@ function detectDivergences(candles, rsiArr, macdHist) {
 }
 
 // ─────────────────────────────────────────
+// PREÇO DE LIQUIDAÇÃO — Bybit Isolated Margin
+// ─────────────────────────────────────────
+// Fórmula: Bybit usa MMR (Maintenance Margin Rate) padrão de 0.5%
+// Long:  Liq = entry × (1 − 1/lev + MMR)
+// Short: Liq = entry × (1 + 1/lev − MMR)
+const BYBIT_MMR = 0.005; // 0.5% maintenance margin
+
+function calcLiqPrice(entry, dir, lev) {
+  if (dir === 'buy')  return entry * (1 - 1/lev + BYBIT_MMR);
+  else                return entry * (1 + 1/lev - BYBIT_MMR);
+}
+
+// ─────────────────────────────────────────
 // RETORNO ALAVANCADO — CÁLCULO REAL
 // ─────────────────────────────────────────
 function capReturn(entry, target, dir, lev) {
@@ -1377,9 +1399,22 @@ function analyzeCandles(coin, tf, candles, fg) {
     stop  = Math.max(ress.length ? ress[0].price : price+atr*1.5, price+atr*1.2);
   }
 
+  // ── PREÇO DE LIQUIDAÇÃO — verificar se stop é seguro ──
+  const lev = state.leverage;
+  const liqPrice = calcLiqPrice(entry, dir, lev);
+  let stopAdjusted = false;
+  if (dir === 'buy' && stop <= liqPrice) {
+    // Stop abaixo da liquidação → ajustar para 2% acima do preço de liq
+    stop = liqPrice * 1.02;
+    stopAdjusted = true;
+  } else if (dir === 'sell' && stop >= liqPrice) {
+    // Stop acima da liquidação → ajustar para 2% abaixo do preço de liq
+    stop = liqPrice * 0.98;
+    stopAdjusted = true;
+  }
+
   // Metas Fibonacci
   const {m1:m1p, m2:m2p, m3:m3p} = calcMetas(dir, entry, stop);
-  const lev = state.leverage;
 
   const stopPctRaw = ((stop-entry)/entry*100);
   const m1PctRaw   = ((m1p-entry)/entry*100);
@@ -1418,7 +1453,7 @@ function analyzeCandles(coin, tf, candles, fg) {
   return {
     coin, pair:`${coin}/USDT`, dir,
     score: normScore, timeframe: tf, leverage: lev,
-    entry, stop,
+    entry, stop, liqPrice, stopAdjusted,
     stopPct: fmtPct(stopPctRaw),
     m1:{ price:m1p, pct:fmtPct(m1PctRaw), cap:capM1 },
     m2:{ price:m2p, pct:fmtPct(m2PctRaw), cap:capM2 },
@@ -1773,10 +1808,15 @@ function renderGroupCard(coin, setups) {
           <div class="val entry">${fmtPrice(d.entry)}</div>
         </div>
         <div class="level-item">
-          <div class="lbl">Stop Loss</div>
+          <div class="lbl">Stop Loss${d.stopAdjusted ? ' ⚠' : ''}</div>
           <div class="val stop">${fmtPrice(d.stop)} <span style="font-size:10px;opacity:0.6">${d.stopPct}</span></div>
         </div>
+        <div class="level-item">
+          <div class="lbl">Liquidação</div>
+          <div class="val" style="color:var(--danger);font-size:12px">${fmtPrice(d.liqPrice)}</div>
+        </div>
       </div>
+      ${d.stopAdjusted ? '<div style="font-family:var(--mono);font-size:10px;color:var(--warn);margin-bottom:12px;padding:6px 10px;background:rgba(255,184,0,0.08);border:1px solid rgba(255,184,0,0.2);border-radius:6px">⚠ Stop ajustado — original ficaria abaixo do preço de liquidação</div>' : ''}
 
       <div class="metas-title">METAS FIBONACCI — RETORNO NO CAPITAL</div>
       <div class="metas-track">
@@ -1887,7 +1927,8 @@ function openModal(d) {
         Fee Bybit Taker: <em>0.055% × 2 lados = 0.11%</em> sobre o valor da posição.<br>
         Com <em>${lev}x</em>, a posição vale ${lev}× o capital → fee real = <em>${feeCapPct}% do capital por operação.</em><br>
         Breakeven mínimo de preço para cobrir fee: <em>${(ROUND_TRIP_FEE*100).toFixed(3)}% × ${lev} = ${feeCapPct}%</em> do capital.<br>
-        Se stop for atingido: perda de <em style="color:var(--danger)">−${d.capStop?.netPct ?? Math.abs(parseFloat(d.stopPct.replace('%',''))*lev-parseFloat(feeCapPct)).toFixed(1)}% no capital</em> (incluindo fee de saída).
+        Se stop for atingido: perda de <em style="color:var(--danger)">−${d.capStop?.netPct ?? Math.abs(parseFloat(d.stopPct.replace('%',''))*lev-parseFloat(feeCapPct)).toFixed(1)}% no capital</em> (incluindo fee de saída).<br>
+        Preço de liquidação (isolated margin, MMR 0.5%): <em style="color:var(--danger)">${fmtPrice(d.liqPrice)}</em>${d.stopAdjusted ? ' — <em style="color:var(--warn)">⚠ Stop foi ajustado para ficar acima da liquidação</em>' : ' — stop está seguro ✓'}.
       </div>
     </div>
 
@@ -2009,308 +2050,204 @@ function switchTab(tab) {
 }
 
 // ─────────────────────────────────────────
-// DIÁRIO DE TRADES — STORAGE
+// DIÁRIO DE TRADES — versão simples / bloco de notas
 // ─────────────────────────────────────────
-const JOURNAL_KEY = 'cryptoscanner_journal_v1';
+const JOURNAL_KEY = 'cryptoscanner_journal_v2';
 
 function loadJournal() {
   try { return JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]'); }
   catch { return []; }
 }
 function saveJournal(entries) {
-  localStorage.setItem(JOURNAL_KEY, JSON.stringify(entries));
+  try { localStorage.setItem(JOURNAL_KEY, JSON.stringify(entries)); }
+  catch(e) { console.error('Erro ao salvar diário:', e); }
   updateJournalCount();
 }
 function updateJournalCount() {
-  const n = loadJournal().length;
   const el = document.getElementById('journalCount');
-  if (el) el.textContent = n;
+  if (el) el.textContent = loadJournal().length;
 }
 
+// Salva apenas os campos essenciais — sem objetos complexos
 function saveToJournal(d) {
   const entries = loadJournal();
-  // Evitar duplicata exata
-  const dup = entries.find(e => e.coin===d.coin && e.timeframe===d.timeframe && Math.abs(e.entry - d.entry) < 0.001);
+  const dup = entries.find(e =>
+    e.coin === d.coin &&
+    e.timeframe === d.timeframe &&
+    Math.abs(e.entry - d.entry) < 0.001
+  );
   if (dup) {
-    alert('Este setup já está no diário!');
+    const btn = document.getElementById('saveJournalBtn');
+    if (btn) { btn.textContent = '✓  JÁ SALVO'; btn.disabled = true; }
     return;
   }
 
-  const entry = {
+  const fp = p => p >= 1000 ? p.toFixed(0) : p >= 1 ? p.toFixed(3) : p.toFixed(5);
+  const sign = d.dir === 'buy' ? '+' : '-';
+
+  entries.unshift({
     id:        Date.now(),
     savedAt:   new Date().toISOString(),
     coin:      d.coin,
-    pair:      d.pair,
     dir:       d.dir,
-    score:     d.score,
     timeframe: d.timeframe,
     leverage:  d.leverage || state.leverage,
-    entry:     d.entry,
-    stop:      d.stop,
+    entry:     fp(d.entry),
+    stop:      fp(d.stop),
     stopPct:   d.stopPct,
-    m1: { price: d.m1.price, pct: d.m1.pct, cap: d.m1.cap },
-    m2: { price: d.m2.price, pct: d.m2.pct, cap: d.m2.cap },
-    m3: { price: d.m3.price, pct: d.m3.pct, cap: d.m3.cap },
-    capStop:   d.capStop,
-    feePctCap: d.feePctCap,
-    result:    'active', // active | stop | m1 | m2 | m3
+    liqPrice:  d.liqPrice ? fp(d.liqPrice) : '—',
+    stopAdj:   d.stopAdjusted || false,
+    m1:        fp(d.m1.price) + ' (' + sign + d.m1.cap.netPct + '% cap)',
+    m2:        fp(d.m2.price) + ' (' + sign + d.m2.cap.netPct + '% cap)',
+    m3:        fp(d.m3.price) + ' (' + sign + d.m3.cap.netPct + '% cap)',
+    score:     d.score,
+    summary:   d.summary || '',
     notes:     '',
-    expanded:  true,
-  };
+  });
 
-  entries.unshift(entry);
   saveJournal(entries);
-
-  // Feedback no botão
   const btn = document.getElementById('saveJournalBtn');
   if (btn) { btn.textContent = '✓  SALVO NO DIÁRIO!'; btn.disabled = true; }
-
   updateJournalCount();
 }
 
 // ─────────────────────────────────────────
 // DIÁRIO — RENDER
 // ─────────────────────────────────────────
-let journalFilter = 'all';
-
 function filterJournal(type, el) {
-  journalFilter = type;
-  document.querySelectorAll('.journal-filter-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.journal-filter-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  renderJournal();
+  renderJournal(type);
 }
 
-function renderJournal() {
+function renderJournal(filter) {
   const all = loadJournal();
   renderJournalStats(all);
-  renderJournalList(all);
+  renderJournalList(all, filter || 'all');
 }
 
 function renderJournalStats(entries) {
   const el = document.getElementById('journalStats');
   if (!entries.length) { el.innerHTML = ''; return; }
-
-  const closed  = entries.filter(e => e.result !== 'active');
-  const wins    = entries.filter(e => ['m1','m2','m3'].includes(e.result));
-  const losses  = entries.filter(e => e.result === 'stop');
-  const active  = entries.filter(e => e.result === 'active');
-  const winRate = closed.length ? Math.round(wins.length / closed.length * 100) : 0;
-
-  // Calcular retorno médio das vitórias (cap net da meta atingida)
-  let avgWin = 0;
-  if (wins.length) {
-    const total = wins.reduce((sum, e) => {
-      const target = e.result === 'm1' ? e.m1 : e.result === 'm2' ? e.m2 : e.m3;
-      return sum + parseFloat(target.cap.netPct);
-    }, 0);
-    avgWin = (total / wins.length).toFixed(1);
-  }
-  let avgLoss = 0;
-  if (losses.length) {
-    const total = losses.reduce((sum, e) => sum + parseFloat(e.capStop?.netPct ?? '0'), 0);
-    avgLoss = (total / losses.length).toFixed(1);
-  }
-
   el.innerHTML = `
     <div class="stat-card">
-      <div class="stat-label">Total de Trades</div>
+      <div class="stat-label">Operações salvas</div>
       <div class="stat-val">${entries.length}</div>
-      <div class="stat-sub">${active.length} ativo${active.length!==1?'s':''} · ${closed.length} fechado${closed.length!==1?'s':''}</div>
+      <div class="stat-sub">no diário</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Win Rate</div>
-      <div class="stat-val ${winRate>=50?'green':winRate>0?'yellow':'red'}">${closed.length ? winRate+'%' : '—'}</div>
-      <div class="stat-sub">${wins.length} vitória${wins.length!==1?'s':''} · ${losses.length} stop${losses.length!==1?'s':''}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Retorno médio (win)</div>
-      <div class="stat-val green">${wins.length ? '+'+avgWin+'%' : '—'}</div>
-      <div class="stat-sub">no capital</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Perda média (stop)</div>
-      <div class="stat-val red">${losses.length ? '-'+Math.abs(avgLoss)+'%' : '—'}</div>
-      <div class="stat-sub">no capital</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Meta mais comum</div>
-      <div class="stat-val yellow">${bestMeta(wins)}</div>
-      <div class="stat-sub">entre as vitórias</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Melhor trade</div>
-      <div class="stat-val green">${bestTradeReturn(wins)}</div>
-      <div class="stat-sub">no capital</div>
+      <div class="stat-label">Última entrada</div>
+      <div class="stat-val" style="font-size:14px">${entries[0].coin}</div>
+      <div class="stat-sub">${entries[0].dir === 'buy' ? '▲ LONG' : '▼ SHORT'} · ${entries[0].timeframe}</div>
     </div>
   `;
 }
 
-function bestMeta(wins) {
-  if (!wins.length) return '—';
-  const counts = {m1:0,m2:0,m3:0};
-  wins.forEach(e => { if(counts[e.result]!==undefined) counts[e.result]++; });
-  return Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0].toUpperCase();
-}
-function bestTradeReturn(wins) {
-  if (!wins.length) return '—';
-  let best = 0;
-  wins.forEach(e => {
-    const t = e.result==='m1'?e.m1:e.result==='m2'?e.m2:e.m3;
-    const v = parseFloat(t.cap.netPct);
-    if (v > best) best = v;
-  });
-  return '+'+best.toFixed(1)+'%';
-}
-
-function renderJournalList(all) {
+function renderJournalList(all, filter) {
   const listEl = document.getElementById('journalList');
-
-  // Aplicar filtro
   let filtered = all;
-  if (journalFilter === 'active') filtered = all.filter(e=>e.result==='active');
-  else if (journalFilter === 'win')  filtered = all.filter(e=>['m1','m2','m3'].includes(e.result));
-  else if (journalFilter === 'loss') filtered = all.filter(e=>e.result==='stop');
-  else if (journalFilter === 'buy')  filtered = all.filter(e=>e.dir==='buy');
-  else if (journalFilter === 'sell') filtered = all.filter(e=>e.dir==='sell');
+  if (filter === 'buy')  filtered = all.filter(e => e.dir === 'buy');
+  if (filter === 'sell') filtered = all.filter(e => e.dir === 'sell');
 
   if (!filtered.length) {
-    listEl.innerHTML = `<div class="journal-empty">
-      <div class="icon">📓</div>
-      <h3>${all.length === 0 ? 'Diário vazio' : 'Nenhum trade neste filtro'}</h3>
-      <p>${all.length === 0
-        ? 'Execute um scan, abra o detalhe de qualquer oportunidade<br>e toque em "Salvar no Diário" para começar a registrar.'
-        : 'Tente outro filtro acima.'
-      }</p>
-    </div>`;
+    listEl.innerHTML = '<div class="journal-empty"><div class="icon">📓</div><h3>' +
+      (all.length === 0 ? 'Diário vazio' : 'Nenhum trade aqui') + '</h3><p>' +
+      (all.length === 0
+        ? 'Rode um scan, abra o detalhe de uma oportunidade<br>e clique em "Salvar no Diário".'
+        : 'Tente outro filtro.') +
+      '</p></div>';
     return;
   }
 
-  listEl.innerHTML = `<div class="journal-list">${filtered.map(e => renderEntryHTML(e)).join('')}</div>`;
+  listEl.innerHTML = '<div class="journal-list">' +
+    filtered.map(e => renderEntryHTML(e)).join('') +
+    '</div>';
 }
 
 function renderEntryHTML(e) {
-  const isLong  = e.dir === 'buy';
-  const sign    = isLong ? '+' : '-';
-  const isOpen  = e.expanded !== false;
-  const resLabels = { active:'EM ANDAMENTO', stop:'STOP', m1:'META 1', m2:'META 2', m3:'META 3 🔥' };
-  const resCls    = { active:'res-active', stop:'res-stop', m1:'res-m1', m2:'res-m2', m3:'res-m3' };
-  const date = new Date(e.savedAt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
-
-  const fp = p => p>=1000 ? '$'+p.toLocaleString('en-US',{maximumFractionDigits:0}) : p>=1 ? '$'+p.toFixed(3) : '$'+p.toFixed(5);
+  const isLong = e.dir === 'buy';
+  const date = new Date(e.savedAt).toLocaleString('pt-BR', {
+    day:'2-digit', month:'2-digit', year:'2-digit',
+    hour:'2-digit', minute:'2-digit'
+  });
 
   return `<div class="journal-entry je-${e.dir}" id="je-${e.id}">
-    <div class="je-header" onclick="toggleEntry(${e.id})">
+
+    <div class="je-header">
       <div class="je-header-left">
         <div class="je-coin">${e.coin}</div>
         <div class="je-meta">
           <strong>${isLong ? '▲ LONG' : '▼ SHORT'}</strong> &nbsp;·&nbsp;
           ${e.timeframe.toUpperCase()} &nbsp;·&nbsp;
           ${e.leverage}x &nbsp;·&nbsp;
-          Score <strong>${e.score}</strong> &nbsp;·&nbsp;
-          Entrada: <strong>${fp(e.entry)}</strong>
+          Score <strong>${e.score}</strong>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span class="je-result-badge ${resCls[e.result]}">${resLabels[e.result]}</span>
-        <span class="je-chevron ${isOpen?'open':''}">▾</span>
-      </div>
+      <span class="je-date" style="font-size:10px">${date}</span>
     </div>
 
-    <div class="je-body" style="${isOpen?'':'display:none'}">
-
-      <!-- Levels row -->
+    <div class="je-body">
       <div class="je-levels-row">
         <div class="je-level">
           <div class="jl-lbl">Entrada</div>
-          <div class="jl-val">${fp(e.entry)}</div>
+          <div class="jl-val">$${e.entry}</div>
         </div>
         <div class="je-level">
-          <div class="jl-lbl">Stop Loss</div>
-          <div class="jl-val" style="color:var(--danger)">${fp(e.stop)}</div>
-          <div class="jl-cap" style="color:var(--danger)">−${e.capStop?.netPct ?? '?'}% cap</div>
+          <div class="jl-lbl">Stop ${e.stopAdj ? '⚠' : ''}</div>
+          <div class="jl-val" style="color:var(--danger)">$${e.stop}</div>
+          <div class="jl-cap" style="font-size:9px;color:var(--muted)">Liq: $${e.liqPrice}</div>
         </div>
         <div class="je-level">
           <div class="jl-lbl">Meta 1</div>
-          <div class="jl-val">${fp(e.m1.price)}</div>
-          <div class="jl-cap">${sign}${e.m1.cap.netPct}% cap</div>
+          <div class="jl-val" style="font-size:11px">${e.m1}</div>
         </div>
         <div class="je-level">
           <div class="jl-lbl">Meta 2</div>
-          <div class="jl-val">${fp(e.m2.price)}</div>
-          <div class="jl-cap">${sign}${e.m2.cap.netPct}% cap</div>
+          <div class="jl-val" style="font-size:11px">${e.m2}</div>
         </div>
-        <div class="je-level" style="border: 1px solid rgba(0,229,160,0.2)">
+        <div class="je-level" style="border:1px solid rgba(0,229,160,0.2)">
           <div class="jl-lbl">Meta 3</div>
-          <div class="jl-val">${fp(e.m3.price)}</div>
-          <div class="jl-cap">${sign}${e.m3.cap.netPct}% cap</div>
+          <div class="jl-val" style="font-size:11px">${e.m3}</div>
         </div>
       </div>
 
-      <!-- Resultado -->
-      <div class="je-result-selector">
-        <label>Resultado final</label>
-        ${['active','stop','m1','m2','m3'].map(r => {
-          const labels = {active:'Em andamento', stop:'Stop atingido', m1:'Meta 1', m2:'Meta 2', m3:'Meta 3 🔥'};
-          const cls    = {active:'rb-active', stop:'rb-stop', m1:'rb-m1', m2:'rb-m2', m3:'rb-m3'};
-          return `<button class="res-btn ${cls[r]} ${e.result===r?'active-res':''}"
-                    onclick="updateResult(${e.id},'${r}')">${labels[r]}</button>`;
-        }).join('')}
-      </div>
+      ${e.summary ? `<div style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.7;padding:10px 0 8px;border-top:1px solid var(--border)">${e.summary}</div>` : ''}
 
-      <!-- Notas -->
-      <div class="je-notes-wrap">
-        <label>Notas &amp; aprendizado</label>
+      <div class="je-notes-wrap" style="margin-top:8px">
+        <label>Minhas notas</label>
         <textarea class="je-notes"
-          placeholder="O que levou você a entrar? O que deu certo? O que erraria menos da próxima vez..."
+          placeholder="Anote aqui seus motivos, observações, o que aprendeu..."
           onblur="updateNotes(${e.id}, this.value)">${e.notes || ''}</textarea>
-      </div>
 
-      <div class="je-footer">
-        <span class="je-date">Salvo em ${date}</span>
-        <button class="je-delete-btn" onclick="deleteEntry(${e.id})">✕ Remover</button>
-      </div>
+```
+  </div>
 
-    </div>
+  <div class="je-footer">
+    <span></span>
+    <button class="je-delete-btn" onclick="deleteEntry(${e.id})">✕ Remover</button>
+  </div>
+</div>
+```
+
   </div>`;
 }
 
-function toggleEntry(id) {
-  const entries = loadJournal();
-  const e = entries.find(x=>x.id===id);
-  if (!e) return;
-  e.expanded = !e.expanded;
-  saveJournal(entries);
-  renderJournal();
-}
-
-function updateResult(id, result) {
-  const entries = loadJournal();
-  const e = entries.find(x=>x.id===id);
-  if (!e) return;
-  e.result = result;
-  saveJournal(entries);
-  renderJournal();
-}
-
 function updateNotes(id, notes) {
-  const entries = loadJournal();
-  const e = entries.find(x=>x.id===id);
-  if (!e) return;
-  e.notes = notes;
-  saveJournal(entries);
-  // Não re-render para não perder foco
-  updateJournalCount();
+const entries = loadJournal();
+const e = entries.find(x => x.id === id);
+if (!e) return;
+e.notes = notes;
+saveJournal(entries);
 }
 
 function deleteEntry(id) {
-  if (!confirm('Remover este trade do diário?')) return;
-  const entries = loadJournal().filter(x=>x.id!==id);
-  saveJournal(entries);
-  renderJournal();
+if (!confirm(‘Remover este trade do diário?’)) return;
+saveJournal(loadJournal().filter(x => x.id !== id));
+renderJournal();
 }
 
 // Inicializar contagem ao carregar
-document.addEventListener('DOMContentLoaded', updateJournalCount);
+document.addEventListener(‘DOMContentLoaded’, updateJournalCount);
 
 </script>
 </body>
