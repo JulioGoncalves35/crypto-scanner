@@ -79,68 +79,31 @@ main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; paddin
 .page-section.active { display: block; }
 
 /* ─── PAGE TITLE ─── */
-.page-title { text-align: center; margin-bottom: 32px; }
-.page-title h1 { font-size: clamp(32px, 5vw, 52px); font-weight: 800; letter-spacing: -2px; line-height: 1; }
+.page-title { margin-bottom: 32px; }
+.page-title h1 { font-size: clamp(24px, 4vw, 38px); font-weight: 800; line-height: 1.1; letter-spacing: -1px; }
 .page-title h1 em { font-style: normal; color: var(–accent); }
-.page-title p { margin-top: 8px; color: var(–muted); font-size: 13px; font-family: var(–mono); letter-spacing: 0.5px; }
+.page-title p { margin-top: 8px; color: var(–muted); font-size: 14px; font-family: var(–mono); }
 
 /* ─── MARKET BAR ─── */
-.market-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
-.market-pill {
-background: var(–surface); border: 1px solid var(–border);
-border-radius: 14px; padding: 14px 18px;
-display: flex; align-items: center; gap: 12px;
-flex: 1; min-width: 120px;
-transition: border-color 0.2s;
-}
-.market-pill:hover { border-color: rgba(255,255,255,0.12); }
-.market-pill img.pill-icon { width: 28px; height: 28px; border-radius: 50%; object-fit: contain; flex-shrink: 0; }
-.pill-info { display: flex; flex-direction: column; gap: 3px; }
-.pill-label { font-family: var(–mono); font-size: 9px; color: var(–muted); letter-spacing: 1.5px; text-transform: uppercase; }
-.pill-val { font-family: var(–mono); font-size: 15px; font-weight: 700; color: var(–text); }
-.pill-val.up   { color: var(–accent); }
-.pill-val.down { color: var(–danger); }
-.pill-val.warn { color: var(–warn); }
+.market-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; }
+.market-pill { background: var(–surface); border: 1px solid var(–border); border-radius: 8px; padding: 10px 16px; font-family: var(–mono); font-size: 12px; display: flex; align-items: center; gap: 8px; flex: 1; min-width: 140px; }
+.market-pill .label { color: var(–muted); }
+.market-pill .val { color: var(–text); font-weight: 700; }
+.market-pill .val.up   { color: var(–accent); }
+.market-pill .val.down { color: var(–danger); }
+.market-pill .val.warn { color: var(–warn); }
 
 /* ─── CONFIG PANEL ─── */
-.config-panel {
-background: var(–surface); border: 1px solid var(–border);
-border-radius: 20px; padding: 28px 32px 32px; margin-bottom: 28px;
-}
-.config-panel-title {
-font-family: var(–mono); font-size: 10px; color: var(–muted);
-letter-spacing: 2.5px; text-transform: uppercase;
-margin-bottom: 24px; padding-bottom: 16px;
-border-bottom: 1px solid var(–border);
-display: flex; align-items: center; gap: 10px;
-}
-.config-grid {
-display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-gap: 24px; margin-bottom: 28px;
-}
-.config-group label {
-display: block; font-family: var(–mono); font-size: 10px;
-color: var(–muted); letter-spacing: 1.5px; text-transform: uppercase;
-margin-bottom: 10px;
-}
+.config-panel { background: var(–surface); border: 1px solid var(–border); border-radius: 16px; padding: 24px; margin-bottom: 28px; }
+.config-panel h2 { font-size: 13px; font-family: var(–mono); color: var(–muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
+.config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 24px; }
+.config-group label { display: block; font-size: 11px; font-family: var(–mono); color: var(–muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
 .toggle-group { display: flex; gap: 6px; flex-wrap: wrap; }
-.toggle-btn {
-background: var(–surface2); border: 1px solid var(–border);
-color: var(–muted); font-family: var(–mono); font-size: 11px;
-padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: all 0.15s;
-}
-.toggle-btn.active {
-background: rgba(0,229,160,0.1); border-color: rgba(0,229,160,0.5);
-color: var(–accent); box-shadow: 0 0 12px rgba(0,229,160,0.1);
-}
-.toggle-btn:hover:not(.active) { border-color: rgba(255,255,255,0.15); color: var(–text); }
-.fee-note {
-font-family: var(–mono); font-size: 10px; color: var(–muted);
-margin-top: 8px; padding: 8px 12px;
-background: rgba(255,184,0,0.05); border: 1px solid rgba(255,184,0,0.15);
-border-radius: 8px; line-height: 1.7;
-}
-.rr-mode-note { font-family: var(–mono); font-size: 10px; color: var(–muted); margin-top: 8px; }
+.toggle-btn { background: var(–surface2); border: 1px solid var(–border); color: var(–muted); font-family: var(–mono); font-size: 12px; padding: 7px 14px; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+.toggle-btn.active { background: rgba(0,229,160,0.12); border-color: var(–accent); color: var(–accent); }
+.toggle-btn:hover:not(.active) { border-color: rgba(255,255,255,0.2); color: var(–text); }
+.fee-note { font-family: var(–mono); font-size: 10px; color: var(–muted); margin-top: 6px; padding: 6px 10px; background: rgba(255,184,0,0.05); border: 1px solid rgba(255,184,0,0.15); border-radius: 6px; line-height: 1.6; }
+.rr-mode-note { font-family: var(–mono); font-size: 10px; color: var(–muted); margin-top: 6px; }
 
 /* ─── COIN SECTION ─── */
 .coin-section-label {
@@ -148,20 +111,10 @@ font-family: var(–mono); font-size: 10px; color: var(–muted);
 letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px;
 }
 .custom-coin-row { display: flex; gap: 8px; margin-bottom: 18px; }
-.custom-coin-input {
-flex: 1; background: var(–surface2); border: 1px solid var(–border);
-color: var(–text); font-family: var(–mono); font-size: 13px;
-padding: 9px 14px; border-radius: 10px; outline: none;
-text-transform: uppercase; transition: border-color 0.15s;
-}
+.custom-coin-input { flex: 1; background: var(–surface2); border: 1px solid var(–border); color: var(–text); font-family: var(–mono); font-size: 13px; padding: 8px 14px; border-radius: 8px; outline: none; text-transform: uppercase; transition: border-color 0.15s; }
 .custom-coin-input::placeholder { color: var(–muted); text-transform: none; }
 .custom-coin-input:focus { border-color: var(–accent2); }
-.add-coin-btn {
-background: var(–accent2); color: #fff; border: none;
-font-family: var(–mono); font-size: 12px; font-weight: 700;
-padding: 9px 18px; border-radius: 10px; cursor: pointer;
-transition: all 0.15s; white-space: nowrap;
-}
+.add-coin-btn { background: var(–accent2); color: #fff; border: none; font-family: var(–mono); font-size: 12px; font-weight: 700; padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
 .add-coin-btn:hover { background: #33aaff; }
 
 /* ─── COIN GRID — ÍCONES CIRCULARES ─── */
@@ -219,16 +172,10 @@ box-shadow: 0 0 6px rgba(255,61,107,0.5); z-index: 2;
 .coin-hint { font-family: var(–mono); font-size: 10px; color: var(–muted); margin-top: 12px; opacity: 0.7; }
 
 /* ─── SCAN BUTTON ─── */
-.scan-btn {
-width: 100%; background: var(–accent); color: #000;
-font-family: var(–mono); font-weight: 700; font-size: 15px;
-letter-spacing: 3px; text-transform: uppercase; border: none;
-border-radius: 14px; padding: 18px; cursor: pointer; transition: all 0.2s;
-box-shadow: 0 4px 28px rgba(0,229,160,0.3);
-}
-.scan-btn:hover { background: #00ffb3; transform: translateY(-2px); box-shadow: 0 8px 36px rgba(0,229,160,0.4); }
+.scan-btn { width: 100%; background: var(–accent); color: #000; font-family: var(–mono); font-weight: 700; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; border: none; border-radius: 10px; padding: 16px; cursor: pointer; transition: all 0.2s; }
+.scan-btn:hover { background: #00ffb3; transform: translateY(-1px); }
 .scan-btn:active { transform: translateY(0); }
-.scan-btn:disabled { background: var(–surface2); color: var(–muted); cursor: not-allowed; transform: none; box-shadow: none; }
+.scan-btn:disabled { background: var(–surface2); color: var(–muted); cursor: not-allowed; transform: none; }
 
 /* ─── PROGRESS ─── */
 .progress-wrap { display: none; margin-bottom: 28px; background: var(–surface); border: 1px solid var(–border); border-radius: 14px; padding: 22px 26px; }
@@ -502,29 +449,17 @@ main { padding: 20px 14px 60px; }
   <!-- MARKET BAR -->
 
   <div class="market-bar">
-    <div class="market-pill">
-      <img class="pill-icon" src="https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/128/color/btc.png" onerror="this.style.display='none'" alt="BTC">
-      <div class="pill-info"><span class="pill-label">Bitcoin</span><span class="pill-val up" id="btcPrice">—</span></div>
-    </div>
-    <div class="market-pill">
-      <img class="pill-icon" src="https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/128/color/eth.png" onerror="this.style.display='none'" alt="ETH">
-      <div class="pill-info"><span class="pill-label">Ethereum</span><span class="pill-val up" id="ethPrice">—</span></div>
-    </div>
-    <div class="market-pill">
-      <div class="pill-info"><span class="pill-label">Fear &amp; Greed</span><span class="pill-val warn" id="fgVal">—</span></div>
-    </div>
-    <div class="market-pill">
-      <div class="pill-info"><span class="pill-label">Alavancagem ativa</span><span class="pill-val warn" id="levDisplay">10x</span></div>
-    </div>
-    <div class="market-pill">
-      <div class="pill-info"><span class="pill-label">Última análise</span><span class="pill-val" id="lastScan" style="color:var(--muted)">—</span></div>
-    </div>
+    <div class="market-pill"><span class="label">BTC</span><span class="val up" id="btcPrice">—</span></div>
+    <div class="market-pill"><span class="label">ETH</span><span class="val up" id="ethPrice">—</span></div>
+    <div class="market-pill"><span class="label">Fear & Greed</span><span class="val warn" id="fgVal">—</span></div>
+    <div class="market-pill"><span class="label">Alavancagem</span><span class="val warn" id="levDisplay">10x</span></div>
+    <div class="market-pill"><span class="label">Último scan</span><span class="val" id="lastScan" style="color:var(--muted)">—</span></div>
   </div>
 
   <!-- CONFIG PANEL -->
 
   <div class="config-panel">
-    <div class="config-panel-title">// Configurar Scanner — Bybit Futures</div>
+    <h2>// Configurar Scanner — Bybit Futures</h2>
     <div class="config-grid">
 
 ```
@@ -586,7 +521,8 @@ main { padding: 20px 14px 60px; }
 </div>
 
 <!-- COIN SELECTOR -->
-<div class="coin-section-label">Moedas para escanear</div>
+<div class="config-group" style="margin-bottom:20px">
+  <label>Moedas para escanear</label>
 <div class="custom-coin-row">
   <input type="text" id="customCoinInput" class="custom-coin-input"
     placeholder="Adicionar moeda... ex: PEPE, WLD, ARB"
@@ -594,9 +530,9 @@ main { padding: 20px 14px 60px; }
   <button class="add-coin-btn" onclick="addCustomCoin()">+ ADD</button>
 </div>
 <div class="coin-grid" id="coinGrid"></div>
-<div class="coin-hint">Símbolos Bybit USDT Perpetual · Altcoins de médio cap têm maior potencial de 100%+ no capital</div>
+<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px">Símbolos Bybit USDT Perpetual · Altcoins de médio cap têm maior potencial de 100%+ no capital</div>
+</div><!-- /config-group coins -->
 
-<br>
 <button class="scan-btn" id="scanBtn" onclick="startScan()">▶ &nbsp; INICIAR SCAN</button>
 ```
 
