@@ -293,7 +293,7 @@ display: flex; align-items: center; justify-content: space-between;
 
 /* ─── MTF BADGE / CONDITIONAL ENTRY ─── */
 .mtf-badge { background: rgba(0,136,255,0.15); border: 1px solid rgba(0,136,255,0.35); color: var(–accent2); font-family: var(–mono); font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 5px; display: inline-flex; align-items: center; gap: 4px; }
-.conditional-entry-block { background: rgba(255,184,0,0.07); border: 1px solid rgba(255,184,0,0.25); border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; }
+.conditional-entry-block { background: rgba(255,184,0,0.07); border: 1px solid rgba(255,184,0,0.25); border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
 .cond-label { font-family: var(–mono); font-size: 9px; color: var(–warn); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
 .cond-text { font-family: var(–mono); font-size: 12px; color: var(–text); line-height: 1.5; }
 .cond-text strong { color: var(–warn); }
@@ -409,6 +409,19 @@ display: flex; align-items: center; justify-content: space-between;
 .page-title-j h1 em { font-style: normal; color: var(–accent); }
 .page-title-j p { margin-top: 8px; color: var(–muted); font-size: 14px; font-family: var(–mono); }
 
+/* ─── CONDITIONAL ENTRY CARD CLASSES ─── */
+.ceb-icon { font-size: 20px; flex-shrink: 0; }
+.ceb-label { font-family: var(–mono); font-size: 9px; color: var(–warn); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 3px; }
+.ceb-main { font-family: var(–mono); font-size: 12px; color: var(–text); line-height: 1.5; }
+.ceb-main em { color: var(–warn); font-style: normal; font-weight: 700; }
+.ceb-pattern { font-family: var(–mono); font-size: 10px; color: var(–muted); margin-top: 3px; }
+
+/* ─── MISSING CLASSES ─── */
+.mtf-badge.mtf-sell { background: rgba(255,61,107,0.15); border-color: rgba(255,61,107,0.35); color: var(–danger); }
+.mtf-tf-pill.sell { background: rgba(255,61,107,0.12); border-color: rgba(255,61,107,0.3); color: var(–danger); }
+.pattern-tag.neut { background: rgba(255,184,0,0.15); color: var(–warn); }
+.ptrig { font-family: var(–mono); font-size: 10px; color: var(–warn); font-weight: 700; }
+
 @media (max-width: 600px) {
 header { padding: 0 16px; }
 main { padding: 20px 14px 60px; }
@@ -462,7 +475,6 @@ main { padding: 20px 14px 60px; }
     <h2>// Configurar Scanner — Bybit Futures</h2>
     <div class="config-grid">
 
-```
   <div class="config-group">
     <label>Modo de operação</label>
     <div class="toggle-group">
@@ -521,6 +533,7 @@ main { padding: 20px 14px 60px; }
 </div>
 
 <!-- COIN SELECTOR -->
+
 <div class="config-group" style="margin-bottom:20px">
   <label>Moedas para escanear</label>
 <div class="custom-coin-row">
@@ -533,8 +546,7 @@ main { padding: 20px 14px 60px; }
 <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px">Símbolos Bybit USDT Perpetual · Altcoins de médio cap têm maior potencial de 100%+ no capital</div>
 </div><!-- /config-group coins -->
 
-<button class="scan-btn" id="scanBtn" onclick="startScan()">▶ &nbsp; INICIAR SCAN</button>
-```
+<button class="scan-btn" id="scanBtn" onclick="startScan()">▶   INICIAR SCAN</button>
 
   </div>
 
@@ -622,22 +634,33 @@ const state = {
 };
 
 const ALL_COINS = [
-  // Blue chips
+  // Blue chips — símbolos confirmados Bybit USDT Perpetual
   'BTC','ETH','SOL','BNB','XRP','ADA','AVAX',
-  'DOGE','DOT','LINK','MATIC','LTC','ATOM','UNI',
-  // Altcoins voláteis com maior potencial de 100%+ no capital
+  'DOGE','DOT','LINK','POL','LTC','ATOM','UNI',
+  // Altcoins voláteis — maior potencial de 100%+ no capital
   'INJ','ARB','WLD','SEI','TIA','SUI','APT',
   'OP','IMX','JUP','ONDO','STRK','BLUR','MANTA',
-  'ORDI','BOME','W','ENA','ETHFI','PENDLE',
+  'ORDI','BOME','WIF','ENA','ETHFI','PENDLE',
+  // Populares 2024-2025
+  'PEPE','FET','NEAR','RENDER','TRX','FIL',
 ];
 
 // ─────────────────────────────────────────
 // COIN GRID
 // ─────────────────────────────────────────
 // ─────────────────────────────────────────
-// COIN LOGOS — CDN CoinCap (fallback para letra)
+// COIN LOGOS — Multi-CDN com fallback para letra
 // ─────────────────────────────────────────
-const LOGO_CDN = c => `https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/128/color/${c.toLowerCase()}.png`;
+const LOGO_SOURCES = [
+  c => `https://assets.coincap.io/assets/icons/${c.toLowerCase()}@2x.png`,
+  c => `https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/128/color/${c.toLowerCase()}.png`,
+];
+
+// Mapeamento de nomes alternativos para CDNs (rebranding, etc)
+const LOGO_ALIAS = {
+  'POL': 'matic',   // POL era MATIC
+  'RENDER': 'rndr', // Render Network
+};
 
 function createCoinIcon(coin, isCustom = false) {
   const el = document.createElement('div');
@@ -648,15 +671,33 @@ function createCoinIcon(coin, isCustom = false) {
   ring.className = 'coin-icon-ring';
 
   const img = document.createElement('img');
-  img.src = LOGO_CDN(coin);
   img.alt = coin;
-  img.onerror = () => {
-    img.remove();
-    const fb = document.createElement('div');
-    fb.className = 'coin-fb';
-    fb.textContent = coin.length > 4 ? coin.slice(0,4) : coin;
-    ring.appendChild(fb);
-  };
+  
+  // Tenta cada fonte de logo em sequência
+  let srcIdx = 0;
+  const alias = LOGO_ALIAS[coin];
+  
+  function tryNextSource() {
+    if (srcIdx < LOGO_SOURCES.length) {
+      // Tenta o nome original e o alias se existir
+      img.src = LOGO_SOURCES[srcIdx](alias || coin);
+      srcIdx++;
+    } else if (alias && srcIdx === LOGO_SOURCES.length) {
+      // Se tinha alias, tenta o nome original nas fontes
+      srcIdx = 100; // flag para não repetir
+      img.src = LOGO_SOURCES[0](coin);
+    } else {
+      // Fallback final: mostra as letras
+      img.remove();
+      const fb = document.createElement('div');
+      fb.className = 'coin-fb';
+      fb.textContent = coin.length > 4 ? coin.slice(0,4) : coin;
+      ring.appendChild(fb);
+    }
+  }
+  
+  img.onerror = tryNextSource;
+  tryNextSource(); // inicia com a primeira fonte
   ring.appendChild(img);
 
   if (isCustom) {
@@ -714,7 +755,39 @@ function removeCustomCoin(coin) {
 document.addEventListener('DOMContentLoaded', () => {
   const inp = document.getElementById('customCoinInput');
   if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') addCustomCoin(); });
+
+  // ── Carregar preços BTC/ETH e Fear & Greed ao abrir a página ──
+  loadMarketBar();
 });
+
+async function loadMarketBar() {
+  try {
+    const btcC = await fetchCandles('BTC','1h');
+    if (btcC) {
+      const p = btcC[btcC.length-1].close;
+      const prev = btcC[btcC.length-2].close;
+      const el = document.getElementById('btcPrice');
+      el.textContent = '$'+p.toLocaleString('en-US',{maximumFractionDigits:0});
+      el.className = 'val ' + (p >= prev ? 'up' : 'down');
+    }
+  } catch {}
+  try {
+    const ethC = await fetchCandles('ETH','1h');
+    if (ethC) {
+      const p = ethC[ethC.length-1].close;
+      const prev = ethC[ethC.length-2].close;
+      const el = document.getElementById('ethPrice');
+      el.textContent = '$'+p.toLocaleString('en-US',{maximumFractionDigits:0});
+      el.className = 'val ' + (p >= prev ? 'up' : 'down');
+    }
+  } catch {}
+  try {
+    const fg = await fetchFearGreed();
+    const el = document.getElementById('fgVal');
+    el.textContent = `${fg.value} — ${fg.label}`;
+    el.className = 'val ' + (fg.value<30?'up':fg.value>70?'down':'warn');
+  } catch {}
+}
 
 // ─────────────────────────────────────────
 // TOGGLE HELPERS
@@ -2162,10 +2235,9 @@ function renderEntryHTML(e) {
     <span></span>
     <button class="je-delete-btn" onclick="deleteEntry(${e.id})">✕ Remover</button>
   </div>
-</div>
+</div>`;
 ```
 
-  </div>`;
 }
 
 function updateNotes(id, notes) {
