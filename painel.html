@@ -925,7 +925,7 @@ async function fetchWithFallback(url, signal = null) {
 }
 
 async function fetchCandles(symbol, tf, signal = null) {
-  const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${symbol}USDT&interval=${TF_MAP[tf]}&limit=220`;
+  const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${symbol}USDT&interval=${TF_MAP[tf]}&limit=400`;
   const j = await fetchWithFallback(url, signal);
   if (!j || j.retCode !== 0 || !j.result?.list?.length) return null;
   return j.result.list.reverse().map(c => ({
@@ -949,8 +949,17 @@ async function fetchFearGreed(signal = null) {
 // INDICADORES TÉCNICOS
 // ─────────────────────────────────────────
 function calcEMA(closes, period) {
-  const k = 2 / (period + 1); let ema = closes[0];
-  return closes.map((v,i) => { if (i===0) return ema; ema = v*k + ema*(1-k); return ema; });
+  if (closes.length < period) return closes.map(() => null);
+  const k = 2 / (period + 1);
+  // Seed com SMA dos primeiros 'period' valores (padrão da indústria)
+  let ema = closes.slice(0, period).reduce((a,b) => a+b, 0) / period;
+  const result = new Array(period - 1).fill(null);
+  result.push(ema);
+  for (let i = period; i < closes.length; i++) {
+    ema = closes[i] * k + ema * (1 - k);
+    result.push(ema);
+  }
+  return result;
 }
 function calcRSI(closes, p=14) {
   let g=0,l=0;
@@ -1313,10 +1322,11 @@ function detectEMACross(closes) {
   const ema50  = calcEMA(closes, 50);
   const ema200 = calcEMA(closes, 200);
   if (ema50.length < 6 || ema200.length < 6) return null;
-  // ema200 é mais curto (mais período), alinhar pelo fim
   const n50 = ema50.length, n200 = ema200.length;
   const cur50 = ema50[n50 - 1], cur200 = ema200[n200 - 1];
   const prv50 = ema50[n50 - 6], prv200 = ema200[n200 - 6];
+  // Se algum valor é null (dados insuficientes), retornar null
+  if (cur50 == null || cur200 == null || prv50 == null || prv200 == null) return null;
   if (prv50 <= prv200 && cur50 > cur200)
     return { type: 'golden', score: +25,
       name: 'Cruz Dourada ✦',
@@ -1625,11 +1635,17 @@ function _computeScore(price, ind, fg) {
   indicators.push({name:'MACD',reading:mxUp?'Cruzamento altista ✓':mxDown?'Cruzamento baixista ✓':mAbove?'Acima da signal':'Abaixo da signal',color:mxUp||mAbove?'var(--accent)':'var(--danger)'});
 
   // EMAs
-  if      (price > ema9 && ema9 > ema21 && ema21 > ema200) { score += 16; reasons.push({text:'EMAs alinhadas ↑',type:'positive'}); }
-  else if (price < ema9 && ema9 < ema21 && ema21 < ema200) { score -= 16; reasons.push({text:'EMAs alinhadas ↓',type:'negative'}); }
-  else if (price > ema200) { score += 7; reasons.push({text:'Acima da EMA200',type:'positive'}); }
-  else                     { score -= 7; reasons.push({text:'Abaixo da EMA200',type:'negative'}); }
-  indicators.push({name:'EMA 9 / 21 / 200',reading:`${ema9.toFixed(2)} / ${ema21.toFixed(2)} / ${ema200.toFixed(2)}`,color:price>ema200?'var(--accent)':'var(--danger)'});
+  if (ema9 != null && ema21 != null && ema200 != null) {
+    if      (price > ema9 && ema9 > ema21 && ema21 > ema200) { score += 16; reasons.push({text:'EMAs alinhadas ↑',type:'positive'}); }
+    else if (price < ema9 && ema9 < ema21 && ema21 < ema200) { score -= 16; reasons.push({text:'EMAs alinhadas ↓',type:'negative'}); }
+    else if (price > ema200) { score += 7; reasons.push({text:'Acima da EMA200',type:'positive'}); }
+    else                     { score -= 7; reasons.push({text:'Abaixo da EMA200',type:'negative'}); }
+    indicators.push({name:'EMA 9 / 21 / 200',reading:`${ema9.toFixed(2)} / ${ema21.toFixed(2)} / ${ema200.toFixed(2)}`,color:price>ema200?'var(--accent)':'var(--danger)'});
+  } else if (ema9 != null && ema21 != null) {
+    if (price > ema9 && ema9 > ema21) { score += 10; reasons.push({text:'EMA9 > EMA21 ↑',type:'positive'}); }
+    else if (price < ema9 && ema9 < ema21) { score -= 10; reasons.push({text:'EMA9 < EMA21 ↓',type:'negative'}); }
+    indicators.push({name:'EMA 9 / 21',reading:`${ema9.toFixed(2)} / ${ema21.toFixed(2)}`,color:price>ema21?'var(--accent)':'var(--danger)'});
+  }
 
   // Bollinger
   if (bb) {
@@ -1782,7 +1798,8 @@ function analyzeCandles(coin, tf, candles, fg) {
   const divSummary = divergences.length > 0 ? ` ${divergences.map(d=>d.name).join(' + ')}.` : '';
   const patSummary = patterns.filter(p=>p.score!==0).length > 0 ? ` Padrão: ${patterns.filter(p=>p.score!==0).map(p=>p.name).join(', ')}.` : '';
   const condSummary = conditionalEntry ? ` Aguardar ${conditionalEntry.triggerCond} $${conditionalEntry.triggerPrice.toFixed(conditionalEntry.triggerPrice>=1?2:4)} para confirmar.` : '';
-  const summary = `${coin} setup ${dir==='buy'?'LONG':'SHORT'} no ${tf}. RSI ${rsi?.toFixed(1)??'N/A'}, MACD ${mxUp?'cruzamento altista':mxDown?'cruzamento baixista':mAbove?'acima':'abaixo'} da signal. Preço ${price>ema200?'acima':'abaixo'} da EMA200.${divSummary}${patSummary}${condSummary} Alvos ${rriWord}. Com ${lev}x: M3 = ${dir==='buy'?'+':'-'}${capM3.netPct}% no capital líquido.`;
+  const emaInfo = ema200 != null ? `Preço ${price>ema200?'acima':'abaixo'} da EMA200.` : '';
+  const summary = `${coin} setup ${dir==='buy'?'LONG':'SHORT'} no ${tf}. RSI ${rsi?.toFixed(1)??'N/A'}, MACD ${mxUp?'cruzamento altista':mxDown?'cruzamento baixista':mAbove?'acima':'abaixo'} da signal. ${emaInfo}${divSummary}${patSummary}${condSummary} Alvos ${rriWord}. Com ${lev}x: M3 = ${dir==='buy'?'+':'-'}${capM3.netPct}% no capital líquido.`;
 
   return {
     coin, pair:`${coin}/USDT`, dir,
@@ -2449,14 +2466,19 @@ function renderModalChart(d) {
     height: 320,
   });
 
+  // Precisão dinâmica com base no preço da moeda
+  const allCandles = d.candles;
+  const samplePrice = allCandles[allCandles.length - 1].close;
+  const pricePrecision = samplePrice >= 1000 ? 1 : samplePrice >= 100 ? 2 : samplePrice >= 1 ? 4 : 5;
+  const priceMinMove = samplePrice >= 1000 ? 0.1 : samplePrice >= 100 ? 0.01 : samplePrice >= 1 ? 0.0001 : 0.00001;
+
   // Série de velas
   const candleSeries = chart.addCandlestickSeries({
     upColor: '#00e5a0', downColor: '#ff3d6b',
     borderUpColor: '#00e5a0', borderDownColor: '#ff3d6b',
     wickUpColor: '#00e5a0', wickDownColor: '#ff3d6b',
+    priceFormat: { type: 'price', precision: pricePrecision, minMove: priceMinMove },
   });
-
-  const allCandles = d.candles;
   const last100 = allCandles.slice(-100);
   candleSeries.setData(last100.map(c => ({
     time: Math.floor(c.time / 1000),
@@ -2468,16 +2490,18 @@ function renderModalChart(d) {
   const emaConfigs = [
     { period: 9,   color: 'rgba(255,255,255,0.55)', title: 'EMA9'  },
     { period: 21,  color: 'rgba(0,136,255,0.7)',    title: 'EMA21' },
+    { period: 50,  color: 'rgba(0,229,160,0.5)',    title: 'EMA50' },
     { period: 200, color: 'rgba(255,184,0,0.7)',    title: 'EMA200'},
   ];
   emaConfigs.forEach(({ period, color, title }) => {
     const emaVals = calcEMA(closes, period);
     if (!emaVals.length) return;
-    const offset = closes.length - emaVals.length; // EMA começa depois dos primeiros 'period' candles
-    const lineSeries = chart.addLineSeries({ color, lineWidth: 1, title, priceLineVisible: false, lastValueVisible: false });
+    const lineSeries = chart.addLineSeries({ color, lineWidth: 1, title, priceLineVisible: false, lastValueVisible: false,
+      priceFormat: { type: 'price', precision: pricePrecision, minMove: priceMinMove } });
     const data = last100.map((c, i) => {
-      const idx = (allCandles.length - 100 + i) - offset;
-      return idx >= 0 && idx < emaVals.length ? { time: Math.floor(c.time / 1000), value: emaVals[idx] } : null;
+      const idx = allCandles.length - 100 + i;
+      const val = idx >= 0 && idx < emaVals.length ? emaVals[idx] : null;
+      return val != null ? { time: Math.floor(c.time / 1000), value: val } : null;
     }).filter(Boolean);
     if (data.length) lineSeries.setData(data);
   });
