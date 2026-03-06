@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Crypto Scanner</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 <style>
 /* ─────────────────────────────────────────
    DESIGN SYSTEM
@@ -1306,6 +1307,184 @@ function detectDivergences(candles, rsiArr, macdHist) {
 }
 
 // ─────────────────────────────────────────
+// CRUZ DOURADA / CRUZ DA MORTE — EMA 50 × EMA 200
+// ─────────────────────────────────────────
+function detectEMACross(closes) {
+  const ema50  = calcEMA(closes, 50);
+  const ema200 = calcEMA(closes, 200);
+  if (ema50.length < 6 || ema200.length < 6) return null;
+  // ema200 é mais curto (mais período), alinhar pelo fim
+  const n50 = ema50.length, n200 = ema200.length;
+  const cur50 = ema50[n50 - 1], cur200 = ema200[n200 - 1];
+  const prv50 = ema50[n50 - 6], prv200 = ema200[n200 - 6];
+  if (prv50 <= prv200 && cur50 > cur200)
+    return { type: 'golden', score: +25,
+      name: 'Cruz Dourada ✦',
+      desc: 'EMA 50 cruzou acima da EMA 200 recentemente — sinal clássico de tendência altista de longo prazo.' };
+  if (prv50 >= prv200 && cur50 < cur200)
+    return { type: 'death', score: -25,
+      name: 'Cruz da Morte ✦',
+      desc: 'EMA 50 cruzou abaixo da EMA 200 recentemente — sinal clássico de tendência baixista de longo prazo.' };
+  if (cur50 > cur200)
+    return { type: 'above', score: +8,
+      name: 'EMA50 acima da EMA200',
+      desc: 'Tendência estrutural altista: EMA 50 sustentada acima da EMA 200.' };
+  return { type: 'below', score: -8,
+    name: 'EMA50 abaixo da EMA200',
+    desc: 'Tendência estrutural baixista: EMA 50 abaixo da EMA 200.' };
+}
+
+// ─────────────────────────────────────────
+// ESTRUTURA DE MERCADO — HH/HL vs LH/LL
+// ─────────────────────────────────────────
+function detectMarketStructure(candles, lookback = 60) {
+  const levels = findLevels(candles, lookback);
+  const swingHighs = levels.filter(l => l.type === 'resistance').map(l => l.price);
+  const swingLows  = levels.filter(l => l.type === 'support').map(l => l.price);
+
+  if (swingHighs.length < 3 || swingLows.length < 3) return null;
+
+  const highs = swingHighs.slice(-3);
+  const lows  = swingLows.slice(-3);
+
+  let upH = 0, downH = 0, upL = 0, downL = 0;
+  for (let i = 1; i < highs.length; i++) { if (highs[i] > highs[i-1]) upH++; else downH++; }
+  for (let i = 1; i < lows.length;  i++) { if (lows[i]  > lows[i-1])  upL++; else downL++; }
+
+  const isUptrend   = upH >= 2 && upL >= 2;
+  const isDowntrend = downH >= 2 && downL >= 2;
+
+  if (isUptrend)
+    return { type: 'uptrend', score: +12,
+      name: 'Estrutura de Alta (HH/HL)',
+      desc: 'Mercado formando topos e fundos ascendentes — tendência de alta confirmada pela estrutura.' };
+  if (isDowntrend)
+    return { type: 'downtrend', score: -12,
+      name: 'Estrutura de Baixa (LH/LL)',
+      desc: 'Mercado formando topos e fundos descendentes — tendência de baixa confirmada pela estrutura.' };
+  return { type: 'ranging', score: 0,
+    name: 'Estrutura Lateral (ranging)',
+    desc: 'Sem tendência clara na estrutura de mercado — topos e fundos mistos.' };
+}
+
+// ─────────────────────────────────────────
+// TRIÂNGULOS — Ascendente, Descendente, Simétrico
+// ─────────────────────────────────────────
+function detectTriangle(candles, lookback = 80) {
+  const n = candles.length;
+  const slice = candles.slice(-lookback);
+
+  // Coletar swing highs e lows com índice relativo
+  const highs = [], lows = [];
+  for (let i = 2; i < slice.length - 2; i++) {
+    if (slice[i].high > slice[i-1].high && slice[i].high > slice[i-2].high &&
+        slice[i].high > slice[i+1].high && slice[i].high > slice[i+2].high)
+      highs.push({ i, price: slice[i].high });
+    if (slice[i].low < slice[i-1].low && slice[i].low < slice[i-2].low &&
+        slice[i].low < slice[i+1].low && slice[i].low < slice[i+2].low)
+      lows.push({ i, price: slice[i].low });
+  }
+
+  if (highs.length < 3 || lows.length < 3) return null;
+
+  // Calcular slope linear simples (regressão mínima quadrada nos últimos 3 pontos)
+  const slope = pts => {
+    const xs = pts.map(p => p.i);
+    const ys = pts.map(p => p.price);
+    const mx = xs.reduce((a,b)=>a+b,0)/xs.length;
+    const my = ys.reduce((a,b)=>a+b,0)/ys.length;
+    const num = xs.reduce((s,x,i)=>s+(x-mx)*(ys[i]-my),0);
+    const den = xs.reduce((s,x)=>s+(x-mx)**2,0);
+    return den === 0 ? 0 : num / den;
+  };
+
+  const hSlope = slope(highs.slice(-3));
+  const lSlope = slope(lows.slice(-3));
+  const lastClose = candles[n-1].close;
+  const midLevel  = (highs[highs.length-1].price + lows[lows.length-1].price) / 2;
+  const flatThreshold = Math.abs(highs[highs.length-1].price) * 0.0003; // 0.03% por candle
+
+  // Ascendente: resistência plana + suporte crescente → bullish
+  if (Math.abs(hSlope) < flatThreshold && lSlope > flatThreshold)
+    return { type: 'ascending', score: +18,
+      name: 'Triângulo Ascendente ▲',
+      desc: 'Resistência plana com suporte crescente — compressão bullish. Rompimento provável para cima.' };
+
+  // Descendente: resistência decrescente + suporte plano → bearish
+  if (hSlope < -flatThreshold && Math.abs(lSlope) < flatThreshold)
+    return { type: 'descending', score: -18,
+      name: 'Triângulo Descendente ▽',
+      desc: 'Suporte plano com resistência decrescente — compressão bearish. Rompimento provável para baixo.' };
+
+  // Simétrico: convergindo — direção pelo último fechamento vs ponto médio
+  if (hSlope < -flatThreshold && lSlope > flatThreshold) {
+    const dir = lastClose > midLevel ? 'up' : 'down';
+    return { type: 'symmetrical', score: dir === 'up' ? +15 : -15,
+      name: dir === 'up' ? 'Triângulo Simétrico ↑' : 'Triângulo Simétrico ↓',
+      desc: `Triângulo simétrico em compressão. Preço ${dir==='up'?'acima':'abaixo'} do ponto médio — rompimento provável ${dir==='up'?'para cima':'para baixo'}.` };
+  }
+
+  return null;
+}
+
+// ─────────────────────────────────────────
+// TOPO DUPLO / FUNDO DUPLO
+// ─────────────────────────────────────────
+function detectDoubleTopBottom(candles, lookback = 100) {
+  const n = candles.length;
+  const slice = candles.slice(-lookback);
+  const sliceLen = slice.length;
+
+  const swingHighs = [], swingLows = [];
+  for (let i = 2; i < sliceLen - 2; i++) {
+    if (slice[i].high > slice[i-1].high && slice[i].high > slice[i-2].high &&
+        slice[i].high > slice[i+1].high && slice[i].high > slice[i+2].high)
+      swingHighs.push({ i, price: slice[i].high });
+    if (slice[i].low < slice[i-1].low && slice[i].low < slice[i-2].low &&
+        slice[i].low < slice[i+1].low && slice[i].low < slice[i+2].low)
+      swingLows.push({ i, price: slice[i].low });
+  }
+
+  const lastClose = candles[n-1].close;
+  const tol = 0.015; // 1.5% tolerância entre picos
+  const minSep = 10; // mínimo de candles entre os dois picos
+
+  // Topo Duplo — dois swing highs similares
+  if (swingHighs.length >= 2) {
+    const h1 = swingHighs[swingHighs.length - 2];
+    const h2 = swingHighs[swingHighs.length - 1];
+    const sep = h2.i - h1.i;
+    const diff = Math.abs(h1.price - h2.price) / h1.price;
+    // Encontrar o fundo (neckline) entre os dois topos
+    let neckline = Infinity;
+    for (let i = h1.i; i <= h2.i; i++) neckline = Math.min(neckline, slice[i].low);
+    if (sep >= minSep && diff <= tol && lastClose < neckline * 1.005) {
+      return { type: 'doubleTop', score: -18,
+        name: 'Topo Duplo ▽▽',
+        desc: `Dois topos similares (~${(diff*100).toFixed(1)}% diferença) com preço rompendo abaixo do suporte intermediário — reversão de baixa.` };
+    }
+  }
+
+  // Fundo Duplo — dois swing lows similares
+  if (swingLows.length >= 2) {
+    const l1 = swingLows[swingLows.length - 2];
+    const l2 = swingLows[swingLows.length - 1];
+    const sep = l2.i - l1.i;
+    const diff = Math.abs(l1.price - l2.price) / l1.price;
+    // Encontrar o topo (neckline) entre os dois fundos
+    let neckline = -Infinity;
+    for (let i = l1.i; i <= l2.i; i++) neckline = Math.max(neckline, slice[i].high);
+    if (sep >= minSep && diff <= tol && lastClose > neckline * 0.995) {
+      return { type: 'doubleBottom', score: +18,
+        name: 'Fundo Duplo △△',
+        desc: `Dois fundos similares (~${(diff*100).toFixed(1)}% diferença) com preço rompendo acima da resistência intermediária — reversão de alta.` };
+    }
+  }
+
+  return null;
+}
+
+// ─────────────────────────────────────────
 // PREÇO DE LIQUIDAÇÃO — Bybit Isolated Margin
 // ─────────────────────────────────────────
 // Fórmula: Bybit usa MMR (Maintenance Margin Rate) padrão de 0.5%
@@ -1393,19 +1572,25 @@ function _calcTechIndicators(candles, closes) {
   const vwap      = calcVWAP(candles);
   const obvTrend  = calcOBVTrend(candles);
   const stochRSI  = calcStochRSI(rsiArr);
-  const patterns  = detectCandlePatterns(candles);
+  const patterns    = detectCandlePatterns(candles);
   const divergences = detectDivergences(candles, rsiArr, hist);
-  const adx       = calcADX(candles);
+  const adx         = calcADX(candles);
+  const emaCross    = detectEMACross(closes);
+  const mktStruct   = detectMarketStructure(candles);
+  const triangle    = detectTriangle(candles);
+  const dblPattern  = detectDoubleTopBottom(candles);
 
   return { price, rsiArr, rsi, ema9, ema21, ema200,
     macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
-    bb, atr, volRatio, levels, vwap, obvTrend, stochRSI, patterns, divergences, adx };
+    bb, atr, volRatio, levels, vwap, obvTrend, stochRSI,
+    patterns, divergences, adx, emaCross, mktStruct, triangle, dblPattern };
 }
 
 // Fase 2: calcular score e razões com base nos indicadores
 function _computeScore(price, ind, fg) {
   const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
-    ema9, ema21, ema200, bb, vwap, obvTrend, volRatio, patterns, divergences, adx } = ind;
+    ema9, ema21, ema200, bb, vwap, obvTrend, volRatio, patterns, divergences, adx,
+    emaCross, mktStruct, triangle, dblPattern } = ind;
 
   let score = 0;
   const reasons = [], indicators = [];
@@ -1499,7 +1684,32 @@ function _computeScore(price, ind, fg) {
     reasons.push({text:div.name, type: div.score > 0 ? 'positive' : 'negative', isDivergence: true});
   });
 
-  return { score, reasons, indicators, mxUp, mxDown, mAbove };
+  // Cruz Dourada / Cruz da Morte (EMA 50 × EMA 200)
+  if (emaCross && emaCross.score !== 0) {
+    score += emaCross.score;
+    reasons.push({text: emaCross.name, type: emaCross.score > 0 ? 'positive' : 'negative', isPattern: true});
+    indicators.push({name:'EMA 50 / 200 Cross',reading:emaCross.name,color:emaCross.score>0?'var(--accent)':'var(--danger)'});
+  }
+
+  // Estrutura de mercado (HH/HL vs LH/LL)
+  if (mktStruct && mktStruct.score !== 0) {
+    score += mktStruct.score;
+    reasons.push({text: mktStruct.name, type: mktStruct.score > 0 ? 'positive' : 'negative', isPattern: true});
+  }
+
+  // Triângulos
+  if (triangle && triangle.score !== 0) {
+    score += triangle.score;
+    reasons.push({text: triangle.name, type: triangle.score > 0 ? 'positive' : 'negative', isPattern: true});
+  }
+
+  // Topo Duplo / Fundo Duplo
+  if (dblPattern && dblPattern.score !== 0) {
+    score += dblPattern.score;
+    reasons.push({text: dblPattern.name, type: dblPattern.score > 0 ? 'positive' : 'negative', isPattern: true});
+  }
+
+  return { score, reasons, indicators, mxUp, mxDown, mAbove, emaCross, mktStruct, triangle, dblPattern };
 }
 
 // ─────────────────────────────────────────
@@ -1514,7 +1724,8 @@ function analyzeCandles(coin, tf, candles, fg) {
   const { price, rsi, ema200, atr, levels, vwap, obvTrend, stochRSI, patterns, divergences } = ind;
 
   // Fase 2: score
-  const { score: rawScore, reasons, indicators, mxUp, mxDown, mAbove } = _computeScore(price, ind, fg);
+  const { score: rawScore, reasons, indicators, mxUp, mxDown, mAbove,
+    emaCross, mktStruct, triangle, dblPattern } = _computeScore(price, ind, fg);
 
   const dir       = rawScore >= 0 ? 'buy' : 'sell';
   const normScore = Math.min(100, Math.round(Math.abs(rawScore)));
@@ -1584,7 +1795,9 @@ function analyzeCandles(coin, tf, candles, fg) {
     capStop, feePctCap,
     reasons, indicators, summary,
     patterns, divergences, conditionalEntry,
+    emaCross, mktStruct, triangle, dblPattern,
     vwap, obvTrend, stochRSI,
+    candles,
     mtfConfluence: null, // preenchido depois em runRealAnalysis
   };
 }
@@ -2052,6 +2265,9 @@ function openModal(d) {
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
 
+    <!-- GRÁFICO DE VELAS -->
+    <div id="modalChart" style="width:100%;height:320px;border-radius:12px;overflow:hidden;margin-bottom:16px;background:var(--surface);"></div>
+
     <!-- RETORNO NO CAPITAL — DESTAQUE PRINCIPAL -->
     <div class="capital-summary-modal">
       <h4>Retorno no capital — ${lev}x alavancagem (líquido após fees)</h4>
@@ -2103,9 +2319,10 @@ function openModal(d) {
       </div>
     </div>` : ''}
 
-    ${(d.patterns && d.patterns.filter(p=>p.score!==0).length > 0) || (d.divergences && d.divergences.length > 0) ? `
+    ${(d.patterns && d.patterns.filter(p=>p.score!==0).length > 0) || (d.divergences && d.divergences.length > 0) ||
+      d.emaCross || d.mktStruct || d.triangle || d.dblPattern ? `
     <div class="modal-section">
-      <h4>Padrões de Candlestick &amp; Divergências</h4>
+      <h4>Padrões de Candlestick &amp; Análise Avançada</h4>
       ${(d.patterns || []).filter(p=>p.score!==0).map(pat => `
         <div class="pattern-row">
           <div class="pattern-row-badge"><span class="pattern-tag ${pat.type==='positive'?'bull':pat.type==='negative'?'bear':'neut'}">${pat.name}</span></div>
@@ -2116,6 +2333,26 @@ function openModal(d) {
           <div class="pattern-row-badge"><span class="div-tag">${div.name}</span></div>
           <div class="pattern-row-text">${div.desc}</div>
         </div>`).join('')}
+      ${d.emaCross && d.emaCross.score !== 0 ? `
+        <div class="pattern-row">
+          <div class="pattern-row-badge"><span class="pattern-tag ${d.emaCross.score>0?'bull':'bear'}">${d.emaCross.name}</span></div>
+          <div class="pattern-row-text">${d.emaCross.desc}</div>
+        </div>` : ''}
+      ${d.mktStruct && d.mktStruct.score !== 0 ? `
+        <div class="pattern-row">
+          <div class="pattern-row-badge"><span class="pattern-tag ${d.mktStruct.score>0?'bull':'bear'}">${d.mktStruct.name}</span></div>
+          <div class="pattern-row-text">${d.mktStruct.desc}</div>
+        </div>` : ''}
+      ${d.triangle && d.triangle.score !== 0 ? `
+        <div class="pattern-row">
+          <div class="pattern-row-badge"><span class="pattern-tag ${d.triangle.score>0?'bull':'bear'}">${d.triangle.name}</span></div>
+          <div class="pattern-row-text">${d.triangle.desc}</div>
+        </div>` : ''}
+      ${d.dblPattern && d.dblPattern.score !== 0 ? `
+        <div class="pattern-row">
+          <div class="pattern-row-badge"><span class="pattern-tag ${d.dblPattern.score>0?'bull':'bear'}">${d.dblPattern.name}</span></div>
+          <div class="pattern-row-text">${d.dblPattern.desc}</div>
+        </div>` : ''}
     </div>` : ''}
 
     ${d.mtfConfluence ? `
@@ -2187,11 +2424,90 @@ function openModal(d) {
   }
 
   overlay.classList.add('open');
+  // Renderizar gráfico após o DOM ser atualizado
+  requestAnimationFrame(() => renderModalChart(d));
+}
+
+// ─────────────────────────────────────────
+// GRÁFICO DE VELAS — modal
+// ─────────────────────────────────────────
+function renderModalChart(d) {
+  const container = document.getElementById('modalChart');
+  if (!container || !d.candles || d.candles.length < 10 || !window.LightweightCharts) return;
+
+  // Limpar instância anterior se existir
+  if (container._chart) { container._ro?.disconnect(); container._chart.remove(); }
+
+  const isLong = d.dir === 'buy';
+  const chart = LightweightCharts.createChart(container, {
+    layout: { background: { color: '#0e1318' }, textColor: '#5a6a7a' },
+    grid: { vertLines: { color: 'rgba(255,255,255,0.04)' }, horzLines: { color: 'rgba(255,255,255,0.04)' } },
+    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+    rightPriceScale: { borderColor: 'rgba(255,255,255,0.07)' },
+    timeScale: { borderColor: 'rgba(255,255,255,0.07)', timeVisible: true },
+    width: container.clientWidth,
+    height: 320,
+  });
+
+  // Série de velas
+  const candleSeries = chart.addCandlestickSeries({
+    upColor: '#00e5a0', downColor: '#ff3d6b',
+    borderUpColor: '#00e5a0', borderDownColor: '#ff3d6b',
+    wickUpColor: '#00e5a0', wickDownColor: '#ff3d6b',
+  });
+
+  const allCandles = d.candles;
+  const last100 = allCandles.slice(-100);
+  candleSeries.setData(last100.map(c => ({
+    time: Math.floor(c.time / 1000),
+    open: c.open, high: c.high, low: c.low, close: c.close,
+  })));
+
+  // Linhas de EMA — calculadas sobre todos os candles disponíveis
+  const closes = allCandles.map(c => c.close);
+  const emaConfigs = [
+    { period: 9,   color: 'rgba(255,255,255,0.55)', title: 'EMA9'  },
+    { period: 21,  color: 'rgba(0,136,255,0.7)',    title: 'EMA21' },
+    { period: 200, color: 'rgba(255,184,0,0.7)',    title: 'EMA200'},
+  ];
+  emaConfigs.forEach(({ period, color, title }) => {
+    const emaVals = calcEMA(closes, period);
+    if (!emaVals.length) return;
+    const offset = closes.length - emaVals.length; // EMA começa depois dos primeiros 'period' candles
+    const lineSeries = chart.addLineSeries({ color, lineWidth: 1, title, priceLineVisible: false, lastValueVisible: false });
+    const data = last100.map((c, i) => {
+      const idx = (allCandles.length - 100 + i) - offset;
+      return idx >= 0 && idx < emaVals.length ? { time: Math.floor(c.time / 1000), value: emaVals[idx] } : null;
+    }).filter(Boolean);
+    if (data.length) lineSeries.setData(data);
+  });
+
+  // Linhas de preço horizontais: entrada, stop e metas
+  const priceLevels = [
+    { price: d.entry,    color: '#00e5a0',              lineStyle: 0, title: 'Entrada' },
+    { price: d.stop,     color: '#ff3d6b',              lineStyle: 0, title: 'Stop'    },
+    { price: d.m1.price, color: 'rgba(255,255,255,0.4)', lineStyle: 2, title: 'M1'     },
+    { price: d.m2.price, color: 'rgba(255,184,0,0.7)',  lineStyle: 2, title: 'M2'      },
+    { price: d.m3.price, color: '#0088ff',              lineStyle: 2, title: 'M3'      },
+  ];
+  priceLevels.forEach(({ price, color, lineStyle, title }) => {
+    candleSeries.createPriceLine({ price, color, lineWidth: 1, lineStyle, axisLabelVisible: true, title });
+  });
+
+  // Manter tamanho ao redimensionar
+  const ro = new ResizeObserver(() => { if (container.clientWidth > 0) chart.resize(container.clientWidth, 320); });
+  ro.observe(container);
+  container._chart = chart;
+  container._ro    = ro;
 }
 
 function closeModal(e) {
-  if (!e || e.target === document.getElementById('modalOverlay'))
+  if (!e || e.target === document.getElementById('modalOverlay')) {
+    const chartEl = document.getElementById('modalChart');
+    if (chartEl) { chartEl._ro?.disconnect(); chartEl._chart?.remove(); }
     document.getElementById('modalOverlay').classList.remove('open');
+    _currentModalData = null;
+  }
 }
 
 // ─────────────────────────────────────────
