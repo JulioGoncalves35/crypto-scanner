@@ -1821,7 +1821,7 @@ function analyzeCandles(coin, tf, candles, fg) {
   const patSummary = patterns.filter(p=>p.score!==0).length > 0 ? ` Padrão: ${patterns.filter(p=>p.score!==0).map(p=>p.name).join(', ')}.` : '';
   const condSummary = conditionalEntry ? ` Aguardar ${conditionalEntry.triggerCond} $${conditionalEntry.triggerPrice.toFixed(conditionalEntry.triggerPrice>=1?2:4)} para confirmar.` : '';
   const emaInfo = ema200 != null ? `Preço ${price>ema200?'acima':'abaixo'} da EMA200.` : '';
-  const summary = `${coin} setup ${dir==='buy'?'LONG':'SHORT'} no ${tf}. RSI ${rsi?.toFixed(1)??'N/A'}, MACD ${mxUp?'cruzamento altista':mxDown?'cruzamento baixista':mAbove?'acima':'abaixo'} da signal. ${emaInfo}${divSummary}${patSummary}${condSummary} Alvos ${rriWord}. Com ${lev}x: M3 = ${dir==='buy'?'+':'-'}${capM3.netPct}% no capital líquido.`;
+  const summary = `${coin} setup ${dir==='buy'?'LONG':'SHORT'} no ${tf}. RSI ${rsi?.toFixed(1)??'N/A'}, MACD ${mxUp?'cruzamento altista':mxDown?'cruzamento baixista':mAbove?'acima':'abaixo'} da signal. ${emaInfo}${divSummary}${patSummary}${condSummary} Alvos ${rriWord}. Com ${lev}x: M3 = +${capM3.netPct}% no capital líquido.`;
 
   return {
     coin, pair:`${coin}/USDT`, dir,
@@ -1937,8 +1937,7 @@ async function runRealAnalysis(signal = null) {
           const result = analyzeCandles(coin, tf, candles, fg);
           if (result) {
             results.push(result);
-            const sign = result.dir==='buy' ? '+' : '-';
-            addLog(`✓ ${coin} ${tf} · Score ${result.score} · M3: ${sign}${result.m3.cap.netPct}%`, 'var(--accent)');
+            addLog(`✓ ${coin} ${tf} · Score ${result.score} · M3: +${result.m3.cap.netPct}%`, 'var(--accent)');
           } else {
             addLog(`◌ ${coin} ${tf} — score abaixo do filtro (${state.score}+)`, 'var(--muted)');
           }
@@ -2139,12 +2138,12 @@ function renderGroupCard(coin, setups) {
   const sc    = d.score>=80?'high':d.score>=65?'mid':'low';
   const capM3 = d.m3.cap;
   const m3Hot = parseFloat(capM3.netPct) >= 100;
-  const sign  = isLong ? '+' : '-';
+  const sign  = '+'; // M1/M2/M3 are always profit targets
 
   const tfBadges = setups.map((s,i)=>{
     const a = i===idx?'active-tf':'';
     const cl= s.dir==='sell'?'sell-tf':'';
-    return `<span class="group-tf-badge ${a} ${cl}" onclick="switchTF('${coin}',${i})" title="${s.dir==='buy'?'▲ Long':'▼ Short'} · Score ${s.score} · ${s.dir==='buy'?'+':'-'}${s.m3.cap.netPct}% capital">${s.timeframe.toUpperCase()}</span>`;
+    return `<span class="group-tf-badge ${a} ${cl}" onclick="switchTF('${coin}',${i})" title="${s.dir==='buy'?'▲ Long':'▼ Short'} · Score ${s.score} · +${s.m3.cap.netPct}% capital">${s.timeframe.toUpperCase()}</span>`;
   }).join('');
 
   card.innerHTML = `
@@ -2289,7 +2288,7 @@ function openModal(d) {
   const content = document.getElementById('modalContent');
   const lev     = d.leverage || state.leverage;
   const isLong  = d.dir === 'buy';
-  const sign    = isLong ? '+' : '-';
+  const sign    = '+'; // M1/M2/M3 are always profit targets
   const feeCapPct = (ROUND_TRIP_FEE * lev * 100).toFixed(2);
   const m3Hot     = parseFloat(d.m3.cap.netPct) >= 100;
 
