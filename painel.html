@@ -117,6 +117,10 @@ letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px;
 .custom-coin-input:focus { border-color: var(--accent2); }
 .add-coin-btn { background: var(--accent2); color: #fff; border: none; font-family: var(--mono); font-size: 12px; font-weight: 700; padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
 .add-coin-btn:hover { background: #33aaff; }
+.select-all-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.sel-all-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: var(--mono); font-size: 11px; padding: 5px 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+.sel-all-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.sel-all-btn.desel:hover { border-color: var(--danger); color: var(--danger); }
 
 /* ─── COIN GRID — ÍCONES CIRCULARES ─── */
 .coin-grid { display: flex; gap: 14px; flex-wrap: wrap; }
@@ -593,6 +597,10 @@ main { padding: 20px 14px 60px; }
     maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false">
   <button class="add-coin-btn" onclick="addCustomCoin()">+ ADD</button>
 </div>
+<div class="select-all-row">
+  <button class="sel-all-btn" onclick="selectAllCoins()">☑ Selecionar todos</button>
+  <button class="sel-all-btn desel" onclick="deselectAllCoins()">☐ Desmarcar todos</button>
+</div>
 <div class="coin-grid" id="coinGrid"></div>
 <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px">Símbolos Bybit USDT Perpetual · Altcoins de médio cap têm maior potencial de 100%+ no capital</div>
 </div><!-- /config-group coins -->
@@ -786,6 +794,20 @@ function removeCustomCoin(coin) {
   state.coins.delete(coin);
   const el = document.querySelector(`[data-coin="${coin}"]`);
   if (el) el.remove();
+}
+
+function selectAllCoins() {
+  document.querySelectorAll('#coinGrid .coin-icon').forEach(el => {
+    state.coins.add(el.dataset.coin);
+    el.classList.add('selected');
+  });
+}
+
+function deselectAllCoins() {
+  document.querySelectorAll('#coinGrid .coin-icon').forEach(el => {
+    state.coins.delete(el.dataset.coin);
+    el.classList.remove('selected');
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
