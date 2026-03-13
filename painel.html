@@ -718,7 +718,7 @@ const FIB_FIXED3 = { m1: 3.0,   m2: 4.5,   m3: 6.0   };
 const state = {
   mode: 'day',
   rr: 'fib',
-  score: '65',
+  score: '70',
   dir: 'both',
   coins: new Set(['BTC','ETH','SOL','BNB','INJ','ARB','WLD']),
   cards: [],
@@ -1788,6 +1788,9 @@ function analyzeCandles(coin, tf, candles, fg) {
   const ind = _calcTechIndicators(candles, closes);
   const { price, rsi, ema200, atr, levels, vwap, obvTrend, stochRSI, patterns, divergences } = ind;
 
+  // Filtro duro: mercado lateral — sem tendência definida
+  if (ind.adx !== null && ind.adx < 18) return null;
+
   // Fase 2: score
   const { score: rawScore, reasons, indicators, mxUp, mxDown, mAbove,
     emaCross, mktStruct, triangle, dblPattern } = _computeScore(price, ind, fg);
@@ -2029,6 +2032,22 @@ async function runRealAnalysis(signal = null) {
         s.mtfConfluence = { dir:'sell', count:sellSetups.length, tfs };
         if (!s.reasons.find(r=>r.text.includes('Confluência')))
           s.reasons.unshift({ text:`Confluência ${sellSetups.length} TFs ↓ (${tfs.join('+')})`, type:'negative', isMTF:true });
+      });
+    }
+
+    // Penalidade por contra-tendência: setup de TF menor conflita com TF maior
+    if (setups.length >= 2) {
+      const TF_ORDER = ['5m','15m','30m','1h','4h','1D'];
+      const highestTF = setups.reduce((prev, curr) =>
+        TF_ORDER.indexOf(curr.timeframe) > TF_ORDER.indexOf(prev.timeframe) ? curr : prev
+      );
+      setups.forEach(s => {
+        const sIsLower = TF_ORDER.indexOf(s.timeframe) < TF_ORDER.indexOf(highestTF.timeframe);
+        if (sIsLower && s.dir !== highestTF.dir) {
+          s.score = Math.max(0, s.score - 20);
+          if (!s.reasons.find(r => r.text.includes('Contra-tendência')))
+            s.reasons.unshift({ text: `⚠ Contra-tendência ${highestTF.timeframe}`, type: 'negative' });
+        }
       });
     }
   });
