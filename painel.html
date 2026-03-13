@@ -478,6 +478,33 @@ display: flex; align-items: center; justify-content: space-between;
 .pattern-tag.neut { background: rgba(255,184,0,0.15); color: var(--warn); }
 .ptrig { font-family: var(--mono); font-size: 10px; color: var(--warn); font-weight: 700; }
 
+/* ─── CHECK SETUP ─── */
+.check-btn {
+  width: 100%; margin-top: 8px;
+  background: rgba(0,136,255,0.08); border: 1px solid rgba(0,136,255,0.25);
+  color: var(--accent2); font-family: var(--mono); font-size: 12px; font-weight: 700;
+  padding: 10px; border-radius: 8px; cursor: pointer; letter-spacing: 0.5px;
+  transition: all 0.2s;
+}
+.check-btn:hover { background: rgba(0,136,255,0.15); border-color: var(--accent2); }
+.check-btn:disabled { opacity: 0.45; cursor: default; }
+.check-status {
+  margin-top: 10px; border-radius: 8px; overflow: hidden;
+  font-family: var(--mono); font-size: 11px; line-height: 1.7;
+}
+.check-status-line {
+  padding: 8px 12px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 7px; margin-bottom: 5px; color: var(--muted);
+}
+.check-status-line.cs-hit-stop  { background: rgba(255,61,107,0.07);  border-color: rgba(255,61,107,0.25);  color: var(--danger); }
+.check-status-line.cs-hit-m1    { background: rgba(255,184,0,0.07);   border-color: rgba(255,184,0,0.25);   color: var(--warn); }
+.check-status-line.cs-hit-m2    { background: rgba(0,229,160,0.07);   border-color: rgba(0,229,160,0.22);   color: var(--accent); }
+.check-status-line.cs-hit-m3    { background: rgba(0,229,160,0.13);   border-color: var(--accent);          color: var(--accent); font-weight: 700; }
+.check-status-line.cs-current   { background: rgba(0,136,255,0.06);   border-color: rgba(0,136,255,0.2);    color: var(--accent2); }
+.check-status-line.cs-waiting   { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.07); color: var(--muted); }
+.check-suggest { margin-top: 6px; font-family: var(--mono); font-size: 10px; color: var(--muted); padding: 6px 10px; background: rgba(0,229,160,0.05); border: 1px solid rgba(0,229,160,0.15); border-radius: 6px; }
+
 @media (max-width: 600px) {
 header { padding: 0 16px; }
 main { padding: 20px 14px 60px; }
@@ -2655,7 +2682,33 @@ function renderJournalStats(entries) {
   if (!entries.length) { el.innerHTML = ''; return; }
   const longs  = entries.filter(e => e.dir === 'buy').length;
   const shorts = entries.filter(e => e.dir === 'sell').length;
-  const withNotes = entries.filter(e => e.notes && e.notes.trim()).length;
+
+  // Performance stats
+  const withResult = entries.filter(e => e.result && e.result !== 'active');
+  const wins  = withResult.filter(e => ['m1','m2','m3'].includes(e.result));
+  const losses = withResult.filter(e => e.result === 'stop');
+  const winRate = withResult.length > 0 ? Math.round(wins.length / withResult.length * 100) : null;
+
+  // Retorno médio estimado (usando o cap da meta atingida)
+  let avgReturn = null;
+  if (wins.length > 0) {
+    const total = wins.reduce((sum, e) => {
+      const cap = e.result === 'm1' ? parseFloat(e.m1cap) :
+                  e.result === 'm2' ? parseFloat(e.m2cap) :
+                  parseFloat(e.m3cap);
+      return sum + (isNaN(cap) ? 0 : Math.abs(cap));
+    }, 0);
+    avgReturn = (total / wins.length).toFixed(1);
+  }
+
+  // Precisão por faixa de score (apenas entradas com resultado)
+  const scoreHigh = withResult.filter(e => e.score >= 80);
+  const scoreHighWin = scoreHigh.filter(e => ['m1','m2','m3'].includes(e.result)).length;
+  const scoreMid = withResult.filter(e => e.score >= 65 && e.score < 80);
+  const scoreMidWin = scoreMid.filter(e => ['m1','m2','m3'].includes(e.result)).length;
+
+  const winColor = winRate === null ? '' : winRate >= 60 ? 'green' : winRate >= 40 ? 'yellow' : 'red';
+
   el.innerHTML = `
     <div class="stat-card">
       <div class="stat-label">Total de fichas</div>
@@ -2663,14 +2716,23 @@ function renderJournalStats(entries) {
       <div class="stat-sub">${longs} long · ${shorts} short</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Com anotações</div>
-      <div class="stat-val ${withNotes>0?'green':''}">${withNotes}</div>
-      <div class="stat-sub">de ${entries.length} fichas</div>
+      <div class="stat-label">Win Rate</div>
+      <div class="stat-val ${winColor}">${winRate !== null ? winRate + '%' : '—'}</div>
+      <div class="stat-sub">${wins.length} ganhos · ${losses.length} stop${withResult.length > 0 ? ' · de ' + withResult.length + ' marcados' : ' · marque resultados'}</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Última salva</div>
-      <div class="stat-val" style="font-size:14px">${entries[0].coin}</div>
-      <div class="stat-sub">${entries[0].dir === 'buy' ? '▲ LONG' : '▼ SHORT'} · ${entries[0].timeframe}</div>
+      <div class="stat-label">Retorno médio</div>
+      <div class="stat-val ${avgReturn ? 'green' : ''}">${avgReturn ? avgReturn + '%' : '—'}</div>
+      <div class="stat-sub">${wins.length > 0 ? 'capital por trade ganho' : 'sem trades vencedores ainda'}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Score 80+ / 65-79</div>
+      <div class="stat-val" style="font-size:16px">
+        ${scoreHigh.length > 0 ? Math.round(scoreHighWin/scoreHigh.length*100)+'%' : '—'}
+        <span style="font-size:12px;color:var(--muted)"> / </span>
+        ${scoreMid.length > 0 ? Math.round(scoreMidWin/scoreMid.length*100)+'%' : '—'}
+      </div>
+      <div class="stat-sub">precisão por faixa de score</div>
     </div>
   `;
 }
@@ -2722,6 +2784,18 @@ function renderEntryHTML(e) {
   const m2txt = e.m2p ? `$${e.m2p} · <strong>${e.m2cap}% cap</strong>` : e.m2 || '—';
   const m3txt = e.m3p ? `$${e.m3p} · <strong>${e.m3cap}% cap</strong>` : e.m3 || '—';
 
+  // Badge de resultado
+  const resMap  = { active:'res-active', stop:'res-stop', m1:'res-m1', m2:'res-m2', m3:'res-m3' };
+  const resLabel = { active:'EM ANDAMENTO', stop:'STOP', m1:'META 1', m2:'META 2', m3:'META 3' };
+  const resBadge = e.result
+    ? `<span class="je-result-badge ${resMap[e.result] || ''}">${resLabel[e.result] || e.result.toUpperCase()}</span>`
+    : '';
+
+  // Botões de resultado
+  const resBtns = ['active','stop','m1','m2','m3'].map(r =>
+    `<button class="res-btn rb-${r}${e.result===r?' active-res':''}" data-res="${r}" onclick="updateResult(${e.id},'${r}')">${resLabel[r]}</button>`
+  ).join('');
+
   return `<div class="journal-entry je-${e.dir}" id="je-${e.id}">
 
     <!-- CABEÇALHO -->
@@ -2734,7 +2808,7 @@ function renderEntryHTML(e) {
           &nbsp;·&nbsp; Score <strong>${e.score}</strong>
         </div>
       </div>
-      <span class="je-date">${date}</span>
+      <div style="display:flex;align-items:center;gap:8px">${resBadge}<span class="je-date">${date}</span></div>
     </div>
 
     <!-- CORPO DA FICHA -->
@@ -2793,6 +2867,17 @@ function renderEntryHTML(e) {
         </div>
       </div>
 
+      <!-- BLOCO: RESULTADO -->
+      <div class="jf-section">
+        <div class="jf-section-title">Resultado do setup</div>
+        <div class="je-result-selector">
+          <label>Marcar como:</label>
+          ${resBtns}
+        </div>
+        <button class="check-btn" onclick="checkSetupNow(${e.id})">🔍 Verificar agora — buscar candles e preço atual</button>
+        <div class="check-status" id="check-status-${e.id}"></div>
+      </div>
+
       <!-- BLOCO: MINHAS ANOTAÇÕES -->
       <div class="jf-section">
         <div class="jf-section-title">Minhas anotações</div>
@@ -2816,6 +2901,139 @@ const e = entries.find(x => x.id === id);
 if (!e) return;
 e.notes = notes;
 saveJournal(entries);
+}
+
+function updateResult(id, result) {
+  const entries = loadJournal();
+  const e = entries.find(x => x.id === id);
+  if (!e) return;
+  e.result = result;
+  saveJournal(entries);
+  // Atualiza badge no cabeçalho sem re-renderizar tudo
+  const badge = document.querySelector(`#je-${id} .je-result-badge`);
+  if (badge) {
+    const map = { active:'res-active', stop:'res-stop', m1:'res-m1', m2:'res-m2', m3:'res-m3' };
+    const lbl = { active:'EM ANDAMENTO', stop:'STOP', m1:'META 1', m2:'META 2', m3:'META 3' };
+    badge.className = `je-result-badge ${map[result] || ''}`;
+    badge.textContent = lbl[result] || result.toUpperCase();
+    badge.style.display = '';
+  }
+  // Atualiza botões de resultado
+  document.querySelectorAll(`#je-${id} .res-btn`).forEach(b => {
+    b.classList.toggle('active-res', b.dataset.res === result);
+  });
+  // Atualiza stats
+  renderJournalStats(loadJournal());
+}
+
+// ─────────────────────────────────────────
+// VERIFICAR SETUP — busca candles e compara com níveis
+// ─────────────────────────────────────────
+async function checkSetupNow(id) {
+  const entries = loadJournal();
+  const e = entries.find(x => x.id === id);
+  if (!e) return;
+
+  const btn = document.querySelector(`#je-${id} .check-btn`);
+  const statusDiv = document.getElementById(`check-status-${id}`);
+  if (!statusDiv) return;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Buscando dados...';
+  statusDiv.innerHTML = '';
+
+  try {
+    const candles = await fetchCandles(e.coin, e.timeframe);
+    if (!candles || !candles.length) throw new Error('Sem dados');
+
+    const savedTs = new Date(e.savedAt).getTime();
+    const recent = candles.filter(c => c.time * 1000 >= savedTs);
+
+    const isLong = e.dir === 'buy';
+    const entry  = parseFloat(e.entry);
+    const stop   = parseFloat(e.stop);
+    const m1     = parseFloat(e.m1p);
+    const m2     = parseFloat(e.m2p);
+    const m3     = parseFloat(e.m3p);
+
+    // Checa histórico desde que foi salvo
+    let bestHit = null; // 'stop' | 'm1' | 'm2' | 'm3'
+    let hitTime = null;
+
+    for (const c of recent) {
+      const hi = c.high, lo = c.low;
+      const ts = new Date(c.time * 1000).toLocaleString('pt-BR', {
+        day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'
+      });
+      if (isLong) {
+        if (lo <= stop)  { if (!bestHit || bestHit === 'stop')  { bestHit = 'stop'; hitTime = ts; } }
+        if (hi >= m1)    { if (!bestHit || bestHit === 'stop' || bestHit === 'm1') { bestHit = 'm1'; hitTime = ts; } }
+        if (hi >= m2)    { if (!bestHit || ['stop','m1','m2'].includes(bestHit))   { bestHit = 'm2'; hitTime = ts; } }
+        if (hi >= m3)    { bestHit = 'm3'; hitTime = ts; }
+      } else {
+        if (hi >= stop)  { if (!bestHit || bestHit === 'stop')  { bestHit = 'stop'; hitTime = ts; } }
+        if (lo <= m1)    { if (!bestHit || bestHit === 'stop' || bestHit === 'm1') { bestHit = 'm1'; hitTime = ts; } }
+        if (lo <= m2)    { if (!bestHit || ['stop','m1','m2'].includes(bestHit))   { bestHit = 'm2'; hitTime = ts; } }
+        if (lo <= m3)    { bestHit = 'm3'; hitTime = ts; }
+      }
+    }
+
+    const currentPrice = candles[candles.length - 1].close;
+    const fp = p => p >= 1000 ? p.toFixed(0) : p >= 1 ? p.toFixed(3) : p.toFixed(5);
+    const pctFromEntry = ((currentPrice - entry) / entry * 100).toFixed(2);
+    const pctSign = pctFromEntry >= 0 ? '+' : '';
+
+    // Monta HTML de status
+    let histHTML = '';
+    const histClass = {
+      stop: 'cs-hit-stop', m1: 'cs-hit-m1', m2: 'cs-hit-m2', m3: 'cs-hit-m3'
+    };
+    const histLabel = {
+      stop: `🛑 Stop atingido em ${hitTime}`,
+      m1:   `🎯 Meta 1 atingida em ${hitTime}`,
+      m2:   `🎯 Meta 2 atingida em ${hitTime}`,
+      m3:   `🏆 Meta 3 atingida em ${hitTime}`,
+    };
+    if (bestHit) {
+      histHTML = `<div class="check-status-line ${histClass[bestHit]}">📊 Histórico: ${histLabel[bestHit]}</div>`;
+    } else if (recent.length === 0) {
+      histHTML = `<div class="check-status-line cs-waiting">📊 Histórico: setup muito recente, sem candles fechados desde o save</div>`;
+    } else {
+      histHTML = `<div class="check-status-line cs-waiting">📊 Histórico: nenhum nível atingido nos ${recent.length} candle(s) desde o save</div>`;
+    }
+
+    // Onde está o preço atual em relação aos níveis
+    let zoneLabel = '';
+    if (isLong) {
+      if (currentPrice >= m3)        zoneLabel = '✅ Acima da Meta 3';
+      else if (currentPrice >= m2)   zoneLabel = '✅ Entre Meta 2 e 3';
+      else if (currentPrice >= m1)   zoneLabel = '🟡 Entre Meta 1 e 2';
+      else if (currentPrice >= entry)zoneLabel = '🟡 Entre Entrada e Meta 1';
+      else if (currentPrice >= stop) zoneLabel = '⚠️ Entre Stop e Entrada';
+      else                           zoneLabel = '🔴 Abaixo do Stop';
+    } else {
+      if (currentPrice <= m3)        zoneLabel = '✅ Abaixo da Meta 3';
+      else if (currentPrice <= m2)   zoneLabel = '✅ Entre Meta 2 e 3';
+      else if (currentPrice <= m1)   zoneLabel = '🟡 Entre Meta 1 e 2';
+      else if (currentPrice <= entry)zoneLabel = '🟡 Entre Entrada e Meta 1';
+      else if (currentPrice <= stop) zoneLabel = '⚠️ Entre Stop e Entrada';
+      else                           zoneLabel = '🔴 Acima do Stop';
+    }
+
+    const currentHTML = `<div class="check-status-line cs-current">💰 Preço atual: $${fp(currentPrice)} (${pctSign}${pctFromEntry}% vs entrada) — ${zoneLabel}</div>`;
+
+    let suggestHTML = '';
+    if (bestHit) {
+      suggestHTML = `<div class="check-suggest">💡 Sugestão: marcar como <strong>${bestHit === 'stop' ? 'Stop' : 'Meta ' + bestHit.toUpperCase().replace('M','')}</strong> abaixo</div>`;
+    }
+
+    statusDiv.innerHTML = histHTML + currentHTML + suggestHTML;
+    btn.textContent = '🔄 Atualizar';
+  } catch(err) {
+    statusDiv.innerHTML = `<div class="check-status-line">⚠ Não foi possível buscar dados: ${err.message}</div>`;
+    btn.textContent = '🔍 Tentar novamente';
+  }
+  btn.disabled = false;
 }
 
 function deleteEntry(id) {
