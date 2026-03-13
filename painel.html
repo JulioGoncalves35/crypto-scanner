@@ -2947,7 +2947,7 @@ async function checkSetupNow(id) {
     if (!candles || !candles.length) throw new Error('Sem dados');
 
     const savedTs = new Date(e.savedAt).getTime();
-    const recent = candles.filter(c => c.time * 1000 >= savedTs);
+    const recent = candles.filter(c => c.time >= savedTs);
 
     const isLong = e.dir === 'buy';
     const entry  = parseFloat(e.entry);
@@ -2962,7 +2962,7 @@ async function checkSetupNow(id) {
 
     for (const c of recent) {
       const hi = c.high, lo = c.low;
-      const ts = new Date(c.time * 1000).toLocaleString('pt-BR', {
+      const ts = new Date(c.time).toLocaleString('pt-BR', {
         day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'
       });
       if (isLong) {
