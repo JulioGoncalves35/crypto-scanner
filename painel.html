@@ -2053,6 +2053,15 @@ async function runRealAnalysis(signal = null) {
     }
   });
 
+  // Deduplicar: manter apenas o melhor setup (maior score) por coin
+  const bestByCoin = {};
+  results.forEach(r => {
+    if (!bestByCoin[r.coin] || r.score > bestByCoin[r.coin].score)
+      bestByCoin[r.coin] = r;
+  });
+  results.length = 0;
+  Object.values(bestByCoin).forEach(r => results.push(r));
+
   // Ordenar por retorno no capital (M3 net) desc
   results.sort((a,b) => parseFloat(b.m3.cap.netPct) - parseFloat(a.m3.cap.netPct));
   addLog(`Concluído — ${results.length} oportunidade(s). Ordenado por retorno no capital.`, 'var(--accent)');
