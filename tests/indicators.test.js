@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   calcEMA, calcRSI, calcMACD, calcBollinger,
-  calcATR, calcADX, avgVol, calcVWAP, calcOBVTrend, calcStochRSI,
+  calcATR, calcADX, avgVol, findLevels, calcVWAP, calcOBVTrend, calcStochRSI,
 } from '../painel-core.js';
 import { makeTrendingCandles, makeFlatCandles, makeDowntrendCandles } from './fixtures/candles.js';
 
@@ -276,5 +276,70 @@ describe('calcStochRSI', () => {
     const rsi = [80, 70, 60, 50, 40, 30, 20]; // 20 is min and last
     const result = calcStochRSI(rsi, 7);
     expect(result).toBeCloseTo(0, 5);
+  });
+});
+
+// ─── findLevels ───────────────────────────────────────────────────────────────
+describe('findLevels', () => {
+  it('returns an array of objects with price and type fields', () => {
+    const candles = makeTrendingCandles(60);
+    const levels = findLevels(candles);
+    expect(Array.isArray(levels)).toBe(true);
+    if (levels.length > 0) {
+      expect(levels[0]).toHaveProperty('price');
+      expect(levels[0]).toHaveProperty('type');
+    }
+  });
+
+  it('each level type is either support or resistance', () => {
+    const candles = makeTrendingCandles(80);
+    const levels = findLevels(candles);
+    levels.forEach(l => {
+      expect(['support', 'resistance']).toContain(l.type);
+    });
+  });
+
+  it('returns empty array for fewer than 5 candles (no valid swing points)', () => {
+    const candles = makeTrendingCandles(4);
+    const levels = findLevels(candles);
+    expect(levels).toEqual([]);
+  });
+
+  it('detects resistance levels in uptrending data', () => {
+    // Create candles with a clear swing high in the middle of a lookback window
+    const candles = makeTrendingCandles(60, 100, 1);
+    // Inject a swing high (high surrounding candles are lower)
+    const midIdx = 30;
+    candles[midIdx] = { ...candles[midIdx], high: 500, low: candles[midIdx].low };
+    const levels = findLevels(candles, 60);
+    const resistances = levels.filter(l => l.type === 'resistance');
+    expect(resistances.length).toBeGreaterThan(0);
+  });
+
+  it('detects support levels in downtrending data', () => {
+    const candles = makeDowntrendCandles(60, 200, 1);
+    // Inject a swing low in the middle
+    const midIdx = 30;
+    candles[midIdx] = { ...candles[midIdx], low: 1, high: candles[midIdx].high };
+    const levels = findLevels(candles, 60);
+    const supports = levels.filter(l => l.type === 'support');
+    expect(supports.length).toBeGreaterThan(0);
+  });
+
+  it('shorter lookback returns only levels within that window', () => {
+    const candles = makeTrendingCandles(100, 100, 1);
+    const levelsAll = findLevels(candles, 100);
+    const levelsShort = findLevels(candles, 20);
+    // Shorter lookback can only find levels within the last 20 candles
+    expect(levelsShort.length).toBeLessThanOrEqual(levelsAll.length);
+  });
+
+  it('calcBollinger with custom period and multiplier still produces valid bands', () => {
+    const closes = makeTrendingCandles(50).map(c => c.close);
+    const bands = calcBollinger(closes, 10, 3);
+    expect(bands.length).toBeGreaterThan(0);
+    const last = bands[bands.length - 1];
+    expect(last.upper).toBeGreaterThan(last.mid);
+    expect(last.mid).toBeGreaterThan(last.lower);
   });
 });

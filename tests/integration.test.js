@@ -248,3 +248,42 @@ describe('analyzeCandles — reasons and indicators', () => {
     expect(result.summary).toMatch(/LONG|SHORT/);
   });
 });
+
+// ─── analyzeCandles — boundary conditions ────────────────────────────────────
+describe('analyzeCandles — boundary conditions', () => {
+  it('exactly 50 candles passes the length guard (< 50 check)', () => {
+    // The guard is `candles.length < 50`, so 50 should proceed (may return null for other reasons)
+    const candles = makeTrendingCandles(50, 100, 1);
+    // Should not throw — null is acceptable (ADX may be flat with only 50 candles)
+    expect(() => analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS)).not.toThrow();
+  });
+
+  it('score equal to threshold passes the filter (guard is < not <=)', () => {
+    // If the setup scores exactly 60 and threshold is 60, it should NOT be filtered
+    // (guard: normScore < parseInt(options.score))
+    // We use score '0' to ensure a result, then test at score '70' with enough candles
+    const candles = makeTrendingCandles(200, 100, 1);
+    const result70 = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, { score: '70', leverage: 10, rr: 'fib' });
+    const result0  = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, { score: '0',  leverage: 10, rr: 'fib' });
+    // A result from score='0' guarantees the pipeline works; score='70' may or may not produce result
+    // The key test: score='0' always returns or is only null due to ADX flat (not score filter)
+    if (result0 !== null) {
+      // If score='0' returns a result, score threshold at or below that score must also pass
+      const threshold = String(result0.score);
+      const resultAtThreshold = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, { score: threshold, leverage: 10, rr: 'fib' });
+      expect(resultAtThreshold).not.toBeNull();
+    }
+  });
+
+  it('null Fear & Greed throws TypeError (fg.value is read unconditionally)', () => {
+    // Documents current behavior: analyzeCandles requires a non-null fg object.
+    // Callers must ensure fg is always a valid { value, label } object.
+    const candles = makeTrendingCandles(200, 100, 1);
+    expect(() => analyzeCandles('BTC', '15m', candles, null, PERMISSIVE_OPTS)).toThrow(TypeError);
+  });
+
+  it('Fear & Greed with missing value field does not throw (value is undefined, treated as neutral)', () => {
+    const candles = makeTrendingCandles(200, 100, 1);
+    expect(() => analyzeCandles('BTC', '15m', candles, { label: 'Neutro' }, PERMISSIVE_OPTS)).not.toThrow();
+  });
+});

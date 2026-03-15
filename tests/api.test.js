@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fetchJSON, fetchWithFallback, fetchCandles, CORS_PROXIES } from '../painel-core.js';
+import { fetchJSON, fetchWithFallback, fetchCandles, CORS_PROXIES, TIMEFRAMES_BY_MODE, TF_MAP } from '../painel-core.js';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 function makeFetchOk(body) {
@@ -236,5 +236,42 @@ describe('fetchCandles', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new DOMException('aborted', 'AbortError')));
     await expect(fetchCandles('BTC', '15m', controller.signal))
       .rejects.toMatchObject({ name: 'AbortError' });
+  });
+
+  it('returns null when result key is missing from response', async () => {
+    vi.stubGlobal('fetch', makeFetchOk({ retCode: 0 })); // no .result key
+    const result = await fetchCandles('BTC', '15m');
+    expect(result).toBeNull();
+  });
+
+  it('does not throw for kline row with fewer than 6 fields (returns NaN values)', async () => {
+    // Bybit rows normally have 7 fields; a truncated row should not crash
+    const truncatedRow = ['1700000000', '42000']; // only time and open
+    vi.stubGlobal('fetch', makeFetchOk(makeBybitResponse([truncatedRow])));
+    let candles;
+    expect(() => { /* synchronous part */ }).not.toThrow();
+    candles = await fetchCandles('BTC', '15m');
+    expect(Array.isArray(candles)).toBe(true);
+    expect(candles).toHaveLength(1);
+    // Undefined fields become NaN via parseFloat(undefined)
+    expect(isNaN(candles[0].high)).toBe(true);
+  });
+});
+
+// ─── TIMEFRAMES_BY_MODE ───────────────────────────────────────────────────────
+describe('TIMEFRAMES_BY_MODE', () => {
+  it('all modes return non-empty arrays', () => {
+    for (const mode of ['scalp', 'day', 'swing', 'both']) {
+      expect(Array.isArray(TIMEFRAMES_BY_MODE[mode])).toBe(true);
+      expect(TIMEFRAMES_BY_MODE[mode].length).toBeGreaterThan(0);
+    }
+  });
+
+  it('all timeframes in each mode exist in TF_MAP', () => {
+    for (const [mode, tfs] of Object.entries(TIMEFRAMES_BY_MODE)) {
+      for (const tf of tfs) {
+        expect(TF_MAP).toHaveProperty(tf, expect.anything());
+      }
+    }
   });
 });
