@@ -155,12 +155,12 @@ describe('fetchCandles', () => {
     expect(url).toContain('BTCUSDT');
   });
 
-  it('does not double-append USDT for symbols already ending in USDT', async () => {
+  it('strips trailing USDT before appending — prevents BTCUSDTUSDT for custom coins', async () => {
     vi.stubGlobal('fetch', makeFetchOk(makeBybitResponse([makeKlineRow(0)])));
-    // fetchCandles appends USDT always — symbol should be passed without USDT
-    // The function always does symbol + 'USDT', so we test that BTC → BTCUSDT
-    await fetchCandles('BTC', '15m');
+    // If a user enters "BTCUSDT" as a custom coin, the URL must be BTCUSDT (not BTCUSDTUSDT)
+    await fetchCandles('BTCUSDT', '15m');
     const url = globalThis.fetch.mock.calls[0][0];
+    expect(url).toContain('BTCUSDT');
     expect(url).not.toContain('BTCUSDTUSDT');
   });
 
