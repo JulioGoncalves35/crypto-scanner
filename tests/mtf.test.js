@@ -51,28 +51,28 @@ describe('applyMTFScoring — confluence bonus', () => {
     expect(result[0].mtfConfluence).toBeNull();
   });
 
-  it('2 TFs same direction → +12 bonus (Math.min(12, 2*6))', () => {
+  it('2 TFs same direction → +6 bonus (Math.min(18, (2-1)*6))', () => {
     const setups = [
       makeSetup({ coin: 'BTC', dir: 'buy', score: 60, timeframe: '15m' }),
       makeSetup({ coin: 'BTC', dir: 'buy', score: 65, timeframe: '1h' }),
     ];
     const result = applyMTFScoring(setups);
-    // Deduplication keeps only the best; best score is 65 → 65+12=77
-    expect(result[0].score).toBe(77);
+    // Best score is 65 → 65+6=71
+    expect(result[0].score).toBe(71);
   });
 
-  it('3 TFs same direction → +12 bonus each (capped at 12)', () => {
+  it('3 TFs same direction → +12 bonus (Math.min(18, (3-1)*6))', () => {
     const setups = [
       makeSetup({ coin: 'ETH', dir: 'buy', score: 60, timeframe: '5m' }),
       makeSetup({ coin: 'ETH', dir: 'buy', score: 65, timeframe: '15m' }),
       makeSetup({ coin: 'ETH', dir: 'buy', score: 70, timeframe: '1h' }),
     ];
     const result = applyMTFScoring(setups);
-    // 3 * 6 = 18 but capped at 12, best score = 70+12=82
+    // (3-1)*6=12, best score = 70+12=82
     expect(result[0].score).toBe(82);
   });
 
-  it('4+ TFs same direction still caps bonus at 12', () => {
+  it('4+ TFs same direction caps bonus at 18 (Math.min(18, (4-1)*6))', () => {
     const setups = [
       makeSetup({ coin: 'SOL', dir: 'sell', score: 60, timeframe: '5m' }),
       makeSetup({ coin: 'SOL', dir: 'sell', score: 60, timeframe: '15m' }),
@@ -80,8 +80,8 @@ describe('applyMTFScoring — confluence bonus', () => {
       makeSetup({ coin: 'SOL', dir: 'sell', score: 60, timeframe: '4h' }),
     ];
     const result = applyMTFScoring(setups);
-    // 4 TFs → Math.min(12, 4*6)=12
-    expect(result[0].score).toBe(72);
+    // 4 TFs → Math.min(18, (4-1)*6)=18 → 60+18=78
+    expect(result[0].score).toBe(78);
   });
 
   it('score is capped at 100 after bonus', () => {
@@ -181,8 +181,8 @@ describe('applyMTFScoring — conflict penalty', () => {
     ];
     applyMTFScoring(setups);
     // buy/15m should NOT be penalized — same direction as buy/1h
-    // 2 TFs same direction → Math.min(12, 2*6) = +12 bonus
-    expect(setups[0].score).toBe(72); // 60 + 12 bonus
+    // 2 TFs same direction → Math.min(18, (2-1)*6) = +6 bonus
+    expect(setups[0].score).toBe(66); // 60 + 6 bonus
   });
 });
 
@@ -205,9 +205,9 @@ describe('applyMTFScoring — deduplication', () => {
       makeSetup({ coin: 'BTC', dir: 'buy', score: 70, timeframe: '1h' }),
     ];
     const result = applyMTFScoring(setups);
-    // Both get +12 (2 TFs, Math.min(12,2*6)=12), so 1h setup (70+12=82) wins over 15m (60+12=72)
+    // Both get +6 (2 TFs, Math.min(18,(2-1)*6)=6), so 1h setup (70+6=76) wins over 15m (60+6=66)
     expect(result[0].timeframe).toBe('1h');
-    expect(result[0].score).toBe(82);
+    expect(result[0].score).toBe(76);
   });
 
   it('different coins are not deduplicated together', () => {

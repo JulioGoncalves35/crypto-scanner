@@ -689,7 +689,8 @@ async function fetchWithFallback(url, signal = null) {
 }
 
 async function fetchCandles(symbol, tf, signal = null) {
-  const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${symbol}USDT&interval=${TF_MAP[tf]}&limit=400`;
+  const sym = symbol.replace(/USDT$/i, '');
+  const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${sym}USDT&interval=${TF_MAP[tf]}&limit=400`;
   const j = await fetchWithFallback(url, signal);
   if (!j || j.retCode !== 0 || !j.result?.list?.length) return null;
   return j.result.list.reverse().map(c => ({
@@ -881,8 +882,9 @@ function analyzeCandles(coin, tf, candles, fg, options = { score: '0', leverage:
 
   if (ind.adx !== null && ind.adx < 18) return null;
 
+  const safeFg = fg ?? { value: 50, label: 'Neutro' };
   const { score: rawScore, reasons, indicators, mxUp, mxDown, mAbove,
-    emaCross, mktStruct, triangle, dblPattern } = _computeScore(price, ind, fg);
+    emaCross, mktStruct, triangle, dblPattern } = _computeScore(price, ind, safeFg);
 
   const dir       = rawScore >= 0 ? 'buy' : 'sell';
   const normScore = Math.min(100, Math.round(Math.abs(rawScore)));
@@ -979,7 +981,7 @@ function applyMTFScoring(results) {
     // Confluence bonus for 2+ TFs in same direction
     if (buySetups.length >= 2) {
       const tfs = buySetups.map(s => s.timeframe);
-      const bonus = Math.min(12, buySetups.length * 6);
+      const bonus = Math.min(18, (buySetups.length - 1) * 6);
       buySetups.forEach(s => {
         s.score = Math.min(100, s.score + bonus);
         s.mtfConfluence = { dir:'buy', count:buySetups.length, tfs };
@@ -989,7 +991,7 @@ function applyMTFScoring(results) {
     }
     if (sellSetups.length >= 2) {
       const tfs = sellSetups.map(s => s.timeframe);
-      const bonus = Math.min(12, sellSetups.length * 6);
+      const bonus = Math.min(18, (sellSetups.length - 1) * 6);
       sellSetups.forEach(s => {
         s.score = Math.min(100, s.score + bonus);
         s.mtfConfluence = { dir:'sell', count:sellSetups.length, tfs };

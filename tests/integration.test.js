@@ -275,11 +275,10 @@ describe('analyzeCandles — boundary conditions', () => {
     }
   });
 
-  it('null Fear & Greed throws TypeError (fg.value is read unconditionally)', () => {
-    // Documents current behavior: analyzeCandles requires a non-null fg object.
-    // Callers must ensure fg is always a valid { value, label } object.
+  it('null Fear & Greed does not throw (defaults to neutral fg internally)', () => {
+    // analyzeCandles now guards: const safeFg = fg ?? { value: 50, label: 'Neutro' }
     const candles = makeTrendingCandles(200, 100, 1);
-    expect(() => analyzeCandles('BTC', '15m', candles, null, PERMISSIVE_OPTS)).toThrow(TypeError);
+    expect(() => analyzeCandles('BTC', '15m', candles, null, PERMISSIVE_OPTS)).not.toThrow();
   });
 
   it('Fear & Greed with missing value field does not throw (value is undefined, treated as neutral)', () => {
