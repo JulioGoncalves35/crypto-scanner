@@ -1804,15 +1804,18 @@ function analyzeCandles(coin, tf, candles, fg) {
   if (normScore < parseInt(state.score)) return null;
 
   // Stop Loss
+  const MIN_STOP_PCT = 0.015; // piso mínimo de 1.5% — evita stops apertados em tokens voláteis
   let entry, stop;
   if (dir === 'buy') {
     const sups = levels.filter(l=>l.type==='support'&&l.price<price).sort((a,b)=>b.price-a.price);
     entry = price;
     stop  = Math.min(sups.length ? sups[0].price : price-atr*1.5, price-atr*1.2);
+    if ((price - stop) < price * MIN_STOP_PCT) stop = price - price * MIN_STOP_PCT;
   } else {
     const ress = levels.filter(l=>l.type==='resistance'&&l.price>price).sort((a,b)=>a.price-b.price);
     entry = price;
     stop  = Math.max(ress.length ? ress[0].price : price+atr*1.5, price+atr*1.2);
+    if ((stop - price) < price * MIN_STOP_PCT) stop = price + price * MIN_STOP_PCT;
   }
 
   // Preço de liquidação — verificar se stop tem margem segura de execução
