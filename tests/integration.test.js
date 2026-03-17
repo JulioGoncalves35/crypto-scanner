@@ -9,16 +9,16 @@ const PERMISSIVE_OPTS = { score: '0', leverage: 10, rr: 'fib' };
 // ─── analyzeCandles — null conditions ────────────────────────────────────────
 describe('analyzeCandles — null conditions', () => {
   it('returns null for null input', () => {
-    expect(analyzeCandles('BTC', '15m', null, NEUTRAL_FG, PERMISSIVE_OPTS)).toBeNull();
+    expect(analyzeCandles('BTC', '15m', null, NEUTRAL_FG, null, null, PERMISSIVE_OPTS)).toBeNull();
   });
 
   it('returns null for empty array', () => {
-    expect(analyzeCandles('BTC', '15m', [], NEUTRAL_FG, PERMISSIVE_OPTS)).toBeNull();
+    expect(analyzeCandles('BTC', '15m', [], NEUTRAL_FG, null, null, PERMISSIVE_OPTS)).toBeNull();
   });
 
   it('returns null for < 50 candles', () => {
     const candles = makeTrendingCandles(30);
-    expect(analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS)).toBeNull();
+    expect(analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS)).toBeNull();
   });
 
   it('returns null for flat market (ADX < 18)', () => {
@@ -26,7 +26,7 @@ describe('analyzeCandles — null conditions', () => {
     const candles = Array.from({ length: 120 }, (_, i) => ({
       time: i, open: 100, high: 100.001, low: 99.999, close: 100, volume: 1000,
     }));
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     expect(result).toBeNull();
   });
 
@@ -35,7 +35,7 @@ describe('analyzeCandles — null conditions', () => {
     const opts = { score: '100', leverage: 10, rr: 'fib' };
     const candles = makeTrendingCandles(200, 100, 1);
     // Most real scans won't score exactly 100
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, opts);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, opts);
     // This may or may not be null depending on the exact score; just verify it doesn't throw
     expect(result === null || typeof result === 'object').toBe(true);
   });
@@ -46,7 +46,7 @@ describe('analyzeCandles — return structure', () => {
   // Use a strong uptrend with enough candles to pass all filters
   function getResult(overrides = {}) {
     const candles = makeTrendingCandles(200, 100, 1);
-    return analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, { ...PERMISSIVE_OPTS, ...overrides });
+    return analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, { ...PERMISSIVE_OPTS, ...overrides });
   }
 
   it('returns an object with all required top-level fields', () => {
@@ -91,14 +91,14 @@ describe('analyzeCandles — return structure', () => {
 describe('analyzeCandles — buy setup geometry', () => {
   it('buy setup: stop is below entry', () => {
     const candles = makeTrendingCandles(200, 100, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result || result.dir !== 'buy') return;
     expect(result.stop).toBeLessThan(result.entry);
   });
 
   it('buy setup: m1 < m2 < m3 (targets in ascending order)', () => {
     const candles = makeTrendingCandles(200, 100, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result || result.dir !== 'buy') return;
     expect(result.m1.price).toBeLessThan(result.m2.price);
     expect(result.m2.price).toBeLessThan(result.m3.price);
@@ -106,7 +106,7 @@ describe('analyzeCandles — buy setup geometry', () => {
 
   it('buy setup: all targets above entry', () => {
     const candles = makeTrendingCandles(200, 100, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result || result.dir !== 'buy') return;
     expect(result.m1.price).toBeGreaterThan(result.entry);
     expect(result.m2.price).toBeGreaterThan(result.entry);
@@ -115,7 +115,7 @@ describe('analyzeCandles — buy setup geometry', () => {
 
   it('buy setup: liqPrice is below entry', () => {
     const candles = makeTrendingCandles(200, 100, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result || result.dir !== 'buy') return;
     expect(result.liqPrice).toBeLessThan(result.entry);
   });
@@ -125,14 +125,14 @@ describe('analyzeCandles — buy setup geometry', () => {
 describe('analyzeCandles — sell setup geometry', () => {
   it('sell setup: stop is above entry', () => {
     const candles = makeDowntrendCandles(200, 200, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result || result.dir !== 'sell') return;
     expect(result.stop).toBeGreaterThan(result.entry);
   });
 
   it('sell setup: m1 > m2 > m3 (targets in descending order)', () => {
     const candles = makeDowntrendCandles(200, 200, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result || result.dir !== 'sell') return;
     expect(result.m1.price).toBeGreaterThan(result.m2.price);
     expect(result.m2.price).toBeGreaterThan(result.m3.price);
@@ -140,7 +140,7 @@ describe('analyzeCandles — sell setup geometry', () => {
 
   it('sell setup: all targets below entry', () => {
     const candles = makeDowntrendCandles(200, 200, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result || result.dir !== 'sell') return;
     expect(result.m1.price).toBeLessThan(result.entry);
     expect(result.m2.price).toBeLessThan(result.entry);
@@ -149,7 +149,7 @@ describe('analyzeCandles — sell setup geometry', () => {
 
   it('sell setup: liqPrice is above entry', () => {
     const candles = makeDowntrendCandles(200, 200, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result || result.dir !== 'sell') return;
     expect(result.liqPrice).toBeGreaterThan(result.entry);
   });
@@ -159,7 +159,7 @@ describe('analyzeCandles — sell setup geometry', () => {
 describe('analyzeCandles — stop adjustment for liquidation', () => {
   it('stopAdjusted is boolean', () => {
     const candles = makeTrendingCandles(200, 100, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result) return;
     expect(typeof result.stopAdjusted).toBe('boolean');
   });
@@ -176,7 +176,7 @@ describe('analyzeCandles — stop adjustment for liquidation', () => {
 describe('analyzeCandles — minimum stop distance (1.5%)', () => {
   it('buy stop is always at least 1.5% below entry', () => {
     const candles = makeTrendingCandles(200, 100, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result || result.dir !== 'buy') return;
     const stopDistPct = (result.entry - result.stop) / result.entry;
     expect(stopDistPct).toBeGreaterThanOrEqual(0.015 - 1e-9);
@@ -184,7 +184,7 @@ describe('analyzeCandles — minimum stop distance (1.5%)', () => {
 
   it('sell stop is always at least 1.5% above entry', () => {
     const candles = makeDowntrendCandles(200, 200, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result || result.dir !== 'sell') return;
     const stopDistPct = (result.stop - result.entry) / result.entry;
     expect(stopDistPct).toBeGreaterThanOrEqual(0.015 - 1e-9);
@@ -195,7 +195,7 @@ describe('analyzeCandles — minimum stop distance (1.5%)', () => {
 describe('analyzeCandles — proportional liquidation buffer', () => {
   it('buy stop is above liqPrice with meaningful buffer (>= 50% of entry-liq distance)', () => {
     const candles = makeTrendingCandles(200, 100, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result || result.dir !== 'buy') return;
     const liq  = calcLiqPrice(result.entry, 'buy', result.leverage);
     const dist = result.entry - liq;
@@ -205,7 +205,7 @@ describe('analyzeCandles — proportional liquidation buffer', () => {
 
   it('sell stop is below liqPrice with meaningful buffer (>= 50% of entry-liq distance)', () => {
     const candles = makeDowntrendCandles(200, 200, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result || result.dir !== 'sell') return;
     const liq  = calcLiqPrice(result.entry, 'sell', result.leverage);
     const dist = liq - result.entry;
@@ -218,7 +218,7 @@ describe('analyzeCandles — proportional liquidation buffer', () => {
 describe('analyzeCandles — financial output', () => {
   it('m1.cap, m2.cap, m3.cap have netPct, grossPct, feePct, isProfit fields', () => {
     const candles = makeTrendingCandles(200, 100, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result) return;
     ['m1','m2','m3'].forEach(m => {
       expect(result[m].cap).toHaveProperty('netPct');
@@ -230,7 +230,7 @@ describe('analyzeCandles — financial output', () => {
 
   it('m3.cap.isProfit is true (target far enough to cover fees)', () => {
     const candles = makeTrendingCandles(200, 100, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result) return;
     // M3 is ~4x risk — should always be profitable
     expect(result.m3.cap.isProfit).toBe(true);
@@ -239,7 +239,7 @@ describe('analyzeCandles — financial output', () => {
   it('leverage is passed through to result', () => {
     const candles = makeTrendingCandles(200, 100, 1);
     const opts = { score: '0', leverage: 20, rr: 'fib' };
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, opts);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, opts);
     if (!result) return;
     expect(result.leverage).toBe(20);
   });
@@ -247,7 +247,7 @@ describe('analyzeCandles — financial output', () => {
   it('feePctCap = ROUND_TRIP_FEE * lev * 100', () => {
     const candles = makeTrendingCandles(200, 100, 1);
     const opts = { score: '0', leverage: 10, rr: 'fib' };
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, opts);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, opts);
     if (!result) return;
     // ROUND_TRIP_FEE = 0.0011, lev=10 → feePctCap = "1.10"
     expect(result.feePctCap).toBe('1.10');
@@ -258,14 +258,14 @@ describe('analyzeCandles — financial output', () => {
 describe('analyzeCandles — reasons and indicators', () => {
   it('reasons array is non-empty', () => {
     const candles = makeTrendingCandles(200, 100, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result) return;
     expect(result.reasons.length).toBeGreaterThan(0);
   });
 
   it('each reason has text and type fields', () => {
     const candles = makeTrendingCandles(200, 100, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result) return;
     result.reasons.forEach(r => {
       expect(r).toHaveProperty('text');
@@ -276,7 +276,7 @@ describe('analyzeCandles — reasons and indicators', () => {
 
   it('summary is a non-empty string', () => {
     const candles = makeTrendingCandles(200, 100, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result) return;
     expect(typeof result.summary).toBe('string');
     expect(result.summary.length).toBeGreaterThan(20);
@@ -284,7 +284,7 @@ describe('analyzeCandles — reasons and indicators', () => {
 
   it('summary contains coin name and direction', () => {
     const candles = makeTrendingCandles(200, 100, 1);
-    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS);
     if (!result) return;
     expect(result.summary).toContain('BTC');
     expect(result.summary).toMatch(/LONG|SHORT/);
@@ -297,7 +297,7 @@ describe('analyzeCandles — boundary conditions', () => {
     // The guard is `candles.length < 50`, so 50 should proceed (may return null for other reasons)
     const candles = makeTrendingCandles(50, 100, 1);
     // Should not throw — null is acceptable (ADX may be flat with only 50 candles)
-    expect(() => analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS)).not.toThrow();
+    expect(() => analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, PERMISSIVE_OPTS)).not.toThrow();
   });
 
   it('score equal to threshold passes the filter (guard is < not <=)', () => {
@@ -305,14 +305,14 @@ describe('analyzeCandles — boundary conditions', () => {
     // (guard: normScore < parseInt(options.score))
     // We use score '0' to ensure a result, then test at score '70' with enough candles
     const candles = makeTrendingCandles(200, 100, 1);
-    const result70 = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, { score: '70', leverage: 10, rr: 'fib' });
-    const result0  = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, { score: '0',  leverage: 10, rr: 'fib' });
+    const result70 = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, { score: '70', leverage: 10, rr: 'fib' });
+    const result0  = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, { score: '0',  leverage: 10, rr: 'fib' });
     // A result from score='0' guarantees the pipeline works; score='70' may or may not produce result
     // The key test: score='0' always returns or is only null due to ADX flat (not score filter)
     if (result0 !== null) {
       // If score='0' returns a result, score threshold at or below that score must also pass
       const threshold = String(result0.score);
-      const resultAtThreshold = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, { score: threshold, leverage: 10, rr: 'fib' });
+      const resultAtThreshold = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, null, null, { score: threshold, leverage: 10, rr: 'fib' });
       expect(resultAtThreshold).not.toBeNull();
     }
   });
@@ -320,11 +320,11 @@ describe('analyzeCandles — boundary conditions', () => {
   it('null Fear & Greed does not throw (defaults to neutral fg internally)', () => {
     // analyzeCandles now guards: const safeFg = fg ?? { value: 50, label: 'Neutro' }
     const candles = makeTrendingCandles(200, 100, 1);
-    expect(() => analyzeCandles('BTC', '15m', candles, null, PERMISSIVE_OPTS)).not.toThrow();
+    expect(() => analyzeCandles('BTC', '15m', candles, null, null, null, PERMISSIVE_OPTS)).not.toThrow();
   });
 
   it('Fear & Greed with missing value field does not throw (value is undefined, treated as neutral)', () => {
     const candles = makeTrendingCandles(200, 100, 1);
-    expect(() => analyzeCandles('BTC', '15m', candles, { label: 'Neutro' }, PERMISSIVE_OPTS)).not.toThrow();
+    expect(() => analyzeCandles('BTC', '15m', candles, { label: 'Neutro' }, null, null, PERMISSIVE_OPTS)).not.toThrow();
   });
 });

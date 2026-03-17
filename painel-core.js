@@ -750,7 +750,7 @@ function _calcTechIndicators(candles, closes) {
     patterns, divergences, adx, emaCross, mktStruct, triangle, dblPattern };
 }
 
-function _computeScore(price, ind, fg) {
+function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) {
   const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
     ema9, ema21, ema200, bb, vwap, obvTrend, volRatio, patterns, divergences, adx,
     emaCross, mktStruct, triangle, dblPattern } = ind;
@@ -824,6 +824,52 @@ function _computeScore(price, ind, fg) {
     indicators.push({name:'ADX (14)',reading:`${adx.toFixed(1)} — ${adx>25?'Tendência forte':adx<20?'Mercado lateral':'Tendência moderada'}`,color:adxColor});
   }
 
+  // Funding Rate
+  if (fundingRate !== null) {
+    const frPct = (fundingRate * 100).toFixed(4);
+    if (fundingRate <= -0.0005) {
+      score += 12;
+      reasons.push({ text: `Funding ${frPct}% — Shorts sobrecarregados (pressao de alta)`, type: 'positive' });
+    } else if (fundingRate <= -0.0001) {
+      score += 6;
+      reasons.push({ text: `Funding ${frPct}% — Leve pressao altista`, type: 'positive' });
+    } else if (fundingRate >= 0.0005) {
+      score -= 12;
+      reasons.push({ text: `Funding ${frPct}% — Longs sobrecarregados (pressao de baixa)`, type: 'negative' });
+    } else if (fundingRate >= 0.0001) {
+      score -= 6;
+      reasons.push({ text: `Funding ${frPct}% — Leve pressao baixista`, type: 'negative' });
+    } else {
+      reasons.push({ text: `Funding ${frPct}% — Neutro`, type: 'neutral' });
+    }
+    indicators.push({
+      name: 'Funding Rate',
+      reading: `${frPct}%`,
+      color: fundingRate <= -0.0001 ? 'var(--accent)' : fundingRate >= 0.0001 ? 'var(--danger)' : 'var(--muted)'
+    });
+  }
+
+  // Open Interest
+  if (openInterest !== null) {
+    const oiChg = openInterest.change24h;
+    const oiStr = `${oiChg >= 0 ? '+' : ''}${oiChg.toFixed(1)}% (24h)`;
+    if (oiChg > 5) {
+      score += (score >= 0 ? 8 : -8);
+      const tipo = score >= 0 ? 'Capital novo entrando (confirma long)' : 'Capital novo no short (confirma)';
+      reasons.push({ text: `OI ${oiStr} — ${tipo}`, type: score >= 0 ? 'positive' : 'negative' });
+    } else if (oiChg < -5) {
+      score -= 6;
+      reasons.push({ text: `OI ${oiStr} — Fechamento de posicoes, fraqueza`, type: 'negative' });
+    } else {
+      reasons.push({ text: `OI ${oiStr} — Estavel`, type: 'neutral' });
+    }
+    indicators.push({
+      name: 'Open Interest (24h)',
+      reading: oiStr,
+      color: oiChg > 5 ? 'var(--accent)' : oiChg < -5 ? 'var(--danger)' : 'var(--muted)'
+    });
+  }
+
   if      (fg.value < 25) { score += 10; reasons.push({text:`F&G ${fg.value} — Medo Extremo`,type:'positive'}); }
   else if (fg.value > 75) { score -= 10; reasons.push({text:`F&G ${fg.value} — Ganância Extrema`,type:'negative'}); }
   else                    { reasons.push({text:`F&G ${fg.value} — ${fg.label}`,type:'neutral'}); }
@@ -873,7 +919,7 @@ function _computeScore(price, ind, fg) {
  * @param {{value:number, label:string}} fg - Fear & Greed index
  * @param {{score: string, leverage: number, rr: string}} options - state overrides
  */
-function analyzeCandles(coin, tf, candles, fg, options = { score: '0', leverage: 10, rr: 'fib' }) {
+function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest = null, options = { score: '0', leverage: 10, rr: 'fib' }) {
   if (!candles || candles.length < 50) return null;
   const closes = candles.map(c => c.close);
 
@@ -884,7 +930,7 @@ function analyzeCandles(coin, tf, candles, fg, options = { score: '0', leverage:
 
   const safeFg = fg ?? { value: 50, label: 'Neutro' };
   const { score: rawScore, reasons, indicators, mxUp, mxDown, mAbove,
-    emaCross, mktStruct, triangle, dblPattern } = _computeScore(price, ind, safeFg);
+    emaCross, mktStruct, triangle, dblPattern } = _computeScore(price, ind, safeFg, fundingRate, openInterest);
 
   const dir       = rawScore >= 0 ? 'buy' : 'sell';
   const normScore = Math.min(100, Math.round(Math.abs(rawScore)));
@@ -959,6 +1005,8 @@ function analyzeCandles(coin, tf, candles, fg, options = { score: '0', leverage:
     vwap, obvTrend, stochRSI,
     candles,
     mtfConfluence: null,
+    fundingRate,
+    openInterest,
   };
 }
 

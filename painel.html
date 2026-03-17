@@ -525,6 +525,7 @@ main { padding: 20px 14px 60px; }
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="switchTab('scanner', this)">Scanner</button>
     <button class="nav-tab" onclick="switchTab('journal', this)" id="journalTab">Diário <span class="tab-count" id="journalCount">0</span></button>
+    <button class="nav-tab" onclick="switchTab('history', this)" id="historyTab">HISTORICO <span class="tab-count" id="histCount">0</span></button>
   </div>
   <div class="header-status">
     <div class="dot"></div>
@@ -635,6 +636,7 @@ main { padding: 20px 14px 60px; }
 </div><!-- /config-group coins -->
 
 <button class="scan-btn" id="scanBtn" onclick="startScan()">▶ &nbsp; INICIAR SCAN</button>
+<button id="notifBtn" onclick="toggleNotifications()" style="font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:6px 14px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;border-radius:6px;transition:all 0.15s;text-transform:uppercase">&#128276; ALERTAS OFF</button>
 
   </div>
 
@@ -693,6 +695,20 @@ main { padding: 20px 14px 60px; }
   </div>
   <div id="journalList"></div>
 </div><!-- /section-journal -->
+
+<!-- ══════════════════ HISTORICO ══════════════════ -->
+
+<div class="page-section" id="section-history">
+  <div class="page-title-j">
+    <h1>Historico de <em>Scans</em></h1>
+    <p>// Ultimos scans executados — top 5 setups por sessao</p>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <h2 style="font-family:var(--sans);font-size:18px;font-weight:700">Historico de Scans</h2>
+    <button onclick="clearHistory()" style="font-family:var(--mono);font-size:10px;padding:6px 12px;background:transparent;border:1px solid var(--danger);color:var(--danger);cursor:pointer;border-radius:6px;letter-spacing:1px">LIMPAR</button>
+  </div>
+  <div id="historyList"></div>
+</div><!-- /section-history -->
 
 </main>
 
@@ -842,6 +858,8 @@ function deselectAllCoins() {
 document.addEventListener('DOMContentLoaded', () => {
   const inp = document.getElementById('customCoinInput');
   if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') addCustomCoin(); });
+
+  updateHistoryCount();
 
   // ── Carregar preços BTC/ETH e Fear & Greed ao abrir a página ──
   loadMarketBar();
@@ -1649,7 +1667,7 @@ function _calcTechIndicators(candles, closes) {
 }
 
 // Fase 2: calcular score e razões com base nos indicadores
-function _computeScore(price, ind, fg) {
+function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) {
   const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
     ema9, ema21, ema200, bb, vwap, obvTrend, volRatio, patterns, divergences, adx,
     emaCross, mktStruct, triangle, dblPattern } = ind;
@@ -1732,6 +1750,52 @@ function _computeScore(price, ind, fg) {
     indicators.push({name:'ADX (14)',reading:`${adx.toFixed(1)} — ${adx>25?'Tendência forte':adx<20?'Mercado lateral':'Tendência moderada'}`,color:adxColor});
   }
 
+  // Funding Rate
+  if (fundingRate !== null) {
+    const frPct = (fundingRate * 100).toFixed(4);
+    if (fundingRate <= -0.0005) {
+      score += 12;
+      reasons.push({ text: `Funding ${frPct}% — Shorts sobrecarregados (pressao de alta)`, type: 'positive' });
+    } else if (fundingRate <= -0.0001) {
+      score += 6;
+      reasons.push({ text: `Funding ${frPct}% — Leve pressao altista`, type: 'positive' });
+    } else if (fundingRate >= 0.0005) {
+      score -= 12;
+      reasons.push({ text: `Funding ${frPct}% — Longs sobrecarregados (pressao de baixa)`, type: 'negative' });
+    } else if (fundingRate >= 0.0001) {
+      score -= 6;
+      reasons.push({ text: `Funding ${frPct}% — Leve pressao baixista`, type: 'negative' });
+    } else {
+      reasons.push({ text: `Funding ${frPct}% — Neutro`, type: 'neutral' });
+    }
+    indicators.push({
+      name: 'Funding Rate',
+      reading: `${frPct}%`,
+      color: fundingRate <= -0.0001 ? 'var(--accent)' : fundingRate >= 0.0001 ? 'var(--danger)' : 'var(--muted)'
+    });
+  }
+
+  // Open Interest
+  if (openInterest !== null) {
+    const oiChg = openInterest.change24h;
+    const oiStr = `${oiChg >= 0 ? '+' : ''}${oiChg.toFixed(1)}% (24h)`;
+    if (oiChg > 5) {
+      score += (score >= 0 ? 8 : -8);
+      const tipo = score >= 0 ? 'Capital novo entrando (confirma long)' : 'Capital novo no short (confirma)';
+      reasons.push({ text: `OI ${oiStr} — ${tipo}`, type: score >= 0 ? 'positive' : 'negative' });
+    } else if (oiChg < -5) {
+      score -= 6;
+      reasons.push({ text: `OI ${oiStr} — Fechamento de posicoes, fraqueza`, type: 'negative' });
+    } else {
+      reasons.push({ text: `OI ${oiStr} — Estavel`, type: 'neutral' });
+    }
+    indicators.push({
+      name: 'Open Interest (24h)',
+      reading: oiStr,
+      color: oiChg > 5 ? 'var(--accent)' : oiChg < -5 ? 'var(--danger)' : 'var(--muted)'
+    });
+  }
+
   // Fear & Greed
   if      (fg.value < 25) { score += 10; reasons.push({text:`F&G ${fg.value} — Medo Extremo`,type:'positive'}); }
   else if (fg.value > 75) { score -= 10; reasons.push({text:`F&G ${fg.value} — Ganância Extrema`,type:'negative'}); }
@@ -1783,7 +1847,7 @@ function _computeScore(price, ind, fg) {
 // ─────────────────────────────────────────
 // MOTOR DE ANÁLISE — função principal
 // ─────────────────────────────────────────
-function analyzeCandles(coin, tf, candles, fg) {
+function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest = null) {
   if (!candles || candles.length < 50) return null;
   const closes = candles.map(c => c.close);
 
@@ -1797,7 +1861,7 @@ function analyzeCandles(coin, tf, candles, fg) {
   // Fase 2: score
   const safeFg = fg ?? { value: 50, label: 'Neutro' };
   const { score: rawScore, reasons, indicators, mxUp, mxDown, mAbove,
-    emaCross, mktStruct, triangle, dblPattern } = _computeScore(price, ind, safeFg);
+    emaCross, mktStruct, triangle, dblPattern } = _computeScore(price, ind, safeFg, fundingRate, openInterest);
 
   const dir       = rawScore >= 0 ? 'buy' : 'sell';
   const normScore = Math.min(100, Math.round(Math.abs(rawScore)));
@@ -1884,6 +1948,8 @@ function analyzeCandles(coin, tf, candles, fg) {
     vwap, obvTrend, stochRSI,
     candles,
     mtfConfluence: null, // preenchido depois em runRealAnalysis
+    fundingRate,
+    openInterest,
   };
 }
 
@@ -1970,8 +2036,45 @@ async function runRealAnalysis(signal = null) {
 
   const results = [];
   let ok=0, fail=0;
+  const fundingCache = {};
+  const oiCache = {};
 
   for (const coin of coins) {
+    // Buscar Funding Rate (uma vez por coin)
+    if (fundingCache[coin] === undefined) {
+      try {
+        const frUrl = `https://api.bybit.com/v5/market/funding/history?category=linear&symbol=${coin}USDT&limit=1`;
+        const frData = await fetchWithFallback(frUrl, signal);
+        fundingCache[coin] = frData?.result?.list?.[0]?.fundingRate != null
+          ? parseFloat(frData.result.list[0].fundingRate)
+          : null;
+      } catch(e) {
+        if (e.name === 'AbortError') throw e;
+        fundingCache[coin] = null;
+      }
+    }
+    const fundingRate = fundingCache[coin] ?? null;
+
+    // Buscar Open Interest (uma vez por coin)
+    if (oiCache[coin] === undefined) {
+      try {
+        const oiUrl = `https://api.bybit.com/v5/market/open-interest?category=linear&symbol=${coin}USDT&intervalTime=1h&limit=24`;
+        const oiData = await fetchWithFallback(oiUrl, signal);
+        const list = oiData?.result?.list;
+        if (list && list.length >= 2) {
+          const oiNow  = parseFloat(list[0].openInterest);
+          const oiPrev = parseFloat(list[list.length - 1].openInterest);
+          oiCache[coin] = { value: oiNow, change24h: ((oiNow - oiPrev) / oiPrev) * 100 };
+        } else {
+          oiCache[coin] = null;
+        }
+      } catch(e) {
+        if (e.name === 'AbortError') throw e;
+        oiCache[coin] = null;
+      }
+    }
+    const openInterest = oiCache[coin] ?? null;
+
     for (const tf of tfs) {
       if (signal?.aborted) throw new DOMException('Scan cancelado', 'AbortError');
       try {
@@ -1980,9 +2083,10 @@ async function runRealAnalysis(signal = null) {
         const candles = await fetchCandles(coin, tf, signal);
         if (candles) {
           ok++;
-          const result = analyzeCandles(coin, tf, candles, fg);
+          const result = analyzeCandles(coin, tf, candles, fg, fundingRate, openInterest);
           if (result) {
             results.push(result);
+            if (result.score >= 80 && typeof notifySetup === 'function') notifySetup(result);
             addLog(`✓ ${coin} ${tf} · Score ${result.score} · M3: +${result.m3.cap.netPct}%`, 'var(--accent)');
           } else {
             addLog(`◌ ${coin} ${tf} — score abaixo do filtro (${state.score}+)`, 'var(--muted)');
@@ -2084,6 +2188,7 @@ async function runRealAnalysis(signal = null) {
 }
 
 function finishScan(results) {
+  saveToHistory(results, state.mode);
   document.getElementById('progressFill').style.width = '100%';
   document.getElementById('progressPct').textContent = '100%';
   document.getElementById('progressText').textContent = 'Análise concluída ✓';
@@ -2628,6 +2733,124 @@ function closeModal(e) {
 }
 
 // ─────────────────────────────────────────
+// HISTORICO DE SCANS
+// ─────────────────────────────────────────
+const HISTORY_KEY = 'scanHistory_v1';
+const HISTORY_MAX = 50;
+
+function saveToHistory(results, mode) {
+  if (!results || results.length === 0) return;
+  const existing = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+  const topSetups = [...results]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
+    .map(r => ({
+      coin: r.coin, timeframe: r.timeframe, dir: r.dir,
+      score: r.score, m3NetPct: r.m3.cap.netPct, entry: r.entry
+    }));
+  const entry = {
+    id: Date.now(),
+    timestamp: new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }),
+    mode,
+    totalSetups: results.length,
+    topSetups
+  };
+  const updated = [entry, ...existing].slice(0, HISTORY_MAX);
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(updated)); } catch(e) {}
+  renderHistory();
+  updateHistoryCount();
+}
+
+function clearHistory() {
+  if (!confirm('Apagar todo o historico de scans?')) return;
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+  updateHistoryCount();
+}
+
+function updateHistoryCount() {
+  const data = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+  const el = document.getElementById('histCount');
+  if (el) el.textContent = data.length;
+}
+
+function renderHistory() {
+  const container = document.getElementById('historyList');
+  if (!container) return;
+  const data = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+  if (data.length === 0) {
+    container.innerHTML = '<div style="color:var(--muted);font-family:var(--mono);font-size:12px;text-align:center;padding:40px 0">Nenhum scan salvo ainda.<br>Execute um scan para iniciar o historico.</div>';
+    return;
+  }
+  container.innerHTML = data.map(entry => {
+    const topHtml = entry.topSetups.map(s => {
+      const isLong = s.dir === 'buy';
+      const sign = isLong ? '+' : '-';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px">
+        <span style="color:${isLong ? 'var(--accent)' : 'var(--danger)'};min-width:60px">${isLong ? '&#9650;' : '&#9660;'} ${s.coin}</span>
+        <span style="color:var(--muted);min-width:32px">${s.timeframe}</span>
+        <span style="color:var(--text)">Score ${s.score}</span>
+        <span style="margin-left:auto;color:${isLong ? 'var(--accent)' : 'var(--danger)'}">${sign}${s.m3NetPct}% M3</span>
+      </div>`;
+    }).join('');
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div>
+          <span style="font-family:var(--mono);font-size:11px;color:var(--accent)">${entry.timestamp}</span>
+          <span style="margin-left:10px;font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase">${entry.mode}</span>
+        </div>
+        <span style="font-family:var(--mono);font-size:12px;color:var(--text)">${entry.totalSetups} setup${entry.totalSetups !== 1 ? 's' : ''}</span>
+      </div>
+      ${topHtml}
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────
+// NOTIFICACOES
+// ─────────────────────────────────────────
+let notificationsEnabled = false;
+
+async function toggleNotifications() {
+  const btn = document.getElementById('notifBtn');
+  if (!('Notification' in window)) {
+    alert('Seu browser nao suporta notificacoes.');
+    return;
+  }
+  if (notificationsEnabled) {
+    notificationsEnabled = false;
+    btn.textContent = '\u{1F514} ALERTAS OFF';
+    btn.style.color = 'var(--muted)';
+    btn.style.borderColor = 'var(--border)';
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    alert('Notificacoes bloqueadas. Habilite nas configuracoes do browser.');
+    return;
+  }
+  const perm = Notification.permission === 'granted'
+    ? 'granted'
+    : await Notification.requestPermission();
+  if (perm === 'granted') {
+    notificationsEnabled = true;
+    btn.textContent = '\u{1F514} ALERTAS ON';
+    btn.style.color = 'var(--accent)';
+    btn.style.borderColor = 'var(--accent)';
+  }
+}
+
+function notifySetup(result) {
+  if (!notificationsEnabled || Notification.permission !== 'granted') return;
+  const dir = result.dir === 'buy' ? 'LONG' : 'SHORT';
+  const sign = result.dir === 'buy' ? '+' : '-';
+  new Notification(`${result.coin} ${dir} — Score ${result.score}`, {
+    body: `${result.timeframe} | M3: ${sign}${result.m3.cap.netPct}% | Entry: $${result.entry.toFixed(result.entry >= 1 ? 2 : 4)}`,
+    icon: `https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/svg/color/${result.coin.toLowerCase()}.svg`,
+    tag: `${result.coin}-${result.timeframe}`,
+  });
+}
+
+// ─────────────────────────────────────────
 // TAB NAVIGATION
 // ─────────────────────────────────────────
 function switchTab(tab, el) {
@@ -2636,6 +2859,7 @@ function switchTab(tab, el) {
   document.getElementById('section-' + tab).classList.add('active');
   if (el) el.classList.add('active');
   if (tab === 'journal') renderJournal();
+  if (tab === 'history') renderHistory();
 }
 
 // ─────────────────────────────────────────
