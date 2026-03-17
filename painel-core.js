@@ -892,25 +892,29 @@ function analyzeCandles(coin, tf, candles, fg, options = { score: '0', leverage:
 
   const lev = options.leverage;
 
+  const MIN_STOP_PCT = 0.015; // 1.5% minimum stop distance — avoids noise-level stops
   let entry, stop;
   if (dir === 'buy') {
     const sups = levels.filter(l=>l.type==='support'&&l.price<price).sort((a,b)=>b.price-a.price);
     entry = price;
     stop  = Math.min(sups.length ? sups[0].price : price-atr*1.5, price-atr*1.2);
+    if ((price - stop) < price * MIN_STOP_PCT) stop = price - price * MIN_STOP_PCT;
   } else {
     const ress = levels.filter(l=>l.type==='resistance'&&l.price>price).sort((a,b)=>a.price-b.price);
     entry = price;
     stop  = Math.max(ress.length ? ress[0].price : price+atr*1.5, price+atr*1.2);
+    if ((stop - price) < price * MIN_STOP_PCT) stop = price + price * MIN_STOP_PCT;
   }
 
   const liqPrice = calcLiqPrice(entry, dir, lev);
+  const entryToLiqDist = Math.abs(entry - liqPrice);
   let stopAdjusted = false;
-  if (dir === 'buy' && stop <= liqPrice) {
-    stop = liqPrice * 1.02;
-    stopAdjusted = true;
-  } else if (dir === 'sell' && stop >= liqPrice) {
-    stop = liqPrice * 0.98;
-    stopAdjusted = true;
+  if (dir === 'buy') {
+    const minSafeStop = liqPrice + entryToLiqDist * 0.50;
+    if (stop < minSafeStop) { stop = minSafeStop; stopAdjusted = true; }
+  } else {
+    const minSafeStop = liqPrice - entryToLiqDist * 0.50;
+    if (stop > minSafeStop) { stop = minSafeStop; stopAdjusted = true; }
   }
 
   const {m1:m1p, m2:m2p, m3:m3p} = calcMetas(dir, entry, stop, options.rr);

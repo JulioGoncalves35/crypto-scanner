@@ -172,6 +172,48 @@ describe('analyzeCandles — stop adjustment for liquidation', () => {
   });
 });
 
+// ─── analyzeCandles — MIN_STOP_PCT (1.5%) enforcement ────────────────────────
+describe('analyzeCandles — minimum stop distance (1.5%)', () => {
+  it('buy stop is always at least 1.5% below entry', () => {
+    const candles = makeTrendingCandles(200, 100, 1);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    if (!result || result.dir !== 'buy') return;
+    const stopDistPct = (result.entry - result.stop) / result.entry;
+    expect(stopDistPct).toBeGreaterThanOrEqual(0.015 - 1e-9);
+  });
+
+  it('sell stop is always at least 1.5% above entry', () => {
+    const candles = makeDowntrendCandles(200, 200, 1);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    if (!result || result.dir !== 'sell') return;
+    const stopDistPct = (result.stop - result.entry) / result.entry;
+    expect(stopDistPct).toBeGreaterThanOrEqual(0.015 - 1e-9);
+  });
+});
+
+// ─── analyzeCandles — proportional liq buffer ────────────────────────────────
+describe('analyzeCandles — proportional liquidation buffer', () => {
+  it('buy stop is above liqPrice with meaningful buffer (>= 50% of entry-liq distance)', () => {
+    const candles = makeTrendingCandles(200, 100, 1);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    if (!result || result.dir !== 'buy') return;
+    const liq  = calcLiqPrice(result.entry, 'buy', result.leverage);
+    const dist = result.entry - liq;
+    const minSafeStop = liq + dist * 0.50;
+    expect(result.stop).toBeGreaterThanOrEqual(minSafeStop - 1e-9);
+  });
+
+  it('sell stop is below liqPrice with meaningful buffer (>= 50% of entry-liq distance)', () => {
+    const candles = makeDowntrendCandles(200, 200, 1);
+    const result = analyzeCandles('BTC', '15m', candles, NEUTRAL_FG, PERMISSIVE_OPTS);
+    if (!result || result.dir !== 'sell') return;
+    const liq  = calcLiqPrice(result.entry, 'sell', result.leverage);
+    const dist = liq - result.entry;
+    const minSafeStop = liq - dist * 0.50;
+    expect(result.stop).toBeLessThanOrEqual(minSafeStop + 1e-9);
+  });
+});
+
 // ─── analyzeCandles — financial calculations ──────────────────────────────────
 describe('analyzeCandles — financial output', () => {
   it('m1.cap, m2.cap, m3.cap have netPct, grossPct, feePct, isProfit fields', () => {
