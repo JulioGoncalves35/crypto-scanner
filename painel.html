@@ -1804,15 +1804,18 @@ function analyzeCandles(coin, tf, candles, fg) {
   if (normScore < parseInt(state.score)) return null;
 
   // Stop Loss
+  const MIN_STOP_PCT = 0.015; // piso mínimo de 1.5% — evita stops apertados em tokens voláteis
   let entry, stop;
   if (dir === 'buy') {
     const sups = levels.filter(l=>l.type==='support'&&l.price<price).sort((a,b)=>b.price-a.price);
     entry = price;
     stop  = Math.min(sups.length ? sups[0].price : price-atr*1.5, price-atr*1.2);
+    if ((price - stop) < price * MIN_STOP_PCT) stop = price - price * MIN_STOP_PCT;
   } else {
     const ress = levels.filter(l=>l.type==='resistance'&&l.price>price).sort((a,b)=>a.price-b.price);
     entry = price;
     stop  = Math.max(ress.length ? ress[0].price : price+atr*1.5, price+atr*1.2);
+    if ((stop - price) < price * MIN_STOP_PCT) stop = price + price * MIN_STOP_PCT;
   }
 
   // Preço de liquidação — verificar se stop tem margem segura de execução
@@ -2157,7 +2160,8 @@ const groupActiveIndex = {};
 function fmtPrice(p) {
   if (p >= 1000) return '$' + p.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
   if (p >= 1)    return '$' + p.toFixed(3);
-  return '$' + p.toFixed(5);
+  if (p >= 0.001) return '$' + p.toFixed(5);
+  return '$' + p.toFixed(7);
 }
 
 function renderCards(data) {
@@ -2668,7 +2672,7 @@ function saveToJournal(d) {
     return;
   }
 
-  const fp = p => p >= 1000 ? p.toFixed(0) : p >= 1 ? p.toFixed(3) : p.toFixed(5);
+  const fp = p => p >= 1000 ? p.toFixed(0) : p >= 1 ? p.toFixed(3) : p >= 0.001 ? p.toFixed(5) : p.toFixed(7);
   const sign = d.dir === 'buy' ? '+' : '-';
   const lev = d.leverage || state.leverage;
 
@@ -3020,7 +3024,7 @@ async function checkSetupNow(id) {
     }
 
     const currentPrice = candles[candles.length - 1].close;
-    const fp = p => p >= 1000 ? p.toFixed(0) : p >= 1 ? p.toFixed(3) : p.toFixed(5);
+    const fp = p => p >= 1000 ? p.toFixed(0) : p >= 1 ? p.toFixed(3) : p >= 0.001 ? p.toFixed(5) : p.toFixed(7);
     const pctFromEntry = ((currentPrice - entry) / entry * 100).toFixed(2);
     const pctSign = pctFromEntry >= 0 ? '+' : '';
 
