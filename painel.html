@@ -1815,16 +1815,25 @@ function analyzeCandles(coin, tf, candles, fg) {
     stop  = Math.max(ress.length ? ress[0].price : price+atr*1.5, price+atr*1.2);
   }
 
-  // Preço de liquidação — verificar se stop é seguro
+  // Preço de liquidação — verificar se stop tem margem segura de execução
+  // O stop deve estar a pelo menos 50% da distância entry→liq acima da liquidação.
+  // Isso garante espaço para execução da ordem antes da liquidação forçada.
   const lev = state.leverage;
   const liqPrice = calcLiqPrice(entry, dir, lev);
+  const entryToLiqDist = Math.abs(entry - liqPrice);
   let stopAdjusted = false;
-  if (dir === 'buy' && stop <= liqPrice) {
-    stop = liqPrice * 1.02;
-    stopAdjusted = true;
-  } else if (dir === 'sell' && stop >= liqPrice) {
-    stop = liqPrice * 0.98;
-    stopAdjusted = true;
+  if (dir === 'buy') {
+    const minSafeStop = liqPrice + entryToLiqDist * 0.50;
+    if (stop < minSafeStop) {
+      stop = minSafeStop;
+      stopAdjusted = true;
+    }
+  } else {
+    const minSafeStop = liqPrice - entryToLiqDist * 0.50;
+    if (stop > minSafeStop) {
+      stop = minSafeStop;
+      stopAdjusted = true;
+    }
   }
 
   // Metas Fibonacci
@@ -1860,7 +1869,7 @@ function analyzeCandles(coin, tf, candles, fg) {
   return {
     coin, pair:`${coin}/USDT`, dir,
     score: normScore, timeframe: tf, leverage: lev,
-    entry, stop, liqPrice, stopAdjusted,
+    entry, stop, liqPrice, entryToLiqDist, stopAdjusted,
     stopPct: fmtPct(stopPctRaw),
     m1:{ price:m1p, pct:fmtPct((m1p-entry)/entry*100), cap:capM1 },
     m2:{ price:m2p, pct:fmtPct((m2p-entry)/entry*100), cap:capM2 },
@@ -2278,7 +2287,7 @@ function renderGroupCard(coin, setups) {
           <div class="val" style="color:var(--danger);font-size:12px">${fmtPrice(d.liqPrice)}</div>
         </div>
       </div>
-      ${d.stopAdjusted ? '<div style="font-family:var(--mono);font-size:10px;color:var(--warn);margin-bottom:12px;padding:6px 10px;background:rgba(255,184,0,0.08);border:1px solid rgba(255,184,0,0.2);border-radius:6px">⚠ Stop ajustado — original ficaria abaixo do preço de liquidação</div>' : ''}
+      ${d.stopAdjusted ? '<div style="font-family:var(--mono);font-size:10px;color:var(--warn);margin-bottom:12px;padding:6px 10px;background:rgba(255,184,0,0.08);border:1px solid rgba(255,184,0,0.2);border-radius:6px">⚠ Stop ajustado — distância insuficiente da liquidação. Reposicionado para 50% da margem entry→liquidação, garantindo espaço de execução antes da liquidação forçada.</div>' : ''}
 
       <div class="metas-title">METAS FIBONACCI — RETORNO NO CAPITAL</div>
       <div class="metas-track">
@@ -2397,7 +2406,7 @@ function openModal(d) {
         Com <em>${lev}x</em>, a posição vale ${lev}× o capital → fee real = <em>${feeCapPct}% do capital por operação.</em><br>
         Breakeven mínimo de preço para cobrir fee: <em>${(ROUND_TRIP_FEE*100).toFixed(3)}% × ${lev} = ${feeCapPct}%</em> do capital.<br>
         Se stop for atingido: perda de <em style="color:var(--danger)">−${d.capStop?.netPct ?? Math.abs(parseFloat(d.stopPct.replace('%',''))*lev-parseFloat(feeCapPct)).toFixed(1)}% no capital</em> (incluindo fee de saída).<br>
-        Preço de liquidação (isolated margin, MMR 0.5%): <em style="color:var(--danger)">${fmtPrice(d.liqPrice)}</em>${d.stopAdjusted ? ' — <em style="color:var(--warn)">⚠ Stop foi ajustado para ficar acima da liquidação</em>' : ' — stop está seguro ✓'}.
+        Preço de liquidação (isolated margin, MMR 0.5%): <em style="color:var(--danger)">${fmtPrice(d.liqPrice)}</em> — margem entry→liq: <em>${d.entryToLiqDist != null ? (d.entryToLiqDist/d.entry*100).toFixed(2) : '—'}%</em> do preço.${d.stopAdjusted ? ' <em style="color:var(--warn)">⚠ Stop reposicionado para 50% dessa margem, evitando liquidação antes do stop.</em>' : ' Stop a <em>' + (d.liqPrice != null && d.stop != null ? Math.abs(d.stop - d.liqPrice).toFixed(4) : '—') + '</em> da liq — seguro ✓'}.
       </div>
     </div>
 
