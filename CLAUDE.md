@@ -16,10 +16,22 @@ UI language: **Portuguese (pt-BR)**.
 
 ```
 crypto-scanner/
-└── painel.html      ← Entire application (3,000+ lines): HTML + embedded CSS + embedded JS
+├── painel-core.js   ← Analysis logic (1,100+ lines): fetch, indicators, score, analyzeCandles
+├── painel.html      ← Structural HTML, full CSS, UI rendering, state, initialization
+├── tests/           ← Vitest test suite (8 files, 251 tests)
+│   ├── indicators.test.js
+│   ├── scoring.test.js
+│   ├── patterns.test.js
+│   ├── api.test.js
+│   ├── mtf.test.js
+│   ├── integration.test.js
+│   ├── journal.test.js
+│   ├── risk.test.js
+│   └── fixtures/candles.js
+└── package.json     ← Scripts: npm test (vitest run)
 ```
 
-This is a **monolithic single-file application**. There is no build system, no package.json, and no external tooling required. Everything runs in the browser.
+`painel.html` loads `painel-core.js` via `<script src="painel-core.js"></script>`. There is no build system; everything runs in the browser.
 
 ---
 
@@ -74,9 +86,11 @@ const TIMEFRAMES_BY_MODE = {
 
 ---
 
-## Functional Modules (all inside `painel.html`)
+## Functional Modules
 
 Code sections are separated by `// ─────────────────────` divider comments.
+
+Modules 1–6 live in **`painel-core.js`**; modules 7–8 live in **`painel.html`**.
 
 ### 1. Coin Management
 - `initCoins()` — populates the coin selection grid on page load
@@ -87,6 +101,8 @@ Code sections are separated by `// ───────────────
 ### 2. API Integration
 - `fetchCandles(symbol, interval, limit)` — fetches OHLCV data from Bybit Futures API v5
 - `fetchFearGreed()` — fetches Fear & Greed index from alternative.me
+- `fetchFundingRate(coin, signal)` — fetches latest funding rate from Bybit (cached per coin in `runRealAnalysis`)
+- `fetchOpenInterest(coin, signal)` — fetches 24 h open interest from Bybit (cached per coin in `runRealAnalysis`)
 - `fetchJSON(url)` — base fetch with CORS proxy fallback chain
 - `fetchWithFallback(url)` — iterates through `CORS_PROXIES` on failure
 
@@ -117,25 +133,37 @@ Code sections are separated by `// ───────────────
 | `detectDoubleTopBottom(candles)` | Double Top / Double Bottom patterns |
 
 ### 5. Scoring Engine
-- `_computeScore(indicators, patterns, direction)` — returns 0–100 score
+- `_computeScore(price, ind, fg, fundingRate=null, openInterest=null)` — returns 0–100 score
 - ADX hard filter: setups with ADX < 18 are rejected (sideways market filter)
 - MTF confluence bonus: +6–12 points if same direction on 2+ timeframes
 - MTF conflict penalty: -20 points if lower TF opposes highest TF
+- Funding Rate bonus/penalty: +6 / +12 pts (aligned) or −6 / −12 pts (opposed) based on magnitude
+- Open Interest bonus/penalty: +8 pts (rising OI confirms direction) or −6 pts (falling OI diverges)
 
 ### 6. Analysis Pipeline
-- `analyzeCandles(symbol, candles, timeframe)` — full analysis for one coin/timeframe
+- `analyzeCandles(coin, tf, candles, fg, fundingRate=null, openInterest=null, options)` — full analysis for one coin/timeframe
 - `runRealAnalysis(signal)` — orchestrates the full scan across all selected coins/timeframes
   - Uses `AbortController` for cancellable scans
+  - Fetches `fundingRate` and `openInterest` once per coin (cached) before the timeframe loop
   - Deduplicates: shows only the best setup per coin after MTF processing
   - Results sorted by capital return on M3 target
 
-### 7. UI Rendering
+### 7. UI Rendering *(painel.html)*
 - `renderCards(cards)` — displays scan result cards in the grid
 - `renderGroupCard(group)` — renders a single result card with MTF badges
 - Modal with candlestick chart (lightweight-charts) + indicator breakdown
 
-### 8. Journal System
-- Backed by `localStorage` key: `cryptoscanner_journal_v2`
+### 8. Notifications *(painel.html)*
+- `toggleNotifications()` — enables/disables alerts via the Web Notifications API
+- `notifySetup(result)` — fires a browser notification for setups with score ≥ 80
+
+### 9. Scan History *(painel.html)*
+- `saveToHistory(results, mode)` — persists the top-5 setups after each scan (max 50 entries)
+- `renderHistory()` — renders the saved scan list
+- `clearHistory()` / `updateHistoryCount()` — history management helpers
+
+### 10. Journal System *(painel.html)*
+- Backed by `localStorage` key: `cryptoscanner_journal_v2` *(must not be renamed)*
 - `saveToJournal(setup)` — persists a setup
 - `loadJournal()` — retrieves all saved setups
 - `renderJournal()` / `renderJournalStats()` — renders trade log and performance stats
@@ -158,16 +186,21 @@ Code sections are separated by `// ───────────────
 
 ```
 User clicks "Scan"
-  → runRealAnalysis()
-      → for each coin × timeframe:
-          → fetchCandles(symbol, interval)         [Bybit API v5]
-          → _calcTechIndicators(candles)
-          → detectCandlePatterns / detectDivergences / etc.
-          → _computeScore(indicators, patterns, direction)
-          → analyzeCandles() → setup object
+  → runRealAnalysis()                              [painel.html]
+      → fetchFearGreed()
+      → for each coin:
+          → fetchFundingRate(coin)                 [Bybit API v5 — once per coin]
+          → fetchOpenInterest(coin)                [Bybit API v5 — once per coin]
+          → for each timeframe:
+              → fetchCandles(symbol, interval)
+              → _calcTechIndicators(candles)       [painel-core.js]
+              → detectCandlePatterns / detectDivergences / etc.
+              → _computeScore(price, ind, fg, fundingRate, openInterest)
+              → analyzeCandles() → setup object
       → MTF confluence/conflict adjustments
       → deduplication (best setup per coin)
       → sort by M3 capital return
+      → saveToHistory(results, mode)
       → renderCards(results)
 ```
 
@@ -189,6 +222,23 @@ GET https://api.bybit.com/v5/market/kline
 GET https://api.alternative.me/fng/?limit=1
 ```
 
+**Bybit Funding Rate endpoint:**
+```
+GET https://api.bybit.com/v5/market/funding/history
+  ?category=linear
+  &symbol=BTCUSDT
+  &limit=1
+```
+
+**Bybit Open Interest endpoint:**
+```
+GET https://api.bybit.com/v5/market/open-interest
+  ?category=linear
+  &symbol=BTCUSDT
+  &intervalTime=1h
+  &limit=24
+```
+
 The application handles CORS automatically via the proxy fallback chain. No API keys are required.
 
 ---
@@ -203,13 +253,13 @@ BTC, ETH, SOL, BNB, ADA, AVAX, DOT, LINK, MATIC, UNI, ATOM, LTC, FIL, NEAR, APT,
 
 ## Persistence
 
-All trade journal data is stored client-side in `localStorage`:
+All trade journal and scan history data is stored client-side in `localStorage`:
 
 ```javascript
-// Key
+// Journal key
 'cryptoscanner_journal_v2'
 
-// Entry shape
+// Journal entry shape
 {
   id: string,          // timestamp-based unique ID
   coin: string,        // e.g. "BTCUSDT"
@@ -222,6 +272,20 @@ All trade journal data is stored client-side in `localStorage`:
   score: number,
   result: string,      // "active" | "stop" | "m1" | "m2" | "m3"
   savedAt: string      // ISO timestamp
+}
+
+// Scan History key
+'scanHistory_v1'       // max 50 entries
+
+// Scan history entry shape
+{
+  id: number,          // Date.now()
+  timestamp: string,   // e.g. "17/03/2026, 14:30"
+  mode: string,        // "scalp" | "day" | "swing" | "both"
+  totalSetups: number,
+  topSetups: [         // top 5 setups
+    { coin, timeframe, dir, score, m3NetPct, entry }
+  ]
 }
 ```
 
@@ -239,21 +303,27 @@ python3 -m http.server 8080
 ```
 
 ### Making changes
-1. Edit `painel.html` directly (the only source file).
-2. Refresh the browser to see changes.
-3. No compilation or build step needed.
+- Analysis/fetch logic → edit **`painel-core.js`**
+- HTML structure, CSS, UI rendering, state → edit **`painel.html`**
+- Refresh the browser to see changes. No compilation step needed.
 
 ### Testing
-There is no automated test suite. Manual testing steps:
+```bash
+npm test          # runs all 251 Vitest tests
+npm test -- --watch   # watch mode for development
+```
+
+Manual testing steps:
 - Open `painel.html` in a browser
 - Select a few coins and click "Escanear" (Scan)
 - Verify cards render with correct score/direction badges
 - Open the modal for a card and verify chart and indicators display
 - Save a setup to journal and verify it appears in the Journal tab
+- Check the Histórico tab to confirm the scan was saved
 
 ### Git workflow
 ```bash
-git add painel.html
+git add painel.html painel-core.js
 git commit -m "descriptive message"
 git push -u origin <branch>
 ```
@@ -262,13 +332,14 @@ git push -u origin <branch>
 
 ## Important Constraints
 
-1. **Single-file constraint** — Keep all code in `painel.html`. Do not split into separate `.js` or `.css` files unless explicitly requested.
-2. **No build tooling** — Do not introduce webpack, vite, npm, or any build system unless explicitly requested.
+1. **Two-file rule** — Analysis/fetch logic belongs in `painel-core.js`; HTML, CSS, and UI rendering belong in `painel.html`. Do not merge them back or split further unless explicitly requested.
+2. **No build tooling** — Do not introduce webpack, vite, or any bundler unless explicitly requested. `package.json` is used only for Vitest.
 3. **Vanilla JS only** — Do not add frameworks (React, Vue, etc.) unless explicitly requested.
 4. **Portuguese UI** — All user-facing text should remain in Portuguese (pt-BR).
-5. **localStorage key** — The journal key `cryptoscanner_journal_v2` must not be renamed; changing it would break existing saved data for users.
+5. **localStorage keys** — `cryptoscanner_journal_v2` and `scanHistory_v1` must not be renamed; changing them would break existing saved data for users.
 6. **Bybit symbol format** — PEPE must stay as `1000PEPEUSDT` (not `PEPEUSDT`).
 7. **Fee constants** — `BYBIT_TAKER` and `ROUND_TRIP_FEE` reflect real Bybit fee rates; do not change without verification.
+8. **Dual `_computeScore` / `analyzeCandles`** — Both functions exist in `painel-core.js` (tested by Vitest) and as inline copies in `painel.html` (used in the browser). Keep them in sync when modifying scoring logic.
 
 ---
 
@@ -279,3 +350,6 @@ git push -u origin <branch>
 - **ADX filter:** Setups with ADX < 18 are silently dropped. If a coin never appears in results, it likely has a flat ADX.
 - **MTF deduplication:** After scanning, only the highest-scored setup per coin is shown. Lower-scored timeframes for the same coin are intentionally hidden.
 - **Journal version key:** The `_v2` suffix was introduced after a schema change. If the data shape changes again, bump to `_v3` and add a migration function.
+- **Funding/OI in unit tests:** `fundingRate` and `openInterest` default to `null` in unit tests. When writing scoring tests that exercise funding/OI logic, pass explicit values.
+- **AbortError in funding/OI fetch:** Every `catch` inside `runRealAnalysis` must check `if (e.name === 'AbortError') throw e` before any fallback, so user-initiated scan cancellation propagates correctly.
+- **Dual implementation sync:** `_computeScore` and `analyzeCandles` are duplicated between `painel-core.js` and `painel.html`. Always update both when changing scoring logic.
