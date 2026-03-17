@@ -2157,7 +2157,8 @@ const groupActiveIndex = {};
 function fmtPrice(p) {
   if (p >= 1000) return '$' + p.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
   if (p >= 1)    return '$' + p.toFixed(3);
-  return '$' + p.toFixed(5);
+  if (p >= 0.001) return '$' + p.toFixed(5);
+  return '$' + p.toFixed(7);
 }
 
 function renderCards(data) {
@@ -2668,7 +2669,7 @@ function saveToJournal(d) {
     return;
   }
 
-  const fp = p => p >= 1000 ? p.toFixed(0) : p >= 1 ? p.toFixed(3) : p.toFixed(5);
+  const fp = p => p >= 1000 ? p.toFixed(0) : p >= 1 ? p.toFixed(3) : p >= 0.001 ? p.toFixed(5) : p.toFixed(7);
   const sign = d.dir === 'buy' ? '+' : '-';
   const lev = d.leverage || state.leverage;
 
@@ -3020,7 +3021,7 @@ async function checkSetupNow(id) {
     }
 
     const currentPrice = candles[candles.length - 1].close;
-    const fp = p => p >= 1000 ? p.toFixed(0) : p >= 1 ? p.toFixed(3) : p.toFixed(5);
+    const fp = p => p >= 1000 ? p.toFixed(0) : p >= 1 ? p.toFixed(3) : p >= 0.001 ? p.toFixed(5) : p.toFixed(7);
     const pctFromEntry = ((currentPrice - entry) / entry * 100).toFixed(2);
     const pctSign = pctFromEntry >= 0 ? '+' : '';
 
