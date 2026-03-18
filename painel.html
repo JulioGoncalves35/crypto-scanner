@@ -986,7 +986,7 @@ async function fetchWithFallback(url, signal = null) {
       const data = await fetchJSON(target, 10000, signal);
       return data;
     } catch(e) {
-      if (e.name === 'AbortError') throw e; // Propaga cancelamento imediatamente
+      if (e.name === 'AbortError' && signal?.aborted) throw e; // Propaga apenas cancelamento real do usuário
       lastErr = e;
     }
   }
@@ -2183,7 +2183,6 @@ async function runRealAnalysis(signal = null) {
   let ok=0, fail=0;
   const fundingCache = {};
   const oiCache = {};
-  const newsCache = {};
 
   for (const coin of coins) {
     // Buscar Funding Rate (uma vez por coin)
@@ -2195,7 +2194,7 @@ async function runRealAnalysis(signal = null) {
           ? parseFloat(frData.result.list[0].fundingRate)
           : null;
       } catch(e) {
-        if (e.name === 'AbortError') throw e;
+        if (e.name === 'AbortError' && signal?.aborted) throw e;
         fundingCache[coin] = null;
       }
     }
@@ -2215,29 +2214,11 @@ async function runRealAnalysis(signal = null) {
           oiCache[coin] = null;
         }
       } catch(e) {
-        if (e.name === 'AbortError') throw e;
+        if (e.name === 'AbortError' && signal?.aborted) throw e;
         oiCache[coin] = null;
       }
     }
     const openInterest = oiCache[coin] ?? null;
-
-    // Buscar notícias (uma vez por coin)
-    if (newsCache[coin] === undefined) {
-      try {
-        const newsUrl = `https://cryptopanic.com/api/free/v1/posts/?currencies=${coin}&filter=important&public=true`;
-        const newsData = await fetchWithFallback(newsUrl, signal);
-        const items = newsData?.results ?? [];
-        newsCache[coin] = items.slice(0, 4).map(item => ({
-          title: item.title,
-          url: item.url,
-          publishedAt: item.published_at ? new Date(item.published_at).toLocaleDateString('pt-BR') : '',
-          votes: (item.votes?.positive ?? 0) - (item.votes?.negative ?? 0)
-        }));
-      } catch(e) {
-        if (e.name === 'AbortError') throw e;
-        newsCache[coin] = [];
-      }
-    }
 
     for (const tf of tfs) {
       if (signal?.aborted) throw new DOMException('Scan cancelado', 'AbortError');
@@ -2247,7 +2228,7 @@ async function runRealAnalysis(signal = null) {
         const candles = await fetchCandles(coin, tf, signal);
         if (candles) {
           ok++;
-          const result = analyzeCandles(coin, tf, candles, fg, fundingRate, openInterest, newsCache[coin] ?? []);
+          const result = analyzeCandles(coin, tf, candles, fg, fundingRate, openInterest, []);
           if (result) {
             results.push(result);
             if (result.score >= 80 && typeof notifySetup === 'function') notifySetup(result);
