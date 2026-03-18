@@ -87,10 +87,16 @@ Code sections are separated by `// ───────────────
 ### 2. API Integration
 - `fetchCandles(symbol, interval, limit)` — fetches OHLCV data from Bybit Futures API v5
 - `fetchFearGreed()` — fetches Fear & Greed index from alternative.me
-- `fetchJSON(url)` — base fetch with CORS proxy fallback chain
-- `fetchWithFallback(url)` — iterates through `CORS_PROXIES` on failure
+- `fetchJSON(url)` — base fetch with per-request 10s timeout and external signal support
+- `fetchWithFallback(url, signal)` — iterates through `CORS_PROXIES` on failure; only propagates `AbortError` if `signal.aborted` is true (i.e. user-initiated cancellation), not on internal timeouts
 
 **CORS proxy chain** (in order): direct → corsproxy.io → allorigins → thingproxy
+
+**Per-coin auxiliary fetches** (fetched once per coin before the timeframe loop):
+- Funding rate: `GET https://api.bybit.com/v5/market/funding/history?category=linear&symbol=...&limit=1`
+- Open interest: `GET https://api.bybit.com/v5/market/open-interest?category=linear&symbol=...&intervalTime=1h&limit=24`
+
+Both are optional — if they fail, `null` is passed to `analyzeCandles` and the scan continues.
 
 ### 3. Technical Indicators
 | Function | Indicator |
@@ -123,9 +129,10 @@ Code sections are separated by `// ───────────────
 - MTF conflict penalty: -20 points if lower TF opposes highest TF
 
 ### 6. Analysis Pipeline
-- `analyzeCandles(symbol, candles, timeframe)` — full analysis for one coin/timeframe
+- `analyzeCandles(symbol, tf, candles, fg, fundingRate, openInterest, news)` — full analysis for one coin/timeframe
 - `runRealAnalysis(signal)` — orchestrates the full scan across all selected coins/timeframes
-  - Uses `AbortController` for cancellable scans
+  - Uses `AbortController` for cancellable scans (user-initiated only — timeouts do not cancel the scan)
+  - Fetches funding rate and open interest once per coin before the timeframe loop
   - Deduplicates: shows only the best setup per coin after MTF processing
   - Results sorted by capital return on M3 target
 
@@ -159,12 +166,16 @@ Code sections are separated by `// ───────────────
 ```
 User clicks "Scan"
   → runRealAnalysis()
-      → for each coin × timeframe:
-          → fetchCandles(symbol, interval)         [Bybit API v5]
-          → _calcTechIndicators(candles)
-          → detectCandlePatterns / detectDivergences / etc.
-          → _computeScore(indicators, patterns, direction)
-          → analyzeCandles() → setup object
+      → fetchFearGreed()                          [alternative.me]
+      → for each coin:
+          → fetchWithFallback(fundingHistory)      [Bybit API v5, optional]
+          → fetchWithFallback(openInterest)        [Bybit API v5, optional]
+          → for each timeframe:
+              → fetchCandles(symbol, interval)     [Bybit API v5]
+              → _calcTechIndicators(candles)
+              → detectCandlePatterns / detectDivergences / etc.
+              → _computeScore(indicators, patterns, direction)
+              → analyzeCandles() → setup object
       → MTF confluence/conflict adjustments
       → deduplication (best setup per coin)
       → sort by M3 capital return
@@ -189,7 +200,21 @@ GET https://api.bybit.com/v5/market/kline
 GET https://api.alternative.me/fng/?limit=1
 ```
 
+**Funding Rate (per coin):**
+```
+GET https://api.bybit.com/v5/market/funding/history
+  ?category=linear&symbol=BTCUSDT&limit=1
+```
+
+**Open Interest (per coin):**
+```
+GET https://api.bybit.com/v5/market/open-interest
+  ?category=linear&symbol=BTCUSDT&intervalTime=1h&limit=24
+```
+
 The application handles CORS automatically via the proxy fallback chain. No API keys are required.
+
+> **Note:** Do not add third-party news APIs (e.g. CryptoPanic) without a valid API key. These endpoints fail for all proxies and cause N×4 sequential timeouts per scan, making the scanner extremely slow.
 
 ---
 
@@ -279,3 +304,4 @@ git push -u origin <branch>
 - **ADX filter:** Setups with ADX < 18 are silently dropped. If a coin never appears in results, it likely has a flat ADX.
 - **MTF deduplication:** After scanning, only the highest-scored setup per coin is shown. Lower-scored timeframes for the same coin are intentionally hidden.
 - **Journal version key:** The `_v2` suffix was introduced after a schema change. If the data shape changes again, bump to `_v3` and add a migration function.
+- **AbortError vs timeout:** `fetchJSON` uses a local `AbortController` for per-request timeouts (10s). This produces an `AbortError` identical to a user-cancellation abort. **Always check `signal?.aborted` before re-throwing** in catch blocks — otherwise a single timed-out request will cancel the entire scan. The pattern is: `if (e.name === 'AbortError' && signal?.aborted) throw e;`
