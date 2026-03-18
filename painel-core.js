@@ -160,6 +160,43 @@ function calcOBVTrend(candles, period = 20) {
   return 'neutral';
 }
 
+// ─────────────────────────────────────────
+// CVD — Cumulative Volume Delta (inferido por candles)
+// ─────────────────────────────────────────
+function calcCVD(candles, period = 30) {
+  if (candles.length < period + 1) return null;
+  const recent = candles.slice(-period);
+
+  let cvd = 0;
+  const cvdArr = [];
+  for (const c of recent) {
+    const body = c.close - c.open;
+    const threshold = (c.high - c.low) * 0.1;
+    if (Math.abs(body) < threshold) {
+      cvdArr.push(cvd);
+    } else {
+      cvd += body > 0 ? c.volume : -c.volume;
+      cvdArr.push(cvd);
+    }
+  }
+
+  const last5 = cvdArr.slice(-5);
+  const prev5 = cvdArr.slice(-10, -5);
+  if (prev5.length < 5) return null;
+
+  const avgLast = last5.reduce((a, b) => a + b, 0) / 5;
+  const avgPrev = prev5.reduce((a, b) => a + b, 0) / 5;
+  const delta = avgLast - avgPrev;
+  const relativeChange = Math.abs(avgPrev) > 0 ? delta / Math.abs(avgPrev) : 0;
+
+  let trend;
+  if (relativeChange > 0.05)       trend = 'rising';
+  else if (relativeChange < -0.05) trend = 'falling';
+  else                             trend = 'neutral';
+
+  return { trend, delta, relativeChange };
+}
+
 function calcStochRSI(rsiArr, period = 14) {
   const valid = rsiArr.filter(v => v !== null);
   if (valid.length < period) return null;
@@ -424,6 +461,75 @@ function detectMarketStructure(candles, lookback = 60) {
   return { type: 'ranging', score: 0,
     name: 'Estrutura Lateral (ranging)',
     desc: 'Sem tendência clara na estrutura de mercado — topos e fundos mistos.' };
+}
+
+// ─────────────────────────────────────────
+// BOS / CHoCH — Break of Structure / Change of Character
+// ─────────────────────────────────────────
+function detectBOSCHoCH(candles, lookback = 60) {
+  const n = candles.length;
+  if (n < lookback + 5) return null;
+
+  const slice = candles.slice(-lookback);
+  const sliceLen = slice.length;
+
+  const swingHighs = [], swingLows = [];
+  for (let i = 2; i < sliceLen - 2; i++) {
+    if (slice[i].high > slice[i-1].high && slice[i].high > slice[i-2].high &&
+        slice[i].high > slice[i+1].high && slice[i].high > slice[i+2].high)
+      swingHighs.push({ i, price: slice[i].high });
+    if (slice[i].low < slice[i-1].low && slice[i].low < slice[i-2].low &&
+        slice[i].low < slice[i+1].low && slice[i].low < slice[i+2].low)
+      swingLows.push({ i, price: slice[i].low });
+  }
+
+  if (swingHighs.length < 2 || swingLows.length < 2) return null;
+
+  const lastClose = candles[n-1].close;
+  const prevClose = candles[n-2].close;
+
+  const lastSwingHigh = swingHighs[swingHighs.length - 1];
+  const prevSwingHigh = swingHighs[swingHighs.length - 2];
+  const lastSwingLow  = swingLows[swingLows.length - 1];
+  const prevSwingLow  = swingLows[swingLows.length - 2];
+
+  const higherHighs = lastSwingHigh.price > prevSwingHigh.price;
+  const higherLows  = lastSwingLow.price  > prevSwingLow.price;
+  const lowerHighs  = lastSwingHigh.price < prevSwingHigh.price;
+  const lowerLows   = lastSwingLow.price  < prevSwingLow.price;
+
+  const inUptrend   = higherHighs && higherLows;
+  const inDowntrend = lowerHighs  && lowerLows;
+
+  // BOS Altista: em uptrend, preço rompe acima do último swing high (continuação altista)
+  if (inUptrend && prevClose < lastSwingHigh.price && lastClose > lastSwingHigh.price) {
+    return { type: 'bos_bullish', score: +12,
+      name: 'BOS Altista — Quebra de Estrutura ↑',
+      desc: `Preço rompeu o topo estrutural em $${lastSwingHigh.price.toFixed(lastSwingHigh.price >= 1 ? 2 : 4)} em tendência de alta — continuação confirmada. Estrutura altista intacta.` };
+  }
+
+  // BOS Baixista: em downtrend, preço rompe abaixo do último swing low (continuação baixista)
+  if (inDowntrend && prevClose > lastSwingLow.price && lastClose < lastSwingLow.price) {
+    return { type: 'bos_bearish', score: -12,
+      name: 'BOS Baixista — Quebra de Estrutura ↓',
+      desc: `Preço rompeu o fundo estrutural em $${lastSwingLow.price.toFixed(lastSwingLow.price >= 1 ? 2 : 4)} em tendência de baixa — continuação confirmada. Estrutura baixista intacta.` };
+  }
+
+  // CHoCH Altista: em downtrend, preço rompe acima do último swing high (mudança de caráter — reversão)
+  if (inDowntrend && prevClose < lastSwingHigh.price && lastClose > lastSwingHigh.price) {
+    return { type: 'choch_bullish', score: +22,
+      name: 'CHoCH Altista — Mudança de Caráter ↑',
+      desc: `Preço quebrou a resistência estrutural $${lastSwingHigh.price.toFixed(lastSwingHigh.price >= 1 ? 2 : 4)} em tendência de baixa — sinal de reversão. Alta probabilidade de alta mais significativa.` };
+  }
+
+  // CHoCH Baixista: em uptrend, preço rompe abaixo do último swing low (mudança de caráter — reversão)
+  if (inUptrend && prevClose > lastSwingLow.price && lastClose < lastSwingLow.price) {
+    return { type: 'choch_bearish', score: -22,
+      name: 'CHoCH Baixista — Mudança de Caráter ↓',
+      desc: `Preço quebrou o suporte estrutural $${lastSwingLow.price.toFixed(lastSwingLow.price >= 1 ? 2 : 4)} em tendência de alta — sinal de reversão. Alta probabilidade de queda mais significativa.` };
+  }
+
+  return null;
 }
 
 function detectTriangle(candles, lookback = 80) {
@@ -743,17 +849,20 @@ function _calcTechIndicators(candles, closes) {
   const mktStruct   = detectMarketStructure(candles);
   const triangle    = detectTriangle(candles);
   const dblPattern  = detectDoubleTopBottom(candles);
+  const bosChoch    = detectBOSCHoCH(candles);
+  const cvd         = calcCVD(candles);
 
   return { price, rsiArr, rsi, ema9, ema21, ema200,
     macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
     bb, atr, volRatio, levels, vwap, obvTrend, stochRSI,
-    patterns, divergences, adx, emaCross, mktStruct, triangle, dblPattern };
+    patterns, divergences, adx, emaCross, mktStruct, triangle, dblPattern,
+    bosChoch, cvd };
 }
 
 function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) {
   const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
     ema9, ema21, ema200, bb, vwap, obvTrend, volRatio, patterns, divergences, adx,
-    emaCross, mktStruct, triangle, dblPattern } = ind;
+    emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd } = ind;
 
   let score = 0;
   const reasons = [], indicators = [];
@@ -908,7 +1017,29 @@ function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) 
     reasons.push({text: dblPattern.name, type: dblPattern.score > 0 ? 'positive' : 'negative', isPattern: true});
   }
 
-  return { score, reasons, indicators, mxUp, mxDown, mAbove, emaCross, mktStruct, triangle, dblPattern };
+  // CVD — Cumulative Volume Delta
+  if (cvd != null) {
+    if (cvd.trend === 'rising') {
+      score += 7;
+      reasons.push({ text: 'CVD crescente — pressao compradora acumulando', type: 'positive' });
+    } else if (cvd.trend === 'falling') {
+      score -= 7;
+      reasons.push({ text: 'CVD em queda — pressao vendedora acumulando', type: 'negative' });
+    }
+    indicators.push({
+      name: 'CVD (30 candles)',
+      reading: cvd.trend === 'rising' ? 'Pressao compradora ↑' : cvd.trend === 'falling' ? 'Pressao vendedora ↓' : 'Neutro',
+      color: cvd.trend === 'rising' ? 'var(--accent)' : cvd.trend === 'falling' ? 'var(--danger)' : 'var(--muted)'
+    });
+  }
+
+  // BOS / CHoCH
+  if (bosChoch && bosChoch.score !== 0) {
+    score += bosChoch.score;
+    reasons.push({ text: bosChoch.name, type: bosChoch.score > 0 ? 'positive' : 'negative', isPattern: true });
+  }
+
+  return { score, reasons, indicators, mxUp, mxDown, mAbove, emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd };
 }
 
 /**
@@ -919,8 +1050,21 @@ function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) 
  * @param {{value:number, label:string}} fg - Fear & Greed index
  * @param {{score: string, leverage: number, rr: string}} options - state overrides
  */
-function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest = null, options = { score: '0', leverage: 10, rr: 'fib' }) {
+function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest = null, options = { score: '0', leverage: 10, rr: 'fib' }, news = []) {
   if (!candles || candles.length < 50) return null;
+
+  // ── Filtro de liquidez mínima ──
+  const CANDLES_PER_DAY = { '5m': 288, '15m': 96, '30m': 48, '1h': 24, '4h': 6, '1D': 1 };
+  const candlesPerDay = CANDLES_PER_DAY[tf] ?? 24;
+  const MIN_DAILY_VOLUME_USDT = 5_000_000;
+  const daysToCheck = Math.min(3, Math.floor(candles.length / candlesPerDay));
+  if (daysToCheck >= 1) {
+    const recentCandles = candles.slice(-(candlesPerDay * daysToCheck));
+    const totalVolumeUSDT = recentCandles.reduce((sum, c) => sum + c.volume * c.close, 0);
+    const avgDailyVolumeUSDT = totalVolumeUSDT / daysToCheck;
+    if (avgDailyVolumeUSDT < MIN_DAILY_VOLUME_USDT) return null;
+  }
+
   const closes = candles.map(c => c.close);
 
   const ind = _calcTechIndicators(candles, closes);
@@ -930,7 +1074,7 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
 
   const safeFg = fg ?? { value: 50, label: 'Neutro' };
   const { score: rawScore, reasons, indicators, mxUp, mxDown, mAbove,
-    emaCross, mktStruct, triangle, dblPattern } = _computeScore(price, ind, safeFg, fundingRate, openInterest);
+    emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd } = _computeScore(price, ind, safeFg, fundingRate, openInterest);
 
   const dir       = rawScore >= 0 ? 'buy' : 'sell';
   const normScore = Math.min(100, Math.round(Math.abs(rawScore)));
@@ -1001,12 +1145,13 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
     capStop, feePctCap,
     reasons, indicators, summary,
     patterns, divergences, conditionalEntry,
-    emaCross, mktStruct, triangle, dblPattern,
+    emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd,
     vwap, obvTrend, stochRSI,
     candles,
     mtfConfluence: null,
     fundingRate,
     openInterest,
+    news: news ?? [],
   };
 }
 
@@ -1093,10 +1238,10 @@ export {
   CORS_PROXIES, TF_MAP, TF_ORDER,
   // Indicators
   calcEMA, calcRSI, calcMACD, calcBollinger, calcATR, calcADX,
-  avgVol, findLevels, calcVWAP, calcOBVTrend, calcStochRSI,
+  avgVol, findLevels, calcVWAP, calcOBVTrend, calcStochRSI, calcCVD,
   // Patterns
   detectCandlePatterns, detectDivergences, detectEMACross,
-  detectMarketStructure, detectTriangle, detectDoubleTopBottom,
+  detectMarketStructure, detectTriangle, detectDoubleTopBottom, detectBOSCHoCH,
   // Risk / Reward
   calcLiqPrice, capReturn, getFibSet, calcMetas,
   // Analysis engine
