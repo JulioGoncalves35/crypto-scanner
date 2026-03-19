@@ -80,6 +80,19 @@ const TIMEFRAMES_BY_MODE = {
 
 Code sections are separated by `// ─────────────────────` divider comments.
 
+### 9. Backtest System
+- **Location:** `painel.html` only (not in `painel-core.js`)
+- `fetchCandlesBacktest(symbol, tf, limit, signal)` — fetches up to 1000 candles for backtest
+- `simulateOutcome(setup, futureCandles)` — walks future candles checking stop/m3/m2/m1 in that order (highest target first); returns `{ result, mfePct, maePct }`
+- `calcBacktestPnL(setup, result, leverage)` — P&L % calculation
+- `runBacktest(signal, minScore, selectedTFs, selectedCoins, selectedLeverage)` — sliding window orchestrator (WINDOW=200, STEP=10, LIMIT=1000); accepts configurable coins and leverage
+- `calcPatternHitRates(trades)` — per-indicator win rate from closed trades (min 3 occurrences, excludes open trades)
+- `buildInsightsHtml(...)` — renders 3 insight sections: pattern hit rate table, LONG/SHORT breakdown, P&L distribution bars
+- `renderBacktestResults(trades, periods, rejStats, leverage)` — full results renderer
+- **Controls:** score mínimo, alavancagem (5x/10x/20x/50x), moedas (BTC/ETH/SOL/BNB/XRP/ADA/AVAX, multi-select), timeframes
+- **Default coins:** BTC + ETH (pre-checked); other 5 coins opt-in
+- **Future window per TF:** 5m=288 candles (24h), 15m=192 (48h), 1h=120 (5d), 4h=84 (14d)
+
 ### 1. Coin Management
 - `initCoins()` — populates the coin selection grid on page load
 - `createCoinIcon(symbol)` — builds a coin tile with logo and checkbox

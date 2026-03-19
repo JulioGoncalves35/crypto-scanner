@@ -626,6 +626,10 @@ display: flex; align-items: center; justify-content: space-between;
 }
 .bt-reason-row:last-child { border-bottom: none; }
 .bt-reason-count { font-weight: 700; color: var(--text); }
+.bt-dist-bar-wrap { display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:10px; margin:4px 0; }
+.bt-dist-bar { height:10px; border-radius:3px; min-width:2px; transition:width 0.3s; }
+.bt-insights-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:0 0 24px; }
+.bt-insights-grid .bt-reasons-box.full { grid-column:1/-1; }
 
 @media (max-width: 768px) {
   .header-status-text { display: none; }
@@ -841,7 +845,7 @@ main { padding: 20px 14px 60px; }
 <div class="page-section" id="section-backtest">
   <div class="page-title-j">
     <h1>Back<em>test</em></h1>
-    <p>// BTC &amp; ETH · Janela deslizante 200 candles · 5m / 15m / 1h / 4h</p>
+    <p>// Janela deslizante 200 candles · configurável por moeda e timeframe</p>
   </div>
 
   <!-- CONTROLS -->
@@ -853,6 +857,27 @@ main { padding: 20px 14px 60px; }
         <option value="60">60</option>
         <option value="70">70</option>
       </select>
+    </div>
+    <div class="bt-control-group">
+      <label class="bt-label">Alavancagem</label>
+      <select id="btLeverageSelect" class="bt-select">
+        <option value="5">5x</option>
+        <option value="10" selected>10x</option>
+        <option value="20">20x</option>
+        <option value="50">50x</option>
+      </select>
+    </div>
+    <div class="bt-control-group" style="flex-direction:column;align-items:flex-start;gap:5px">
+      <label class="bt-label">Moedas</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="btCoinsGroup">
+        <label class="bt-tf-check"><input type="checkbox" value="BTC"  class="bt-coin-cb" checked> BTC</label>
+        <label class="bt-tf-check"><input type="checkbox" value="ETH"  class="bt-coin-cb" checked> ETH</label>
+        <label class="bt-tf-check"><input type="checkbox" value="SOL"  class="bt-coin-cb"> SOL</label>
+        <label class="bt-tf-check"><input type="checkbox" value="BNB"  class="bt-coin-cb"> BNB</label>
+        <label class="bt-tf-check"><input type="checkbox" value="XRP"  class="bt-coin-cb"> XRP</label>
+        <label class="bt-tf-check"><input type="checkbox" value="ADA"  class="bt-coin-cb"> ADA</label>
+        <label class="bt-tf-check"><input type="checkbox" value="AVAX" class="bt-coin-cb"> AVAX</label>
+      </div>
     </div>
     <div class="bt-control-group" style="flex-direction:column;align-items:flex-start;gap:5px">
       <label class="bt-label">Timeframes</label>
@@ -881,6 +906,7 @@ main { padding: 20px 14px 60px; }
   <div id="btResults" style="display:none">
     <div id="btStats" class="journal-stats"></div>
     <div id="btReasonsBlock" class="bt-reasons-block"></div>
+    <div id="btInsights"></div>
     <div id="btTable"></div>
   </div>
 </div><!-- /section-backtest -->
@@ -3757,9 +3783,9 @@ function calcBacktestPnL(setup, result, leverage) {
 }
 
 // Orquestração principal do backtest
-async function runBacktest(signal, minScore, selectedTFs) {
-  const COINS    = ['BTCUSDT', 'ETHUSDT'];
-  const LEVERAGE = 10;
+async function runBacktest(signal, minScore, selectedTFs, selectedCoins, selectedLeverage) {
+  const COINS    = selectedCoins;
+  const LEVERAGE = selectedLeverage;
   const FG_VALUE = 50; // neutro — sem fetch histórico de F&G
   const WINDOW   = 200;
   const STEP     = 10;
@@ -3890,7 +3916,7 @@ async function runBacktest(signal, minScore, selectedTFs) {
   fillEl.style.width = '100%';
   pctEl.textContent  = '100%';
 
-  return { trades, periods, rejStats };
+  return { trades, periods, rejStats, leverage: LEVERAGE };
 }
 
 function startBacktest() {
@@ -3909,6 +3935,18 @@ function startBacktest() {
     return;
   }
 
+  // Lê moedas selecionadas
+  const selectedCoins = [...document.querySelectorAll('.bt-coin-cb:checked')]
+    .map(cb => cb.value + 'USDT');
+
+  if (selectedCoins.length === 0) {
+    alert('Selecione ao menos uma moeda.');
+    return;
+  }
+
+  // Lê alavancagem
+  const selectedLeverage = parseInt(document.getElementById('btLeverageSelect').value, 10);
+
   const runBtn    = document.getElementById('btRunBtn');
   const cancelBtn = document.getElementById('btCancelBtn');
   runBtn.disabled = true;
@@ -3922,10 +3960,10 @@ function startBacktest() {
   document.getElementById('btProgressWrap').classList.add('visible');
   document.getElementById('btResults').style.display = 'none';
 
-  runBacktest(signal, minScore, selectedTFs)
-    .then(({ trades, periods, rejStats }) => {
+  runBacktest(signal, minScore, selectedTFs, selectedCoins, selectedLeverage)
+    .then(({ trades, periods, rejStats, leverage }) => {
       if (signal.aborted) return;
-      renderBacktestResults(trades, periods, rejStats);
+      renderBacktestResults(trades, periods, rejStats, leverage);
     })
     .catch(e => {
       if (e.name === 'AbortError') {
@@ -3950,7 +3988,124 @@ function cancelBacktest() {
   cancelBtn.style.display = 'none';
 }
 
-function renderBacktestResults(trades, periods, rejStats) {
+function calcPatternHitRates(trades) {
+  const map = {};
+  for (const t of trades) {
+    const isWin  = ['m1','m2','m3'].includes(t.result);
+    const isLoss = t.result === 'stop';
+    if (!isWin && !isLoss) continue; // ignora abertos (não resolvidos)
+    for (const r of (t.reasons || [])) {
+      if (!map[r]) map[r] = { wins: 0, losses: 0 };
+      if (isWin)  map[r].wins++;
+      if (isLoss) map[r].losses++;
+    }
+  }
+  return Object.entries(map)
+    .map(([reason, v]) => ({
+      reason,
+      wins:    v.wins,
+      losses:  v.losses,
+      total:   v.wins + v.losses,
+      winRate: v.wins + v.losses > 0 ? Math.round(v.wins / (v.wins + v.losses) * 100) : null,
+    }))
+    .filter(e => e.total >= 3)
+    .sort((a, b) => b.total - a.total);
+}
+
+function buildInsightsHtml(trades, wins, stops, opens, closed, allTFs, tfStats, longRate, shortRate, lClosed, lWins, sClosed, sWins, leverage) {
+  const rateColor = r => r === null ? 'var(--muted)' : r >= 60 ? 'var(--accent)' : r >= 40 ? 'var(--warn)' : 'var(--danger)';
+
+  // ── Sub-seção 1: Taxa de acerto por padrão/indicador ──
+  const hitRates = calcPatternHitRates(trades);
+  const maxTotal = hitRates.length > 0 ? hitRates[0].total : 1;
+  const patternRows = hitRates.slice(0, 15).map(e => {
+    const barColor = e.winRate >= 60 ? 'var(--accent)' : e.winRate >= 40 ? 'var(--warn)' : 'var(--danger)';
+    const barWidth = Math.round(e.winRate ?? 0);
+    const label = e.reason.length > 52 ? e.reason.slice(0, 52) + '…' : e.reason;
+    return `<div class="bt-reason-row" style="gap:8px">
+      <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${label}</span>
+      <span style="color:var(--muted);min-width:36px;text-align:right">${e.total}×</span>
+      <span style="color:${barColor};min-width:32px;text-align:right;font-weight:700">${e.winRate !== null ? e.winRate + '%' : '—'}</span>
+      <div style="width:80px;background:rgba(255,255,255,0.06);border-radius:3px;height:8px;flex-shrink:0">
+        <div style="width:${barWidth}%;height:8px;border-radius:3px;background:${barColor}"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const patternSection = `
+    <div class="bt-reasons-box full">
+      <div class="bt-reasons-title" style="color:var(--accent2)">◈ Taxa de Acerto por Padrão / Indicador — fechados (wins + stops)</div>
+      ${hitRates.length === 0
+        ? '<div class="bt-reason-row" style="color:var(--muted)">Dados insuficientes (mín. 3 ocorrências por padrão)</div>'
+        : patternRows}
+    </div>`;
+
+  // ── Sub-seção 2: Breakdown LONG vs SHORT ──
+  const lM1 = lWins.filter(t => t.result === 'm1').length;
+  const lM2 = lWins.filter(t => t.result === 'm2').length;
+  const lM3 = lWins.filter(t => t.result === 'm3').length;
+  const lStops = lClosed.filter(t => t.result === 'stop').length;
+  const lOpens = trades.filter(t => t.dir === 'buy' && t.result === 'open').length;
+
+  const sM1 = sWins.filter(t => t.result === 'm1').length;
+  const sM2 = sWins.filter(t => t.result === 'm2').length;
+  const sM3 = sWins.filter(t => t.result === 'm3').length;
+  const sStops = sClosed.filter(t => t.result === 'stop').length;
+  const sOpens = trades.filter(t => t.dir === 'sell' && t.result === 'open').length;
+
+  const dirSection = `
+    <div class="bt-reasons-box">
+      <div class="bt-reasons-title" style="color:var(--accent)">▲ LONG — ${longRate !== null ? longRate + '%' : '—'} win rate</div>
+      <div class="bt-reason-row"><span>M1 / M2 / M3</span><span class="bt-reason-count">${lM1} / ${lM2} / ${lM3}</span></div>
+      <div class="bt-reason-row"><span>Stop</span><span class="bt-reason-count" style="color:var(--danger)">${lStops}</span></div>
+      <div class="bt-reason-row"><span>Abertos</span><span class="bt-reason-count" style="color:var(--muted)">${lOpens}</span></div>
+      <div class="bt-reason-row"><span>Total fechados</span><span class="bt-reason-count">${lClosed.length}</span></div>
+    </div>
+    <div class="bt-reasons-box">
+      <div class="bt-reasons-title" style="color:var(--danger)">▼ SHORT — ${shortRate !== null ? shortRate + '%' : '—'} win rate</div>
+      <div class="bt-reason-row"><span>M1 / M2 / M3</span><span class="bt-reason-count">${sM1} / ${sM2} / ${sM3}</span></div>
+      <div class="bt-reason-row"><span>Stop</span><span class="bt-reason-count" style="color:var(--danger)">${sStops}</span></div>
+      <div class="bt-reason-row"><span>Abertos</span><span class="bt-reason-count" style="color:var(--muted)">${sOpens}</span></div>
+      <div class="bt-reason-row"><span>Total fechados</span><span class="bt-reason-count">${sClosed.length}</span></div>
+    </div>`;
+
+  // ── Sub-seção 3: Distribuição P&L ──
+  const m1s  = trades.filter(t => t.result === 'm1').length;
+  const m2s  = trades.filter(t => t.result === 'm2').length;
+  const m3s  = trades.filter(t => t.result === 'm3').length;
+  const stps = trades.filter(t => t.result === 'stop').length;
+  const opns = trades.filter(t => t.result === 'open').length;
+  const tot  = trades.length || 1;
+
+  const distRows = [
+    { label: 'M3',    count: m3s,  color: 'var(--accent)',  bold: true  },
+    { label: 'M2',    count: m2s,  color: 'var(--accent)',  bold: false },
+    { label: 'M1',    count: m1s,  color: '#7ec8a0',        bold: false },
+    { label: 'STOP',  count: stps, color: 'var(--danger)',  bold: false },
+    { label: 'ABERTO',count: opns, color: 'var(--muted)',   bold: false },
+  ].map(row => {
+    const pct = Math.round(row.count / tot * 100);
+    const barW = Math.max(pct, row.count > 0 ? 2 : 0);
+    return `<div class="bt-dist-bar-wrap">
+      <span style="min-width:48px;color:${row.color};${row.bold?'font-weight:700':''}">${row.label}</span>
+      <div style="flex:1;background:rgba(255,255,255,0.06);border-radius:3px;height:10px">
+        <div class="bt-dist-bar" style="width:${barW}%;background:${row.color}"></div>
+      </div>
+      <span style="min-width:24px;text-align:right;color:var(--text)">${row.count}</span>
+      <span style="min-width:36px;text-align:right;color:var(--muted)">(${pct}%)</span>
+    </div>`;
+  }).join('');
+
+  const distSection = `
+    <div class="bt-reasons-box full">
+      <div class="bt-reasons-title" style="color:var(--accent2)">◉ Distribuição de Resultados — todos os ${trades.length} trades · leverage ${leverage}x</div>
+      ${distRows}
+    </div>`;
+
+  return `<div class="bt-insights-grid">${patternSection}${dirSection}${distSection}</div>`;
+}
+
+function renderBacktestResults(trades, periods, rejStats, leverage = 10) {
   document.getElementById('btResults').style.display = 'block';
 
   // ── Helpers ──
@@ -4048,7 +4203,7 @@ function renderBacktestResults(trades, periods, rejStats) {
     <div class="stat-card">
       <div class="stat-label">P&amp;L Médio / trade</div>
       <div class="stat-val" style="color:${avgPnl===null?'':parseFloat(avgPnl)>=0?'var(--accent)':'var(--danger)'}">${avgPnl !== null ? (parseFloat(avgPnl)>=0?'+':'')+avgPnl+'%' : '—'}</div>
-      <div class="stat-sub">incluindo abertos · leverage 10x</div>
+      <div class="stat-sub">incluindo abertos · leverage ${leverage}x</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Qualidade dos Wins ⭐</div>
@@ -4127,6 +4282,14 @@ function renderBacktestResults(trades, periods, rejStats) {
       <div class="bt-open-hint">Estes sinais geraram setups que não avançaram. Podem indicar entradas tardias, mercado lateralizado ou conflito entre indicadores.</div>
     </div>` : ''}
   `;
+
+  const insightsEl = document.getElementById('btInsights');
+  if (insightsEl) {
+    insightsEl.innerHTML = buildInsightsHtml(
+      trades, wins, stops, opens, closed, allTFs, tfStats,
+      longRate, shortRate, lClosed, lWins, sClosed, sWins, leverage
+    );
+  }
 
   // ── Tabela ──
   if (!trades.length) {
