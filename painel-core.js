@@ -1039,6 +1039,17 @@ function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) 
     reasons.push({ text: bosChoch.name, type: bosChoch.score > 0 ? 'positive' : 'negative', isPattern: true });
   }
 
+  // Penalidade combo: RSI oversold + F&G Medo Extremo em setup SHORT = risco alto de short squeeze
+  if (score < 0 && rsi !== null && rsi < 40 && fg.value < 25) {
+    score += 20;
+    reasons.push({ text: `RISCO: RSI ${rsi.toFixed(1)} + F&G ${fg.value} — Short squeeze iminente`, type: 'negative' });
+  }
+  // Penalidade combo simétrica: RSI overbought + F&G Ganância Extrema em setup LONG = risco de bull trap
+  if (score > 0 && rsi !== null && rsi > 60 && fg.value > 75) {
+    score -= 20;
+    reasons.push({ text: `RISCO: RSI ${rsi.toFixed(1)} + F&G ${fg.value} — Bull trap iminente`, type: 'negative' });
+  }
+
   return { score, reasons, indicators, mxUp, mxDown, mAbove, emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd };
 }
 
@@ -1106,6 +1117,11 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
     const minSafeStop = liqPrice - entryToLiqDist * 0.50;
     if (stop > minSafeStop) { stop = minSafeStop; stopAdjusted = true; }
   }
+
+  // Rejeitar setup se o stop final ficou apertado demais para o timeframe (ex: 50x em 15M)
+  const TF_MIN_STOP = { '5m': 0.008, '15m': 0.012, '30m': 0.015, '1h': 0.020, '4h': 0.030, '1D': 0.050 };
+  const tfMinStop = TF_MIN_STOP[tf] ?? 0.015;
+  if (Math.abs(stop - entry) / entry < tfMinStop) return null;
 
   const {m1:m1p, m2:m2p, m3:m3p} = calcMetas(dir, entry, stop, options.rr);
 
