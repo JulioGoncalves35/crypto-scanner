@@ -83,15 +83,19 @@ Code sections are separated by `// ───────────────
 ### 9. Backtest System
 - **Location:** `painel.html` only (not in `painel-core.js`)
 - `fetchCandlesBacktest(symbol, tf, limit, signal)` — fetches up to 1000 candles for backtest
-- `simulateOutcome(setup, futureCandles)` — walks future candles checking stop/m3/m2/m1 in that order (highest target first); returns `{ result, mfePct, maePct }`
-- `calcBacktestPnL(setup, result, leverage)` — P&L % calculation
-- `runBacktest(signal, minScore, selectedTFs, selectedCoins, selectedLeverage)` — sliding window orchestrator (WINDOW=200, STEP=10, LIMIT=1000); accepts configurable coins and leverage
-- `calcPatternHitRates(trades)` — per-indicator win rate from closed trades (min 3 occurrences, excludes open trades)
+- `simulateOutcome(setup, futureCandles)` — walks future candles checking stop/m3/m2/m1 (highest target first); returns `{ result, mfePct, maePct, closePrice? }`. If horizon exhausted without resolution, returns `result='timeout'` with `closePrice` = last candle close
+- `calcBacktestPnL(setup, result, leverage, closePrice)` — P&L % calculation; handles `'timeout'` using `closePrice` vs entry for real P&L
+- `runBacktest(signal, minScore, selectedTFs, selectedCoins, selectedLeverage, horizon)` — sliding window orchestrator (WINDOW=200, STEP=10, LIMIT=1000)
+- `calcPatternHitRates(trades)` — per-indicator win rate from closed trades (min 3 occurrences, excludes open/timeout trades)
 - `buildInsightsHtml(...)` — renders 3 insight sections: pattern hit rate table, LONG/SHORT breakdown, P&L distribution bars
 - `renderBacktestResults(trades, periods, rejStats, leverage)` — full results renderer
-- **Controls:** score mínimo, alavancagem (5x/10x/20x/50x), moedas (BTC/ETH/SOL/BNB/XRP/ADA/AVAX, multi-select), timeframes
+- **Trade results:** `m1` / `m2` / `m3` (target hit) · `stop` (stop-loss hit) · `timeout` (horizon exhausted, exit at close price) · `open` (never resolved — should not appear with normal/short horizons)
+- **Controls:** score mínimo, alavancagem (5x/10x/20x/50x), horizonte (curto/normal/longo), moedas (BTC/ETH/SOL/BNB/XRP/ADA/AVAX, multi-select), timeframes
 - **Default coins:** BTC + ETH (pre-checked); other 5 coins opt-in
-- **Future window per TF:** 5m=288 candles (24h), 15m=192 (48h), 1h=120 (5d), 4h=84 (14d)
+- **Horizon — future window per TF:**
+  - Curto:  5m=60 (5h) · 15m=48 (12h) · 1h=36 (36h) · 4h=21 (3.5d)
+  - Normal: 5m=120 (10h) · 15m=96 (24h) · 1h=60 (2.5d) · 4h=42 (7d)  ← padrão
+  - Longo:  5m=288 (24h) · 15m=192 (48h) · 1h=120 (5d) · 4h=84 (14d)
 
 ### 1. Coin Management
 - `initCoins()` — populates the coin selection grid on page load
