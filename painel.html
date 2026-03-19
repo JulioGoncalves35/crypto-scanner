@@ -2164,7 +2164,7 @@ function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) 
 // ─────────────────────────────────────────
 // MOTOR DE ANÁLISE — função principal
 // ─────────────────────────────────────────
-function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest = null, news = []) {
+function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest = null, news = [], scoreThreshold = null) {
   if (!candles || candles.length < 50) return null;
 
   // ── Filtro de liquidez mínima ──
@@ -2193,9 +2193,10 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
   const { score: rawScore, reasons, indicators, mxUp, mxDown, mAbove,
     emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd } = _computeScore(price, ind, safeFg, fundingRate, openInterest);
 
-  const dir       = rawScore >= 0 ? 'buy' : 'sell';
-  const normScore = Math.min(100, Math.round(Math.abs(rawScore)));
-  if (normScore < parseInt(state.score)) return null;
+  const dir            = rawScore >= 0 ? 'buy' : 'sell';
+  const normScore      = Math.min(100, Math.round(Math.abs(rawScore)));
+  const _scoreMin      = scoreThreshold !== null ? scoreThreshold : parseInt(state.score);
+  if (normScore < _scoreMin) return null;
 
   // Stop Loss
   const MIN_STOP_PCT = 0.015; // piso mínimo de 1.5% — evita stops apertados em tokens voláteis
@@ -3772,6 +3773,8 @@ async function runBacktest(signal, minScore, selectedTFs) {
 
   const trades  = [];
   const periods = {}; // { 'BTC 5m': { start, end, count } }
+  // Contadores de rejeição — mostram onde o pipeline descarta janelas
+  const rejStats = { total: 0, nullReturns: 0, scoreFailed: 0, passed: 0 };
   const total   = COINS.length * TIMEFRAMES.length;
   let   progress = 0;
 
@@ -3835,14 +3838,19 @@ async function runBacktest(signal, minScore, selectedTFs) {
         const windowCandles = candles.slice(i, i + WINDOW);
         const futureCandles = candles.slice(i + WINDOW, i + WINDOW + FUTURE);
 
+        rejStats.total++;
         let setup = null;
         try {
-          setup = analyzeCandles(coin, tf, windowCandles, FG_VALUE, null, null, null);
+          // scoreThreshold=0: analyzeCandles retorna tudo (ADX, volume e stop ainda filtram)
+          // O filtro por score do backtest é feito abaixo com minScore
+          setup = analyzeCandles(coin, tf, windowCandles, FG_VALUE, null, null, null, 0);
         } catch(e) {
           // Janela inválida — continuar
         }
 
-        if (!setup || setup.score < minScore) continue;
+        if (!setup) { rejStats.nullReturns++; continue; }
+        if (setup.score < minScore) { rejStats.scoreFailed++; continue; }
+        rejStats.passed++;
 
         const entryTime               = windowCandles[windowCandles.length - 1].time;
         const { result, mfePct, maePct } = simulateOutcome(setup, futureCandles);
@@ -3868,7 +3876,9 @@ async function runBacktest(signal, minScore, selectedTFs) {
           m1:         setup.m1.price,
           m2:         setup.m2.price,
           m3:         setup.m3.price,
-          reasons:    (setup.reasons || []).map(r => r.text || r),
+          reasons:    (setup.reasons || [])
+            .map(r => typeof r === 'string' ? r : (r.text || ''))
+            .filter(r => r && !r.toLowerCase().includes('undefined')),
         });
       }
 
@@ -3880,7 +3890,7 @@ async function runBacktest(signal, minScore, selectedTFs) {
   fillEl.style.width = '100%';
   pctEl.textContent  = '100%';
 
-  return { trades, periods };
+  return { trades, periods, rejStats };
 }
 
 function startBacktest() {
@@ -3913,9 +3923,9 @@ function startBacktest() {
   document.getElementById('btResults').style.display = 'none';
 
   runBacktest(signal, minScore, selectedTFs)
-    .then(({ trades, periods }) => {
+    .then(({ trades, periods, rejStats }) => {
       if (signal.aborted) return;
-      renderBacktestResults(trades, periods);
+      renderBacktestResults(trades, periods, rejStats);
     })
     .catch(e => {
       if (e.name === 'AbortError') {
@@ -3940,7 +3950,7 @@ function cancelBacktest() {
   cancelBtn.style.display = 'none';
 }
 
-function renderBacktestResults(trades, periods) {
+function renderBacktestResults(trades, periods, rejStats) {
   document.getElementById('btResults').style.display = 'block';
 
   // ── Helpers ──
@@ -3987,6 +3997,28 @@ function renderBacktestResults(trades, periods) {
   const longRate  = pct(lWins.length, lClosed.length);
   const shortRate = pct(sWins.length, sClosed.length);
 
+  // ── Pipeline de Filtragem ──
+  const pipelineHtml = rejStats ? (() => {
+    const adxRejected   = rejStats.nullReturns;
+    const scoreRejected = rejStats.scoreFailed;
+    const adxPct   = rejStats.total > 0 ? Math.round(adxRejected   / rejStats.total * 100) : 0;
+    const scorePct = rejStats.total > 0 ? Math.round(scoreRejected / rejStats.total * 100) : 0;
+    const passPct  = rejStats.total > 0 ? Math.round(rejStats.passed / rejStats.total * 100) : 0;
+    return `<div class="bt-period-block" style="grid-column:1/-1;border-color:rgba(0,136,255,0.25)">
+      <div class="bt-period-title" style="color:var(--accent2)">⬡ Pipeline de Filtragem</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text);line-height:2">
+        <span style="color:var(--muted)">${rejStats.total} janelas analisadas</span>
+        <span style="margin:0 8px;color:var(--border)">→</span>
+        <span style="color:var(--danger)">${adxRejected} rejeitadas por ADX&lt;18 / volume / stop (${adxPct}%)</span>
+        <span style="margin:0 8px;color:var(--border)">→</span>
+        <span style="color:var(--warn)">${scoreRejected} rejeitadas por score (${scorePct}%)</span>
+        <span style="margin:0 8px;color:var(--border)">→</span>
+        <span style="color:var(--accent);font-weight:700">${rejStats.passed} setups gerados (${passPct}%)</span>
+      </div>
+      ${adxPct > 70 ? `<div class="bt-open-hint" style="margin-top:6px">ADX &lt; 18 está descartando ${adxPct}% das janelas — mercado em consolidação prolongada. É o comportamento esperado do scanner para evitar entradas em lateralização.</div>` : ''}
+    </div>`;
+  })() : '';
+
   // ── Bloco Período Analisado ──
   const periodRows = Object.entries(periods).map(([key, p]) => {
     const daysRange = Math.round((p.end - p.start) / 86400000);
@@ -3998,6 +4030,7 @@ function renderBacktestResults(trades, periods) {
   }).join('');
 
   document.getElementById('btStats').innerHTML = `
+    ${pipelineHtml}
     <div class="bt-period-block" style="grid-column:1/-1">
       <div class="bt-period-title">◉ Período Analisado — verifique na Bybit</div>
       ${periodRows || '<span style="color:var(--muted)">Sem dados de período.</span>'}
@@ -4058,7 +4091,7 @@ function renderBacktestResults(trades, periods) {
     const freq = {};
     subset.forEach(t => (t.reasons || []).forEach(r => {
       const key = typeof r === 'string' ? r : (r.text || '');
-      if (key) freq[key] = (freq[key] || 0) + 1;
+      if (key && !key.toLowerCase().includes('undefined')) freq[key] = (freq[key] || 0) + 1;
     }));
     return Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0, n);
   }
