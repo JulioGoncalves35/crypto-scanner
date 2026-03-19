@@ -41,31 +41,36 @@ header {
 position: sticky; top: 0; z-index: 100;
 background: rgba(9,12,16,0.95); backdrop-filter: blur(20px);
 border-bottom: 1px solid var(--border);
-padding: 0 28px;
-display: flex; align-items: center; justify-content: space-between;
-height: 52px;
+padding: 0 16px;
+display: flex; align-items: center; gap: 10px;
+height: 52px; overflow: hidden;
 }
 .nav-tabs {
-display: flex; gap: 2px;
+display: flex; gap: 2px; flex-shrink: 1; min-width: 0;
 background: var(--surface2); border-radius: 10px; padding: 3px;
 border: 1px solid var(--border);
+overflow-x: auto; -webkit-overflow-scrolling: touch;
+scrollbar-width: none;
 }
+.nav-tabs::-webkit-scrollbar { display: none; }
 .nav-tab {
-font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px;
-padding: 6px 20px; border-radius: 8px;
+font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
+padding: 6px 14px; border-radius: 8px;
 cursor: pointer; border: none; background: transparent;
 color: var(--muted); transition: all 0.15s; text-transform: uppercase;
+white-space: nowrap; flex-shrink: 0;
 }
 .nav-tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 6px rgba(0,0,0,0.5); }
 .tab-count {
-display: inline-block; margin-left: 6px;
+display: inline-block; margin-left: 5px;
 background: rgba(0,229,160,0.2); color: var(--accent);
-font-size: 10px; padding: 1px 6px; border-radius: 10px;
+font-size: 10px; padding: 1px 5px; border-radius: 10px;
 }
 .header-status {
-display: flex; align-items: center; gap: 8px;
+display: flex; align-items: center; gap: 8px; flex-shrink: 0;
 font-family: var(--mono); font-size: 11px; color: var(--muted);
 }
+.header-status-text { white-space: nowrap; }
 .dot {
 width: 7px; height: 7px; border-radius: 50%;
 background: var(--accent); box-shadow: 0 0 8px var(--accent);
@@ -555,11 +560,45 @@ display: flex; align-items: center; justify-content: space-between;
   display: inline-block; padding: 2px 7px; border-radius: 5px;
   font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
 }
-.bt-badge.m1 { background: rgba(255,184,0,0.15); color: var(--warn); }
-.bt-badge.m2 { background: rgba(0,229,160,0.12); color: var(--accent); }
-.bt-badge.m3 { background: rgba(0,229,160,0.22); color: var(--accent); }
+.bt-badge.m1   { background: rgba(255,184,0,0.15);  color: var(--warn);   }
+.bt-badge.m2   { background: rgba(0,229,160,0.12);  color: var(--accent); }
+.bt-badge.m3   { background: rgba(0,229,160,0.25);  color: var(--accent); font-weight:900; }
 .bt-badge.stop { background: rgba(255,61,107,0.12); color: var(--danger); }
-.bt-badge.open { background: rgba(255,255,255,0.06); color: var(--muted); }
+.bt-badge.open { background: rgba(255,255,255,0.06);color: var(--muted);  }
+/* Quality tier stars inline with badge */
+.bt-stars { font-size: 10px; letter-spacing: -1px; margin-left: 3px; }
+/* MFE / MAE inline display */
+.bt-mfe  { color: var(--accent); font-size: 10px; }
+.bt-mae  { color: var(--danger); font-size: 10px; }
+.bt-mfemae { display: flex; flex-direction: column; gap: 1px; }
+/* Resultado cell: badge + score subtext */
+.bt-result-cell { display: flex; flex-direction: column; gap: 2px; }
+.bt-score-sub   { font-size: 9px; color: var(--muted); letter-spacing: 0; }
+/* Period block */
+.bt-period-block {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px 18px; margin-bottom: 20px;
+  font-family: var(--mono); font-size: 11px;
+}
+.bt-period-title {
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 10px;
+}
+.bt-period-row {
+  display: flex; gap: 16px; align-items: center;
+  padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  flex-wrap: wrap;
+}
+.bt-period-row:last-child { border-bottom: none; }
+.bt-period-par  { color: var(--accent); min-width: 56px; font-weight: 700; }
+.bt-period-date { color: var(--text); }
+.bt-period-meta { color: var(--muted); font-size: 10px; }
+/* MFE avg block for open trades */
+.bt-open-hint {
+  background: rgba(0,136,255,0.06); border: 1px solid rgba(0,136,255,0.18);
+  border-radius: 8px; padding: 8px 12px; margin-top: 4px;
+  font-family: var(--mono); font-size: 10px; color: var(--accent2); line-height: 1.6;
+}
 .bt-reasons-block {
   display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
   margin: 16px 0 24px;
@@ -582,8 +621,11 @@ display: flex; align-items: center; justify-content: space-between;
 .bt-reason-row:last-child { border-bottom: none; }
 .bt-reason-count { font-weight: 700; color: var(--text); }
 
+@media (max-width: 768px) {
+  .header-status-text { display: none; }
+  .nav-tab { padding: 5px 10px; font-size: 10px; letter-spacing: 0.5px; }
+}
 @media (max-width: 600px) {
-header { padding: 0 16px; }
 main { padding: 20px 14px 60px; }
 .cards-grid { grid-template-columns: 1fr; }
 .cap-grid { grid-template-columns: 1fr 1fr 1fr; }
@@ -607,7 +649,7 @@ main { padding: 20px 14px 60px; }
   </div>
   <div class="header-status">
     <div class="dot"></div>
-    <span id="statusText">AGUARDANDO SCAN</span>
+    <span id="statusText" class="header-status-text">AGUARDANDO SCAN</span>
   </div>
 </header>
 
@@ -3637,7 +3679,9 @@ async function fetchCandlesBacktest(symbol, tf, limit, signal) {
   }));
 }
 
-// Simula resultado de um setup usando os próximos 50 candles
+// Simula resultado de um setup e retorna MFE/MAE em % do entry
+// MFE = Max Favorable Excursion (quanto o preço foi a favor)
+// MAE = Max Adverse Excursion  (quanto o preço foi contra)
 function simulateOutcome(setup, futureCandles) {
   const { entry, stopPrice, dir } = setup;
   const m1 = setup.m1.price;
@@ -3645,20 +3689,38 @@ function simulateOutcome(setup, futureCandles) {
   const m3 = setup.m3.price;
   const isLong = dir === 'buy';
 
+  let mfeAbs = 0; // max favorable move em unidade de preço
+  let maeAbs = 0; // max adverse move em unidade de preço
+
   for (const c of futureCandles) {
     if (isLong) {
-      if (c.low  <= stopPrice) return 'stop';
-      if (c.high >= m3)        return 'm3';
-      if (c.high >= m2)        return 'm2';
-      if (c.high >= m1)        return 'm1';
+      const fav = c.high - entry;
+      const adv = entry  - c.low;
+      if (fav > mfeAbs) mfeAbs = fav;
+      if (adv > maeAbs) maeAbs = adv;
+      if (c.low  <= stopPrice) { return _simResult('stop', entry, mfeAbs, maeAbs); }
+      if (c.high >= m3)        { return _simResult('m3',   entry, mfeAbs, maeAbs); }
+      if (c.high >= m2)        { return _simResult('m2',   entry, mfeAbs, maeAbs); }
+      if (c.high >= m1)        { return _simResult('m1',   entry, mfeAbs, maeAbs); }
     } else {
-      if (c.high >= stopPrice) return 'stop';
-      if (c.low  <= m3)        return 'm3';
-      if (c.low  <= m2)        return 'm2';
-      if (c.low  <= m1)        return 'm1';
+      const fav = entry  - c.low;
+      const adv = c.high - entry;
+      if (fav > mfeAbs) mfeAbs = fav;
+      if (adv > maeAbs) maeAbs = adv;
+      if (c.high >= stopPrice) { return _simResult('stop', entry, mfeAbs, maeAbs); }
+      if (c.low  <= m3)        { return _simResult('m3',   entry, mfeAbs, maeAbs); }
+      if (c.low  <= m2)        { return _simResult('m2',   entry, mfeAbs, maeAbs); }
+      if (c.low  <= m1)        { return _simResult('m1',   entry, mfeAbs, maeAbs); }
     }
   }
-  return 'open';
+  return _simResult('open', entry, mfeAbs, maeAbs);
+}
+function _simResult(result, entry, mfeAbs, maeAbs) {
+  return {
+    result,
+    mfePct: (mfeAbs / entry * 100),
+    maePct: (maeAbs / entry * 100),
+  };
 }
 
 // Calcula P&L em % do capital para um trade simulado
@@ -3686,17 +3748,21 @@ async function runBacktest(signal, minScore) {
   const FG_VALUE   = 50; // neutro — sem fetch histórico de F&G
   const WINDOW     = 200;
   const STEP       = 10;
-  const FUTURE     = 50;
   const LIMIT      = 1000;
 
-  const trades   = [];
-  const total    = COINS.length * TIMEFRAMES.length;
+  // Janela futura proporcional ao timeframe (em vez de 50 candles fixos)
+  // 5m × 288 = 24h  |  15m × 192 = 48h  |  1h × 120 = 5 dias
+  const TF_FUTURE = { '5m': 288, '15m': 192, '1h': 120 };
+
+  const trades  = [];
+  const periods = {}; // { 'BTC 5m': { start, end, count } }
+  const total   = COINS.length * TIMEFRAMES.length;
   let   progress = 0;
 
-  const logEl   = document.getElementById('btProgressLog');
-  const fillEl  = document.getElementById('btProgressFill');
-  const pctEl   = document.getElementById('btProgressPct');
-  const textEl  = document.getElementById('btProgressText');
+  const logEl  = document.getElementById('btProgressLog');
+  const fillEl = document.getElementById('btProgressFill');
+  const pctEl  = document.getElementById('btProgressPct');
+  const textEl = document.getElementById('btProgressText');
 
   function updateBtProgress(pct, msg) {
     fillEl.style.width = pct + '%';
@@ -3713,7 +3779,8 @@ async function runBacktest(signal, minScore) {
     for (const tf of TIMEFRAMES) {
       if (signal.aborted) throw new DOMException('Backtest cancelado', 'AbortError');
 
-      const pct = Math.round((progress / total) * 90);
+      const pct    = Math.round((progress / total) * 90);
+      const FUTURE = TF_FUTURE[tf] ?? 96;
       updateBtProgress(pct, `Buscando ${coin} ${tf} — ${LIMIT} candles...`);
 
       let candles = null;
@@ -3730,9 +3797,21 @@ async function runBacktest(signal, minScore) {
         continue;
       }
 
-      updateBtProgress(pct, `${coin} ${tf} — ${candles.length} candles, rodando janela deslizante...`);
+      // Registrar período analisado (janela deslizante cobre da posição 0 até maxStart+WINDOW)
+      const coinLabel = coin.replace('USDT','');
+      const periodKey = `${coinLabel} ${tf}`;
+      // O período de análise vai do início do primeiro candle ao último candle futuro acessível
+      const firstAnalysisCandle = candles[0];
+      const lastFutureCandle    = candles[candles.length - 1];
+      periods[periodKey] = {
+        start: firstAnalysisCandle.time,
+        end:   lastFutureCandle.time,
+        count: candles.length,
+      };
 
       const maxStart = candles.length - WINDOW - FUTURE;
+      updateBtProgress(pct, `${coin} ${tf} — ${candles.length} candles · janela ${WINDOW} · futuro ${FUTURE}...`);
+
       for (let i = 0; i <= maxStart; i += STEP) {
         if (signal.aborted) throw new DOMException('Backtest cancelado', 'AbortError');
 
@@ -3748,24 +3827,31 @@ async function runBacktest(signal, minScore) {
 
         if (!setup || setup.score < minScore) continue;
 
-        const entryTime = windowCandles[windowCandles.length - 1].time;
-        const result    = simulateOutcome(setup, futureCandles);
-        const pnl       = calcBacktestPnL(setup, result, LEVERAGE);
+        const entryTime               = windowCandles[windowCandles.length - 1].time;
+        const { result, mfePct, maePct } = simulateOutcome(setup, futureCandles);
+        const pnl                     = calcBacktestPnL(setup, result, LEVERAGE);
+
+        // % do caminho percorrido em direção ao M1 (útil para "Aberto")
+        const m1Dist = Math.abs(setup.m1.price - setup.entry) / setup.entry * 100;
+        const m1Progress = m1Dist > 0 ? Math.round(mfePct / m1Dist * 100) : 0;
 
         trades.push({
-          time:     entryTime,
-          coin:     coin.replace('USDT', ''),
+          time:       entryTime,
+          coin:       coinLabel,
           tf,
-          dir:      setup.dir,
-          score:    setup.score,
+          dir:        setup.dir,
+          score:      setup.score,
           result,
           pnl,
-          entry:    setup.entry,
-          stop:     setup.stopPrice,
-          m1:       setup.m1.price,
-          m2:       setup.m2.price,
-          m3:       setup.m3.price,
-          reasons:  (setup.reasons || []).map(r => r.text || r),
+          mfePct,
+          maePct,
+          m1Progress, // % do caminho até M1 que o preço percorreu
+          entry:      setup.entry,
+          stop:       setup.stopPrice,
+          m1:         setup.m1.price,
+          m2:         setup.m2.price,
+          m3:         setup.m3.price,
+          reasons:    (setup.reasons || []).map(r => r.text || r),
         });
       }
 
@@ -3777,7 +3863,7 @@ async function runBacktest(signal, minScore) {
   fillEl.style.width = '100%';
   pctEl.textContent  = '100%';
 
-  return trades;
+  return { trades, periods };
 }
 
 function startBacktest() {
@@ -3800,9 +3886,9 @@ function startBacktest() {
   document.getElementById('btResults').style.display = 'none';
 
   runBacktest(signal, minScore)
-    .then(trades => {
+    .then(({ trades, periods }) => {
       if (signal.aborted) return;
-      renderBacktestResults(trades);
+      renderBacktestResults(trades, periods);
     })
     .catch(e => {
       if (e.name === 'AbortError') {
@@ -3827,39 +3913,67 @@ function cancelBacktest() {
   cancelBtn.style.display = 'none';
 }
 
-function renderBacktestResults(trades) {
+function renderBacktestResults(trades, periods) {
   document.getElementById('btResults').style.display = 'block';
 
-  // ── Estatísticas ──
-  const wins    = trades.filter(t => ['m1','m2','m3'].includes(t.result));
-  const stops   = trades.filter(t => t.result === 'stop');
-  const opens   = trades.filter(t => t.result === 'open');
-  const closed  = trades.filter(t => t.result !== 'open');
-  const winRate = closed.length > 0 ? Math.round(wins.length / closed.length * 100) : null;
-  const avgPnl  = trades.length > 0
-    ? (trades.reduce((s, t) => s + t.pnl, 0) / trades.length).toFixed(1)
+  // ── Helpers ──
+  const fmtDate = ts => new Date(ts).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
+  const fmtDateShort = ts => new Date(ts).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+  const rateColor = r => r === null ? 'var(--muted)' : r >= 60 ? 'var(--accent)' : r >= 40 ? 'var(--warn)' : 'var(--danger)';
+  const pct = (n,d) => d > 0 ? Math.round(n/d*100) : null;
+
+  // ── Classificações ──
+  const m1s   = trades.filter(t => t.result === 'm1');
+  const m2s   = trades.filter(t => t.result === 'm2');
+  const m3s   = trades.filter(t => t.result === 'm3');
+  const wins  = [...m1s, ...m2s, ...m3s];
+  const stops = trades.filter(t => t.result === 'stop');
+  const opens = trades.filter(t => t.result === 'open');
+  const closed = [...wins, ...stops];
+
+  const winRate  = pct(wins.length, closed.length);
+  const avgPnl   = trades.length > 0 ? (trades.reduce((s,t) => s+t.pnl, 0) / trades.length).toFixed(1) : null;
+  const avgPnlClosed = closed.length > 0 ? (closed.reduce((s,t) => s+t.pnl, 0) / closed.length).toFixed(1) : null;
+
+  // Quality Score (1=M1, 2=M2, 3=M3) / max possível se todos M3
+  const qualityScore = wins.length > 0
+    ? Math.round((m1s.length*1 + m2s.length*2 + m3s.length*3) / (wins.length * 3) * 100)
+    : null;
+
+  // MFE médio nos Abertos (% do M1 atingido)
+  const avgM1Progress = opens.length > 0
+    ? Math.round(opens.reduce((s,t) => s + t.m1Progress, 0) / opens.length)
     : null;
 
   // Win rate por TF
   const TFS = ['5m','15m','1h'];
   const tfStats = TFS.map(tf => {
-    const tfTrades = closed.filter(t => t.tf === tf);
-    const tfWins   = tfTrades.filter(t => ['m1','m2','m3'].includes(t.result));
-    return { tf, rate: tfTrades.length > 0 ? Math.round(tfWins.length / tfTrades.length * 100) : null, total: tfTrades.length };
+    const cl = closed.filter(t => t.tf === tf);
+    const wi = cl.filter(t => ['m1','m2','m3'].includes(t.result));
+    return { tf, rate: pct(wi.length, cl.length), total: cl.length, opens: opens.filter(t=>t.tf===tf).length };
   });
 
   // Win rate por direção
-  const longClosed  = closed.filter(t => t.dir === 'buy');
-  const longWins    = longClosed.filter(t => ['m1','m2','m3'].includes(t.result));
-  const shortClosed = closed.filter(t => t.dir === 'sell');
-  const shortWins   = shortClosed.filter(t => ['m1','m2','m3'].includes(t.result));
-  const longRate    = longClosed.length  > 0 ? Math.round(longWins.length  / longClosed.length  * 100) : null;
-  const shortRate   = shortClosed.length > 0 ? Math.round(shortWins.length / shortClosed.length * 100) : null;
+  const lClosed = closed.filter(t => t.dir === 'buy'),  lWins = lClosed.filter(t => ['m1','m2','m3'].includes(t.result));
+  const sClosed = closed.filter(t => t.dir === 'sell'), sWins = sClosed.filter(t => ['m1','m2','m3'].includes(t.result));
+  const longRate  = pct(lWins.length, lClosed.length);
+  const shortRate = pct(sWins.length, sClosed.length);
 
-  const wrColor  = winRate === null ? '' : winRate >= 60 ? 'green' : winRate >= 40 ? 'yellow' : 'red';
-  const pnlColor = avgPnl === null  ? '' : parseFloat(avgPnl) >= 0 ? 'green' : 'red';
+  // ── Bloco Período Analisado ──
+  const periodRows = Object.entries(periods).map(([key, p]) => {
+    const daysRange = Math.round((p.end - p.start) / 86400000);
+    return `<div class="bt-period-row">
+      <span class="bt-period-par">${key}</span>
+      <span class="bt-period-date">${fmtDate(p.start)} → ${fmtDate(p.end)}</span>
+      <span class="bt-period-meta">${p.count} candles · ~${daysRange}d</span>
+    </div>`;
+  }).join('');
 
   document.getElementById('btStats').innerHTML = `
+    <div class="bt-period-block" style="grid-column:1/-1">
+      <div class="bt-period-title">◉ Período Analisado — verifique na Bybit</div>
+      ${periodRows || '<span style="color:var(--muted)">Sem dados de período.</span>'}
+    </div>
     <div class="stat-card">
       <div class="stat-label">Total de setups</div>
       <div class="stat-val">${trades.length}</div>
@@ -3867,20 +3981,31 @@ function renderBacktestResults(trades) {
     </div>
     <div class="stat-card">
       <div class="stat-label">Win Rate Geral</div>
-      <div class="stat-val ${wrColor}">${winRate !== null ? winRate + '%' : '—'}</div>
-      <div class="stat-sub">de ${closed.length} setups fechados</div>
+      <div class="stat-val" style="color:${rateColor(winRate)}">${winRate !== null ? winRate + '%' : '—'}</div>
+      <div class="stat-sub">de ${closed.length} fechados · P&L médio ${avgPnlClosed !== null ? (parseFloat(avgPnlClosed)>=0?'+':'')+avgPnlClosed+'%' : '—'}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">P&amp;L Médio / trade</div>
-      <div class="stat-val ${pnlColor}">${avgPnl !== null ? (parseFloat(avgPnl) >= 0 ? '+' : '') + avgPnl + '%' : '—'}</div>
-      <div class="stat-sub">capital · 10x alavancagem</div>
+      <div class="stat-val" style="color:${avgPnl===null?'':parseFloat(avgPnl)>=0?'var(--accent)':'var(--danger)'}">${avgPnl !== null ? (parseFloat(avgPnl)>=0?'+':'')+avgPnl+'%' : '—'}</div>
+      <div class="stat-sub">incluindo abertos · leverage 10x</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Qualidade dos Wins ⭐</div>
+      <div class="stat-val" style="font-size:13px;line-height:1.9">
+        <span title="Parcial">⭐ M1: <b>${m1s.length}</b></span>
+        <span style="color:var(--muted)"> · </span>
+        <span title="Bom">⭐⭐ M2: <b>${m2s.length}</b></span>
+        <span style="color:var(--muted)"> · </span>
+        <span title="Excelente">⭐⭐⭐ M3: <b style="color:var(--accent)">${m3s.length}</b></span>
+      </div>
+      <div class="stat-sub">Quality Score: ${qualityScore !== null ? qualityScore + '/100' : '—'} ${qualityScore !== null ? (qualityScore>=70?'🔥':qualityScore>=40?'👍':'⚠️') : ''}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Win Rate por TF</div>
-      <div class="stat-val" style="font-size:14px;line-height:1.6">
-        ${tfStats.map(s => `<span style="color:var(--muted)">${s.tf}:</span> <span style="color:${s.rate===null?'var(--muted)':s.rate>=60?'var(--accent)':s.rate>=40?'var(--warn)':'var(--danger)'}">${s.rate !== null ? s.rate + '%' : '—'}</span>`).join('  ')}
+      <div class="stat-val" style="font-size:13px;line-height:1.9">
+        ${tfStats.map(s => `<span style="color:var(--muted)">${s.tf}:</span> <span style="color:${rateColor(s.rate)}">${s.rate !== null ? s.rate + '%' : '—'}</span>`).join('  ')}
       </div>
-      <div class="stat-sub">${tfStats.map(s => `${s.total} fechados em ${s.tf}`).join(' · ')}</div>
+      <div class="stat-sub">${tfStats.map(s => `${s.total} fechados / ${s.opens} abertos em ${s.tf}`).join(' · ')}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Long vs Short</div>
@@ -3889,17 +4014,14 @@ function renderBacktestResults(trades) {
         <span style="font-size:12px;color:var(--muted)"> / </span>
         <span style="color:var(--danger)">${shortRate !== null ? shortRate + '%' : '—'}</span>
       </div>
-      <div class="stat-sub">long (${longClosed.length}) · short (${shortClosed.length})</div>
+      <div class="stat-sub">long (${lClosed.length} fechados) · short (${sClosed.length} fechados)</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Breakdown</div>
-      <div class="stat-val" style="font-size:13px;line-height:1.8">
-        <span style="color:var(--danger)">Stop: ${stops.length}</span> ·
-        <span style="color:var(--warn)">M1: ${wins.filter(t=>t.result==='m1').length}</span> ·
-        <span style="color:var(--accent)">M2: ${wins.filter(t=>t.result==='m2').length}</span> ·
-        <span style="color:var(--accent);font-weight:700">M3: ${wins.filter(t=>t.result==='m3').length}</span>
-      </div>
-      <div class="stat-sub">Abertos: ${opens.length}</div>
+      <div class="stat-label">Abertos — Diagnóstico MFE</div>
+      <div class="stat-val" style="font-size:${opens.length>0?'20':'22'}px">${opens.length > 0 ? avgM1Progress + '%' : '—'}</div>
+      <div class="stat-sub">${opens.length > 0
+        ? `do caminho até M1 em média (${opens.length} abertos) — ${avgM1Progress >= 70 ? 'sinal correto, precisava de mais tempo ⏱️' : avgM1Progress >= 40 ? 'progresso parcial 📊' : 'preço não saiu do lugar ⚠️'}`
+        : 'nenhum trade aberto'}</div>
     </div>
   `;
 
@@ -3915,24 +4037,34 @@ function renderBacktestResults(trades) {
   const topWin  = topReasons(wins,  5);
   const topLoss = topReasons(stops, 5);
 
+  // Top reasons dos Abertos que NÃO progrediram (m1Progress < 30) — sinais problemáticos
+  const stuckOpens = opens.filter(t => t.m1Progress < 30);
+  const topStuck   = topReasons(stuckOpens, 5);
+
   function reasonsHtml(list) {
     if (!list.length) return '<div class="bt-reason-row" style="color:var(--muted)">Nenhum dado</div>';
     return list.map(([text, count]) => `
       <div class="bt-reason-row">
-        <span>${text.length > 55 ? text.slice(0,55)+'…' : text}</span>
+        <span>${text.length > 52 ? text.slice(0,52)+'…' : text}</span>
         <span class="bt-reason-count">${count}×</span>
       </div>`).join('');
   }
 
   document.getElementById('btReasonsBlock').innerHTML = `
     <div class="bt-reasons-box">
-      <div class="bt-reasons-title win">▲ Top razões — trades vencedores</div>
+      <div class="bt-reasons-title win">▲ Top razões — trades vencedores (${wins.length})</div>
       ${reasonsHtml(topWin)}
     </div>
     <div class="bt-reasons-box">
-      <div class="bt-reasons-title loss">▼ Top razões — trades perdedores (Stop)</div>
+      <div class="bt-reasons-title loss">▼ Top razões — trades Stop (${stops.length})</div>
       ${reasonsHtml(topLoss)}
     </div>
+    ${stuckOpens.length > 0 ? `
+    <div class="bt-reasons-box" style="grid-column:1/-1">
+      <div class="bt-reasons-title" style="color:var(--warn)">⚠ Razões — Abertos sem progresso (&lt;30% do M1) · ${stuckOpens.length} trades</div>
+      ${reasonsHtml(topStuck)}
+      <div class="bt-open-hint">Estes sinais geraram setups que não avançaram. Podem indicar entradas tardias, mercado lateralizado ou conflito entre indicadores.</div>
+    </div>` : ''}
   `;
 
   // ── Tabela ──
@@ -3941,25 +4073,48 @@ function renderBacktestResults(trades) {
     return;
   }
 
+  // Stars por resultado
+  const stars = { m1:'⭐', m2:'⭐⭐', m3:'⭐⭐⭐', stop:'', open:'' };
+
   const rows = trades.map(t => {
     const isWin  = ['m1','m2','m3'].includes(t.result);
     const isStop = t.result === 'stop';
     const rowCls = isWin ? 'bt-row-win' : isStop ? 'bt-row-loss' : 'bt-row-open';
     const pnlCls = t.pnl > 0 ? 'bt-pnl-pos' : t.pnl < 0 ? 'bt-pnl-neg' : '';
     const pnlStr = t.result === 'open' ? '—' : (t.pnl >= 0 ? '+' : '') + t.pnl.toFixed(1) + '%';
-    const dateStr = new Date(t.time).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    const dateStr = fmtDateShort(t.time);
+
+    // MFE e MAE formatados
+    const mfeStr = t.mfePct > 0 ? '+' + t.mfePct.toFixed(1) + '%' : '—';
+    const maeStr = t.maePct > 0 ? '-' + t.maePct.toFixed(1) + '%' : '—';
+
+    // Para abertos: mostrar progresso até M1
+    const openHint = t.result === 'open' && t.m1Progress > 0
+      ? `<br><span style="font-size:9px;color:var(--accent2)">${t.m1Progress}% do M1</span>`
+      : '';
+
     const dirLabel = t.dir === 'buy'
-      ? `<span style="color:var(--accent)">LONG</span>`
-      : `<span style="color:var(--danger)">SHORT</span>`;
+      ? `<span style="color:var(--accent)">L</span>`
+      : `<span style="color:var(--danger)">S</span>`;
+
     return `
       <tr class="${rowCls}">
-        <td>${dateStr}</td>
-        <td>${t.coin}</td>
-        <td>${t.tf}</td>
+        <td style="font-size:10px">${dateStr}</td>
+        <td><b>${t.coin}</b> <span style="color:var(--muted);font-size:10px">${t.tf}</span></td>
         <td>${dirLabel}</td>
-        <td>${t.score}</td>
-        <td><span class="bt-badge ${t.result}">${t.result.toUpperCase()}</span></td>
+        <td>
+          <div class="bt-result-cell">
+            <span><span class="bt-badge ${t.result}">${t.result.toUpperCase()}</span> <span class="bt-stars">${stars[t.result]}</span>${openHint}</span>
+            <span class="bt-score-sub">Score ${t.score}</span>
+          </div>
+        </td>
         <td class="${pnlCls}">${pnlStr}</td>
+        <td>
+          <div class="bt-mfemae">
+            <span class="bt-mfe" title="Max Favorable Excursion">▲ ${mfeStr}</span>
+            <span class="bt-mae" title="Max Adverse Excursion">▼ ${maeStr}</span>
+          </div>
+        </td>
       </tr>`;
   }).join('');
 
@@ -3969,12 +4124,11 @@ function renderBacktestResults(trades) {
         <thead>
           <tr>
             <th>Data/Hora</th>
-            <th>Coin</th>
-            <th>TF</th>
-            <th>Direção</th>
-            <th>Score</th>
+            <th>Par</th>
+            <th>Dir</th>
             <th>Resultado</th>
             <th>P&amp;L Capital</th>
+            <th title="Max Favorable / Max Adverse Excursion">MFE / MAE</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
