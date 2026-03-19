@@ -569,8 +569,9 @@ display: flex; align-items: center; justify-content: space-between;
 .bt-badge.m1   { background: rgba(255,184,0,0.15);  color: var(--warn);   }
 .bt-badge.m2   { background: rgba(0,229,160,0.12);  color: var(--accent); }
 .bt-badge.m3   { background: rgba(0,229,160,0.25);  color: var(--accent); font-weight:900; }
-.bt-badge.stop { background: rgba(255,61,107,0.12); color: var(--danger); }
-.bt-badge.open { background: rgba(255,255,255,0.06);color: var(--muted);  }
+.bt-badge.stop    { background: rgba(255,61,107,0.12); color: var(--danger); }
+.bt-badge.open    { background: rgba(255,255,255,0.06);color: var(--muted);  }
+.bt-badge.timeout { background: rgba(255,184,0,0.10);  color: var(--warn);   }
 /* Quality tier stars inline with badge */
 .bt-stars { font-size: 10px; letter-spacing: -1px; margin-left: 3px; }
 /* MFE / MAE inline display */
@@ -865,6 +866,14 @@ main { padding: 20px 14px 60px; }
         <option value="10" selected>10x</option>
         <option value="20">20x</option>
         <option value="50">50x</option>
+      </select>
+    </div>
+    <div class="bt-control-group">
+      <label class="bt-label">Horizonte</label>
+      <select id="btHorizonSelect" class="bt-select" title="Tempo máximo para o trade se resolver antes de sair no preço de fechamento">
+        <option value="short">Curto · 5h/12h/36h/3.5d</option>
+        <option value="normal" selected>Normal · 10h/24h/2.5d/7d</option>
+        <option value="long">Longo · 24h/48h/5d/14d</option>
       </select>
     </div>
     <div class="bt-control-group" style="flex-direction:column;align-items:flex-start;gap:5px">
@@ -3733,29 +3742,32 @@ function simulateOutcome(setup, futureCandles) {
 
   let mfeAbs = 0; // max favorable move em unidade de preço
   let maeAbs = 0; // max adverse move em unidade de preço
+  let lastClose = entry;
 
   for (const c of futureCandles) {
+    lastClose = c.close;
     if (isLong) {
       const fav = c.high - entry;
       const adv = entry  - c.low;
       if (fav > mfeAbs) mfeAbs = fav;
       if (adv > maeAbs) maeAbs = adv;
-      if (c.low  <= stopPrice) { return _simResult('stop', entry, mfeAbs, maeAbs); }
-      if (c.high >= m3)        { return _simResult('m3',   entry, mfeAbs, maeAbs); }
-      if (c.high >= m2)        { return _simResult('m2',   entry, mfeAbs, maeAbs); }
-      if (c.high >= m1)        { return _simResult('m1',   entry, mfeAbs, maeAbs); }
+      if (c.low  <= stopPrice) { return _simResult('stop',    entry, mfeAbs, maeAbs); }
+      if (c.high >= m3)        { return _simResult('m3',      entry, mfeAbs, maeAbs); }
+      if (c.high >= m2)        { return _simResult('m2',      entry, mfeAbs, maeAbs); }
+      if (c.high >= m1)        { return _simResult('m1',      entry, mfeAbs, maeAbs); }
     } else {
       const fav = entry  - c.low;
       const adv = c.high - entry;
       if (fav > mfeAbs) mfeAbs = fav;
       if (adv > maeAbs) maeAbs = adv;
-      if (c.high >= stopPrice) { return _simResult('stop', entry, mfeAbs, maeAbs); }
-      if (c.low  <= m3)        { return _simResult('m3',   entry, mfeAbs, maeAbs); }
-      if (c.low  <= m2)        { return _simResult('m2',   entry, mfeAbs, maeAbs); }
-      if (c.low  <= m1)        { return _simResult('m1',   entry, mfeAbs, maeAbs); }
+      if (c.high >= stopPrice) { return _simResult('stop',    entry, mfeAbs, maeAbs); }
+      if (c.low  <= m3)        { return _simResult('m3',      entry, mfeAbs, maeAbs); }
+      if (c.low  <= m2)        { return _simResult('m2',      entry, mfeAbs, maeAbs); }
+      if (c.low  <= m1)        { return _simResult('m1',      entry, mfeAbs, maeAbs); }
     }
   }
-  return _simResult('open', entry, mfeAbs, maeAbs);
+  // Horizonte esgotado: sair no fechamento do último candle (timeout)
+  return { ..._simResult('timeout', entry, mfeAbs, maeAbs), closePrice: lastClose };
 }
 function _simResult(result, entry, mfeAbs, maeAbs) {
   return {
@@ -3766,11 +3778,18 @@ function _simResult(result, entry, mfeAbs, maeAbs) {
 }
 
 // Calcula P&L em % do capital para um trade simulado
-function calcBacktestPnL(setup, result, leverage) {
+function calcBacktestPnL(setup, result, leverage, closePrice) {
   const { entry, stopPrice, dir } = setup;
   const feeImpact = ROUND_TRIP_FEE * leverage * 100;
 
   if (result === 'open') return 0;
+
+  if (result === 'timeout') {
+    const exitPrice = closePrice ?? entry;
+    const movePct = (exitPrice - entry) / entry;
+    const dirMult = dir === 'buy' ? 1 : -1;
+    return (movePct * dirMult * leverage * 100) - feeImpact;
+  }
 
   if (result === 'stop') {
     const stopDist = Math.abs(entry - stopPrice) / entry;
@@ -3783,7 +3802,7 @@ function calcBacktestPnL(setup, result, leverage) {
 }
 
 // Orquestração principal do backtest
-async function runBacktest(signal, minScore, selectedTFs, selectedCoins, selectedLeverage) {
+async function runBacktest(signal, minScore, selectedTFs, selectedCoins, selectedLeverage, horizon) {
   const COINS    = selectedCoins;
   const LEVERAGE = selectedLeverage;
   const FG_VALUE = 50; // neutro — sem fetch histórico de F&G
@@ -3791,9 +3810,16 @@ async function runBacktest(signal, minScore, selectedTFs, selectedCoins, selecte
   const STEP     = 10;
   const LIMIT    = 1000;
 
-  // Janela futura proporcional ao timeframe
-  // 5m×288=24h · 15m×192=48h · 1h×120=5d · 4h×84=14d
-  const TF_FUTURE = { '5m': 288, '15m': 192, '1h': 120, '4h': 84 };
+  // Janela futura por horizonte — tempo máximo para o trade se resolver
+  // short:  5m=60(5h)  15m=48(12h) 1h=36(36h)  4h=21(3.5d)
+  // normal: 5m=120(10h) 15m=96(24h) 1h=60(2.5d) 4h=42(7d)
+  // long:   5m=288(24h) 15m=192(48h) 1h=120(5d)  4h=84(14d)
+  const TF_FUTURES = {
+    short:  { '5m': 60,  '15m': 48,  '1h': 36,  '4h': 21 },
+    normal: { '5m': 120, '15m': 96,  '1h': 60,  '4h': 42 },
+    long:   { '5m': 288, '15m': 192, '1h': 120, '4h': 84 },
+  };
+  const TF_FUTURE = TF_FUTURES[horizon] ?? TF_FUTURES.normal;
 
   const TIMEFRAMES = selectedTFs.length > 0 ? selectedTFs : ['5m','15m','1h','4h'];
 
@@ -3878,9 +3904,9 @@ async function runBacktest(signal, minScore, selectedTFs, selectedCoins, selecte
         if (setup.score < minScore) { rejStats.scoreFailed++; continue; }
         rejStats.passed++;
 
-        const entryTime               = windowCandles[windowCandles.length - 1].time;
-        const { result, mfePct, maePct } = simulateOutcome(setup, futureCandles);
-        const pnl                     = calcBacktestPnL(setup, result, LEVERAGE);
+        const entryTime                          = windowCandles[windowCandles.length - 1].time;
+        const { result, mfePct, maePct, closePrice } = simulateOutcome(setup, futureCandles);
+        const pnl                                = calcBacktestPnL(setup, result, LEVERAGE, closePrice);
 
         // % do caminho percorrido em direção ao M1 (útil para "Aberto")
         const m1Dist = Math.abs(setup.m1.price - setup.entry) / setup.entry * 100;
@@ -3947,6 +3973,9 @@ function startBacktest() {
   // Lê alavancagem
   const selectedLeverage = parseInt(document.getElementById('btLeverageSelect').value, 10);
 
+  // Lê horizonte temporal
+  const selectedHorizon = document.getElementById('btHorizonSelect').value;
+
   const runBtn    = document.getElementById('btRunBtn');
   const cancelBtn = document.getElementById('btCancelBtn');
   runBtn.disabled = true;
@@ -3960,7 +3989,7 @@ function startBacktest() {
   document.getElementById('btProgressWrap').classList.add('visible');
   document.getElementById('btResults').style.display = 'none';
 
-  runBacktest(signal, minScore, selectedTFs, selectedCoins, selectedLeverage)
+  runBacktest(signal, minScore, selectedTFs, selectedCoins, selectedLeverage, selectedHorizon)
     .then(({ trades, periods, rejStats, leverage }) => {
       if (signal.aborted) return;
       renderBacktestResults(trades, periods, rejStats, leverage);
@@ -4045,27 +4074,29 @@ function buildInsightsHtml(trades, wins, stops, opens, closed, allTFs, tfStats, 
   const lM2 = lWins.filter(t => t.result === 'm2').length;
   const lM3 = lWins.filter(t => t.result === 'm3').length;
   const lStops = lClosed.filter(t => t.result === 'stop').length;
-  const lOpens = trades.filter(t => t.dir === 'buy' && t.result === 'open').length;
+  const lOpens    = trades.filter(t => t.dir === 'buy'  && t.result === 'open').length;
+  const lTimeouts = trades.filter(t => t.dir === 'buy'  && t.result === 'timeout').length;
 
   const sM1 = sWins.filter(t => t.result === 'm1').length;
   const sM2 = sWins.filter(t => t.result === 'm2').length;
   const sM3 = sWins.filter(t => t.result === 'm3').length;
-  const sStops = sClosed.filter(t => t.result === 'stop').length;
-  const sOpens = trades.filter(t => t.dir === 'sell' && t.result === 'open').length;
+  const sStops    = sClosed.filter(t => t.result === 'stop').length;
+  const sOpens    = trades.filter(t => t.dir === 'sell' && t.result === 'open').length;
+  const sTimeouts = trades.filter(t => t.dir === 'sell' && t.result === 'timeout').length;
 
   const dirSection = `
     <div class="bt-reasons-box">
       <div class="bt-reasons-title" style="color:var(--accent)">▲ LONG — ${longRate !== null ? longRate + '%' : '—'} win rate</div>
       <div class="bt-reason-row"><span>M1 / M2 / M3</span><span class="bt-reason-count">${lM1} / ${lM2} / ${lM3}</span></div>
       <div class="bt-reason-row"><span>Stop</span><span class="bt-reason-count" style="color:var(--danger)">${lStops}</span></div>
-      <div class="bt-reason-row"><span>Abertos</span><span class="bt-reason-count" style="color:var(--muted)">${lOpens}</span></div>
+      <div class="bt-reason-row"><span>Timeout</span><span class="bt-reason-count" style="color:var(--warn)">${lTimeouts}</span></div>
       <div class="bt-reason-row"><span>Total fechados</span><span class="bt-reason-count">${lClosed.length}</span></div>
     </div>
     <div class="bt-reasons-box">
       <div class="bt-reasons-title" style="color:var(--danger)">▼ SHORT — ${shortRate !== null ? shortRate + '%' : '—'} win rate</div>
       <div class="bt-reason-row"><span>M1 / M2 / M3</span><span class="bt-reason-count">${sM1} / ${sM2} / ${sM3}</span></div>
       <div class="bt-reason-row"><span>Stop</span><span class="bt-reason-count" style="color:var(--danger)">${sStops}</span></div>
-      <div class="bt-reason-row"><span>Abertos</span><span class="bt-reason-count" style="color:var(--muted)">${sOpens}</span></div>
+      <div class="bt-reason-row"><span>Timeout</span><span class="bt-reason-count" style="color:var(--warn)">${sTimeouts}</span></div>
       <div class="bt-reason-row"><span>Total fechados</span><span class="bt-reason-count">${sClosed.length}</span></div>
     </div>`;
 
@@ -4074,15 +4105,17 @@ function buildInsightsHtml(trades, wins, stops, opens, closed, allTFs, tfStats, 
   const m2s  = trades.filter(t => t.result === 'm2').length;
   const m3s  = trades.filter(t => t.result === 'm3').length;
   const stps = trades.filter(t => t.result === 'stop').length;
+  const tmos = trades.filter(t => t.result === 'timeout').length;
   const opns = trades.filter(t => t.result === 'open').length;
   const tot  = trades.length || 1;
 
   const distRows = [
-    { label: 'M3',    count: m3s,  color: 'var(--accent)',  bold: true  },
-    { label: 'M2',    count: m2s,  color: 'var(--accent)',  bold: false },
-    { label: 'M1',    count: m1s,  color: '#7ec8a0',        bold: false },
-    { label: 'STOP',  count: stps, color: 'var(--danger)',  bold: false },
-    { label: 'ABERTO',count: opns, color: 'var(--muted)',   bold: false },
+    { label: 'M3',      count: m3s,  color: 'var(--accent)',  bold: true  },
+    { label: 'M2',      count: m2s,  color: 'var(--accent)',  bold: false },
+    { label: 'M1',      count: m1s,  color: '#7ec8a0',        bold: false },
+    { label: 'STOP',    count: stps, color: 'var(--danger)',  bold: false },
+    { label: 'TIMEOUT', count: tmos, color: 'var(--warn)',    bold: false },
+    { label: 'ABERTO',  count: opns, color: 'var(--muted)',   bold: false },
   ].map(row => {
     const pct = Math.round(row.count / tot * 100);
     const barW = Math.max(pct, row.count > 0 ? 2 : 0);
@@ -4115,17 +4148,21 @@ function renderBacktestResults(trades, periods, rejStats, leverage = 10) {
   const pct = (n,d) => d > 0 ? Math.round(n/d*100) : null;
 
   // ── Classificações ──
-  const m1s   = trades.filter(t => t.result === 'm1');
-  const m2s   = trades.filter(t => t.result === 'm2');
-  const m3s   = trades.filter(t => t.result === 'm3');
-  const wins  = [...m1s, ...m2s, ...m3s];
-  const stops = trades.filter(t => t.result === 'stop');
-  const opens = trades.filter(t => t.result === 'open');
-  const closed = [...wins, ...stops];
+  const m1s     = trades.filter(t => t.result === 'm1');
+  const m2s     = trades.filter(t => t.result === 'm2');
+  const m3s     = trades.filter(t => t.result === 'm3');
+  const wins    = [...m1s, ...m2s, ...m3s];
+  const stops   = trades.filter(t => t.result === 'stop');
+  const opens   = trades.filter(t => t.result === 'open');
+  const timeouts = trades.filter(t => t.result === 'timeout');
+  const closed  = [...wins, ...stops];
 
   const winRate  = pct(wins.length, closed.length);
   const avgPnl   = trades.length > 0 ? (trades.reduce((s,t) => s+t.pnl, 0) / trades.length).toFixed(1) : null;
   const avgPnlClosed = closed.length > 0 ? (closed.reduce((s,t) => s+t.pnl, 0) / closed.length).toFixed(1) : null;
+
+  // P&L médio dos timeouts (saída forçada pelo horizonte)
+  const avgPnlTimeout = timeouts.length > 0 ? (timeouts.reduce((s,t) => s+t.pnl, 0) / timeouts.length).toFixed(1) : null;
 
   // Quality Score (1=M1, 2=M2, 3=M3) / max possível se todos M3
   const qualityScore = wins.length > 0
@@ -4143,7 +4180,7 @@ function renderBacktestResults(trades, periods, rejStats, leverage = 10) {
   const tfStats  = allTFs.map(tf => {
     const cl = closed.filter(t => t.tf === tf);
     const wi = cl.filter(t => ['m1','m2','m3'].includes(t.result));
-    return { tf, rate: pct(wi.length, cl.length), total: cl.length, opens: opens.filter(t=>t.tf===tf).length };
+    return { tf, rate: pct(wi.length, cl.length), total: cl.length, timeouts: timeouts.filter(t=>t.tf===tf).length };
   });
 
   // Win rate por direção
@@ -4193,17 +4230,17 @@ function renderBacktestResults(trades, periods, rejStats, leverage = 10) {
     <div class="stat-card">
       <div class="stat-label">Total de setups</div>
       <div class="stat-val">${trades.length}</div>
-      <div class="stat-sub">${wins.length} win · ${stops.length} stop · ${opens.length} aberto</div>
+      <div class="stat-sub">${wins.length} win · ${stops.length} stop · ${timeouts.length} timeout · ${opens.length} aberto</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Win Rate Geral</div>
       <div class="stat-val" style="color:${rateColor(winRate)}">${winRate !== null ? winRate + '%' : '—'}</div>
-      <div class="stat-sub">de ${closed.length} fechados · P&L médio ${avgPnlClosed !== null ? (parseFloat(avgPnlClosed)>=0?'+':'')+avgPnlClosed+'%' : '—'}</div>
+      <div class="stat-sub">de ${closed.length} fechados (win+stop) · P&L médio ${avgPnlClosed !== null ? (parseFloat(avgPnlClosed)>=0?'+':'')+avgPnlClosed+'%' : '—'}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">P&amp;L Médio / trade</div>
       <div class="stat-val" style="color:${avgPnl===null?'':parseFloat(avgPnl)>=0?'var(--accent)':'var(--danger)'}">${avgPnl !== null ? (parseFloat(avgPnl)>=0?'+':'')+avgPnl+'%' : '—'}</div>
-      <div class="stat-sub">incluindo abertos · leverage ${leverage}x</div>
+      <div class="stat-sub">todos os trades · leverage ${leverage}x${avgPnlTimeout !== null ? ` · timeout médio ${parseFloat(avgPnlTimeout)>=0?'+':''}${avgPnlTimeout}%` : ''}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Qualidade dos Wins ⭐</div>
@@ -4221,7 +4258,7 @@ function renderBacktestResults(trades, periods, rejStats, leverage = 10) {
       <div class="stat-val" style="font-size:13px;line-height:1.9">
         ${tfStats.map(s => `<span style="color:var(--muted)">${s.tf}:</span> <span style="color:${rateColor(s.rate)}">${s.rate !== null ? s.rate + '%' : '—'}</span>`).join('  ')}
       </div>
-      <div class="stat-sub">${tfStats.map(s => `${s.total} fechados / ${s.opens} abertos em ${s.tf}`).join(' · ')}</div>
+      <div class="stat-sub">${tfStats.map(s => `${s.total} fechados · ${s.timeouts} timeout em ${s.tf}`).join(' · ')}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Long vs Short</div>
@@ -4233,11 +4270,13 @@ function renderBacktestResults(trades, periods, rejStats, leverage = 10) {
       <div class="stat-sub">long (${lClosed.length} fechados) · short (${sClosed.length} fechados)</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Abertos — Diagnóstico MFE</div>
-      <div class="stat-val" style="font-size:${opens.length>0?'20':'22'}px">${opens.length > 0 ? avgM1Progress + '%' : '—'}</div>
-      <div class="stat-sub">${opens.length > 0
-        ? `do caminho até M1 em média (${opens.length} abertos) — ${avgM1Progress >= 70 ? 'sinal correto, precisava de mais tempo ⏱️' : avgM1Progress >= 40 ? 'progresso parcial 📊' : 'preço não saiu do lugar ⚠️'}`
-        : 'nenhum trade aberto'}</div>
+      <div class="stat-label">Timeout — saída forçada</div>
+      <div class="stat-val" style="font-size:20px;color:${timeouts.length > 0 ? (parseFloat(avgPnlTimeout)>=0?'var(--accent)':'var(--danger)') : 'var(--muted)'}">
+        ${timeouts.length > 0 ? (parseFloat(avgPnlTimeout)>=0?'+':'')+avgPnlTimeout+'%' : '—'}
+      </div>
+      <div class="stat-sub">${timeouts.length > 0
+        ? `P&L médio ao sair no fechamento · ${timeouts.length} trades · ${Math.round(timeouts.filter(t=>t.pnl>0).length/timeouts.length*100)}% positivos`
+        : 'nenhum trade encerrado por timeout'}</div>
     </div>
   `;
 
@@ -4250,12 +4289,9 @@ function renderBacktestResults(trades, periods, rejStats, leverage = 10) {
     }));
     return Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0, n);
   }
-  const topWin  = topReasons(wins,  5);
-  const topLoss = topReasons(stops, 5);
-
-  // Top reasons dos Abertos que NÃO progrediram (m1Progress < 30) — sinais problemáticos
-  const stuckOpens = opens.filter(t => t.m1Progress < 30);
-  const topStuck   = topReasons(stuckOpens, 5);
+  const topWin     = topReasons(wins,  5);
+  const topLoss    = topReasons(stops, 5);
+  const topTimeout = topReasons(timeouts, 5);
 
   function reasonsHtml(list) {
     if (!list.length) return '<div class="bt-reason-row" style="color:var(--muted)">Nenhum dado</div>';
@@ -4275,11 +4311,11 @@ function renderBacktestResults(trades, periods, rejStats, leverage = 10) {
       <div class="bt-reasons-title loss">▼ Top razões — trades Stop (${stops.length})</div>
       ${reasonsHtml(topLoss)}
     </div>
-    ${stuckOpens.length > 0 ? `
+    ${timeouts.length > 0 ? `
     <div class="bt-reasons-box" style="grid-column:1/-1">
-      <div class="bt-reasons-title" style="color:var(--warn)">⚠ Razões — Abertos sem progresso (&lt;30% do M1) · ${stuckOpens.length} trades</div>
-      ${reasonsHtml(topStuck)}
-      <div class="bt-open-hint">Estes sinais geraram setups que não avançaram. Podem indicar entradas tardias, mercado lateralizado ou conflito entre indicadores.</div>
+      <div class="bt-reasons-title" style="color:var(--warn)">⏱ Razões — Timeouts (horizonte esgotado) · ${timeouts.length} trades</div>
+      ${reasonsHtml(topTimeout)}
+      <div class="bt-open-hint">Estes trades saíram no fechamento ao esgotar o horizonte. Se P&L médio for negativo, os sinais geraram entradas que não avançaram no tempo configurado — indicativo de entradas tardias ou mercado sem follow-through.</div>
     </div>` : ''}
   `;
 
@@ -4298,11 +4334,12 @@ function renderBacktestResults(trades, periods, rejStats, leverage = 10) {
   }
 
   // Stars por resultado
-  const stars = { m1:'⭐', m2:'⭐⭐', m3:'⭐⭐⭐', stop:'', open:'' };
+  const stars = { m1:'⭐', m2:'⭐⭐', m3:'⭐⭐⭐', stop:'', open:'', timeout:'' };
 
   const rows = trades.map(t => {
-    const isWin  = ['m1','m2','m3'].includes(t.result);
-    const isStop = t.result === 'stop';
+    const isWin     = ['m1','m2','m3'].includes(t.result);
+    const isStop    = t.result === 'stop';
+    const isTimeout = t.result === 'timeout';
     const rowCls = isWin ? 'bt-row-win' : isStop ? 'bt-row-loss' : 'bt-row-open';
     const pnlCls = t.pnl > 0 ? 'bt-pnl-pos' : t.pnl < 0 ? 'bt-pnl-neg' : '';
     const pnlStr = t.result === 'open' ? '—' : (t.pnl >= 0 ? '+' : '') + t.pnl.toFixed(1) + '%';
@@ -4312,9 +4349,9 @@ function renderBacktestResults(trades, periods, rejStats, leverage = 10) {
     const mfeStr = t.mfePct > 0 ? '+' + t.mfePct.toFixed(1) + '%' : '—';
     const maeStr = t.maePct > 0 ? '-' + t.maePct.toFixed(1) + '%' : '—';
 
-    // Para abertos: mostrar progresso até M1
-    const openHint = t.result === 'open' && t.m1Progress > 0
-      ? `<br><span style="font-size:9px;color:var(--accent2)">${t.m1Progress}% do M1</span>`
+    // Hint para timeout
+    const openHint = isTimeout
+      ? `<br><span style="font-size:9px;color:var(--warn)">saiu no fechamento</span>`
       : '';
 
     const dirLabel = t.dir === 'buy'
