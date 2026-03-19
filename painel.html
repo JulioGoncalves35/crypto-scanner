@@ -506,6 +506,82 @@ display: flex; align-items: center; justify-content: space-between;
 .check-status-line.cs-waiting   { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.07); color: var(--muted); }
 .check-suggest { margin-top: 6px; font-family: var(--mono); font-size: 10px; color: var(--muted); padding: 6px 10px; background: rgba(0,229,160,0.05); border: 1px solid rgba(0,229,160,0.15); border-radius: 6px; }
 
+/* ─── BACKTEST ─── */
+.bt-controls {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin-bottom: 24px; padding: 16px 20px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+}
+.bt-control-group { display: flex; align-items: center; gap: 8px; }
+.bt-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+.bt-select {
+  font-family: var(--mono); font-size: 12px; padding: 6px 10px;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 7px;
+  color: var(--text); cursor: pointer;
+}
+.bt-run-btn {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 1.5px; font-weight: 700;
+  padding: 8px 22px; border-radius: 9px; cursor: pointer; border: none;
+  background: var(--accent); color: #000; transition: opacity 0.2s;
+}
+.bt-run-btn:hover { opacity: 0.85; }
+.bt-run-btn:disabled { opacity: 0.45; cursor: default; }
+.bt-cancel-btn {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
+  padding: 7px 16px; border-radius: 9px; cursor: pointer;
+  border: 1px solid var(--danger); background: transparent; color: var(--danger); transition: all 0.2s;
+}
+.bt-cancel-btn:hover { background: rgba(255,61,107,0.1); }
+.bt-table-wrap { overflow-x: auto; margin-top: 8px; }
+.bt-table {
+  width: 100%; border-collapse: collapse;
+  font-family: var(--mono); font-size: 11px;
+}
+.bt-table th {
+  padding: 8px 12px; text-align: left; background: var(--surface2);
+  color: var(--muted); letter-spacing: 1px; font-size: 10px; text-transform: uppercase;
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.bt-table td {
+  padding: 7px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text); white-space: nowrap;
+}
+.bt-row-win  td { background: rgba(0,229,160,0.04); }
+.bt-row-loss td { background: rgba(255,61,107,0.05); }
+.bt-row-open td { background: transparent; color: var(--muted); }
+.bt-pnl-pos { color: var(--accent); font-weight: 700; }
+.bt-pnl-neg { color: var(--danger); font-weight: 700; }
+.bt-badge {
+  display: inline-block; padding: 2px 7px; border-radius: 5px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+}
+.bt-badge.m1 { background: rgba(255,184,0,0.15); color: var(--warn); }
+.bt-badge.m2 { background: rgba(0,229,160,0.12); color: var(--accent); }
+.bt-badge.m3 { background: rgba(0,229,160,0.22); color: var(--accent); }
+.bt-badge.stop { background: rgba(255,61,107,0.12); color: var(--danger); }
+.bt-badge.open { background: rgba(255,255,255,0.06); color: var(--muted); }
+.bt-reasons-block {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  margin: 16px 0 24px;
+}
+.bt-reasons-box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 18px;
+}
+.bt-reasons-title {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.bt-reasons-title.win  { color: var(--accent); }
+.bt-reasons-title.loss { color: var(--danger); }
+.bt-reason-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+}
+.bt-reason-row:last-child { border-bottom: none; }
+.bt-reason-count { font-weight: 700; color: var(--text); }
+
 @media (max-width: 600px) {
 header { padding: 0 16px; }
 main { padding: 20px 14px 60px; }
@@ -515,6 +591,7 @@ main { padding: 20px 14px 60px; }
 .coin-icon { width: 54px; }
 .coin-icon-ring { width: 44px; height: 44px; }
 .coin-icon-ring img { width: 30px; height: 30px; }
+.bt-reasons-block { grid-template-columns: 1fr; }
 }
 </style>
 
@@ -526,6 +603,7 @@ main { padding: 20px 14px 60px; }
     <button class="nav-tab active" onclick="switchTab('scanner', this)">Scanner</button>
     <button class="nav-tab" onclick="switchTab('journal', this)" id="journalTab">Diário <span class="tab-count" id="journalCount">0</span></button>
     <button class="nav-tab" onclick="switchTab('history', this)" id="historyTab">HISTORICO <span class="tab-count" id="histCount">0</span></button>
+    <button class="nav-tab" onclick="switchTab('backtest', this)" id="backtestTab">Backtest</button>
   </div>
   <div class="header-status">
     <div class="dot"></div>
@@ -709,6 +787,46 @@ main { padding: 20px 14px 60px; }
   </div>
   <div id="historyList"></div>
 </div><!-- /section-history -->
+
+<!-- ══════════════════ BACKTEST ══════════════════ -->
+
+<div class="page-section" id="section-backtest">
+  <div class="page-title-j">
+    <h1>Back<em>test</em></h1>
+    <p>// BTC &amp; ETH · Janela deslizante 200 candles · Day Trade (5m / 15m / 1h)</p>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="bt-controls">
+    <div class="bt-control-group">
+      <label class="bt-label">Score mínimo</label>
+      <select id="btScoreSelect" class="bt-select">
+        <option value="50">50</option>
+        <option value="60">60</option>
+        <option value="70" selected>70</option>
+      </select>
+    </div>
+    <button id="btRunBtn" onclick="startBacktest()" class="bt-run-btn">▶  RODAR BACKTEST</button>
+    <button id="btCancelBtn" onclick="cancelBacktest()" class="bt-cancel-btn" style="display:none">✕  CANCELAR</button>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="btProgressWrap">
+    <div class="progress-label">
+      <span id="btProgressText">Iniciando backtest...</span>
+      <span id="btProgressPct">0%</span>
+    </div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="btProgressFill"></div></div>
+    <div class="progress-log" id="btProgressLog"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="btResults" style="display:none">
+    <div id="btStats" class="journal-stats"></div>
+    <div id="btReasonsBlock" class="bt-reasons-block"></div>
+    <div id="btTable"></div>
+  </div>
+</div><!-- /section-backtest -->
 
 </main>
 
@@ -3495,6 +3613,374 @@ function deleteEntry(id) {
 if (!confirm('Remover este trade do diário?')) return;
 saveJournal(loadJournal().filter(x => x.id !== id));
 renderJournal();
+}
+
+// ─────────────────────────────────────────
+// BACKTEST — JANELA DESLIZANTE BTC/ETH
+// ─────────────────────────────────────────
+
+let _backtestController = null;
+
+// Fetch com limite customizável para o backtest (1000 candles)
+async function fetchCandlesBacktest(symbol, tf, limit, signal) {
+  const sym = symbol.replace(/USDT$/i, '');
+  const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${sym}USDT&interval=${TF_MAP[tf]}&limit=${limit}`;
+  const j = await fetchWithFallback(url, signal);
+  if (!j || j.retCode !== 0 || !j.result?.list?.length) return null;
+  return j.result.list.reverse().map(c => ({
+    time:   parseInt(c[0]),
+    open:   parseFloat(c[1]),
+    high:   parseFloat(c[2]),
+    low:    parseFloat(c[3]),
+    close:  parseFloat(c[4]),
+    volume: parseFloat(c[5]),
+  }));
+}
+
+// Simula resultado de um setup usando os próximos 50 candles
+function simulateOutcome(setup, futureCandles) {
+  const { entry, stopPrice, dir } = setup;
+  const m1 = setup.m1.price;
+  const m2 = setup.m2.price;
+  const m3 = setup.m3.price;
+  const isLong = dir === 'buy';
+
+  for (const c of futureCandles) {
+    if (isLong) {
+      if (c.low  <= stopPrice) return 'stop';
+      if (c.high >= m3)        return 'm3';
+      if (c.high >= m2)        return 'm2';
+      if (c.high >= m1)        return 'm1';
+    } else {
+      if (c.high >= stopPrice) return 'stop';
+      if (c.low  <= m3)        return 'm3';
+      if (c.low  <= m2)        return 'm2';
+      if (c.low  <= m1)        return 'm1';
+    }
+  }
+  return 'open';
+}
+
+// Calcula P&L em % do capital para um trade simulado
+function calcBacktestPnL(setup, result, leverage) {
+  const { entry, stopPrice, dir } = setup;
+  const feeImpact = ROUND_TRIP_FEE * leverage * 100;
+
+  if (result === 'open') return 0;
+
+  if (result === 'stop') {
+    const stopDist = Math.abs(entry - stopPrice) / entry;
+    return -((stopDist * leverage * 100) + feeImpact);
+  }
+
+  const targetPrice = setup[result].price;
+  const targetDist  = Math.abs(targetPrice - entry) / entry;
+  return (targetDist * leverage * 100) - feeImpact;
+}
+
+// Orquestração principal do backtest
+async function runBacktest(signal, minScore) {
+  const COINS      = ['BTCUSDT', 'ETHUSDT'];
+  const TIMEFRAMES = ['5m', '15m', '1h'];
+  const LEVERAGE   = 10;
+  const FG_VALUE   = 50; // neutro — sem fetch histórico de F&G
+  const WINDOW     = 200;
+  const STEP       = 10;
+  const FUTURE     = 50;
+  const LIMIT      = 1000;
+
+  const trades   = [];
+  const total    = COINS.length * TIMEFRAMES.length;
+  let   progress = 0;
+
+  const logEl   = document.getElementById('btProgressLog');
+  const fillEl  = document.getElementById('btProgressFill');
+  const pctEl   = document.getElementById('btProgressPct');
+  const textEl  = document.getElementById('btProgressText');
+
+  function updateBtProgress(pct, msg) {
+    fillEl.style.width = pct + '%';
+    pctEl.textContent  = pct + '%';
+    textEl.textContent = msg;
+    const row = document.createElement('div');
+    row.style.cssText  = 'color:var(--accent);opacity:0.6';
+    row.textContent    = `› ${msg}`;
+    logEl.appendChild(row);
+    logEl.scrollTop    = logEl.scrollHeight;
+  }
+
+  for (const coin of COINS) {
+    for (const tf of TIMEFRAMES) {
+      if (signal.aborted) throw new DOMException('Backtest cancelado', 'AbortError');
+
+      const pct = Math.round((progress / total) * 90);
+      updateBtProgress(pct, `Buscando ${coin} ${tf} — ${LIMIT} candles...`);
+
+      let candles = null;
+      try {
+        candles = await fetchCandlesBacktest(coin, tf, LIMIT, signal);
+      } catch(e) {
+        if (e.name === 'AbortError' && signal.aborted) throw e;
+        // Falha de rede — pular este par
+      }
+
+      if (!candles || candles.length < WINDOW + FUTURE) {
+        updateBtProgress(pct, `${coin} ${tf} — sem dados suficientes, pulando.`);
+        progress++;
+        continue;
+      }
+
+      updateBtProgress(pct, `${coin} ${tf} — ${candles.length} candles, rodando janela deslizante...`);
+
+      const maxStart = candles.length - WINDOW - FUTURE;
+      for (let i = 0; i <= maxStart; i += STEP) {
+        if (signal.aborted) throw new DOMException('Backtest cancelado', 'AbortError');
+
+        const windowCandles = candles.slice(i, i + WINDOW);
+        const futureCandles = candles.slice(i + WINDOW, i + WINDOW + FUTURE);
+
+        let setup = null;
+        try {
+          setup = analyzeCandles(coin, tf, windowCandles, FG_VALUE, null, null, null);
+        } catch(e) {
+          // Janela inválida — continuar
+        }
+
+        if (!setup || setup.score < minScore) continue;
+
+        const entryTime = windowCandles[windowCandles.length - 1].time;
+        const result    = simulateOutcome(setup, futureCandles);
+        const pnl       = calcBacktestPnL(setup, result, LEVERAGE);
+
+        trades.push({
+          time:     entryTime,
+          coin:     coin.replace('USDT', ''),
+          tf,
+          dir:      setup.dir,
+          score:    setup.score,
+          result,
+          pnl,
+          entry:    setup.entry,
+          stop:     setup.stopPrice,
+          m1:       setup.m1.price,
+          m2:       setup.m2.price,
+          m3:       setup.m3.price,
+          reasons:  (setup.reasons || []).map(r => r.text || r),
+        });
+      }
+
+      progress++;
+    }
+  }
+
+  updateBtProgress(100, `Backtest concluído — ${trades.length} setups encontrados ✓`);
+  fillEl.style.width = '100%';
+  pctEl.textContent  = '100%';
+
+  return trades;
+}
+
+function startBacktest() {
+  if (_backtestController) _backtestController.abort();
+  _backtestController = new AbortController();
+  const signal   = _backtestController.signal;
+  const minScore = parseInt(document.getElementById('btScoreSelect').value, 10);
+
+  const runBtn    = document.getElementById('btRunBtn');
+  const cancelBtn = document.getElementById('btCancelBtn');
+  runBtn.disabled = true;
+  runBtn.textContent = '⟳  RODANDO...';
+  cancelBtn.style.display = 'inline-block';
+
+  document.getElementById('btProgressLog').innerHTML = '';
+  document.getElementById('btProgressFill').style.width = '0%';
+  document.getElementById('btProgressPct').textContent  = '0%';
+  document.getElementById('btProgressText').textContent = 'Iniciando backtest...';
+  document.getElementById('btProgressWrap').classList.add('visible');
+  document.getElementById('btResults').style.display = 'none';
+
+  runBacktest(signal, minScore)
+    .then(trades => {
+      if (signal.aborted) return;
+      renderBacktestResults(trades);
+    })
+    .catch(e => {
+      if (e.name === 'AbortError') {
+        document.getElementById('btProgressText').textContent = 'Backtest cancelado.';
+      }
+    })
+    .finally(() => {
+      if (!signal.aborted) {
+        runBtn.disabled    = false;
+        runBtn.textContent = '▶  RODAR BACKTEST';
+        cancelBtn.style.display = 'none';
+      }
+    });
+}
+
+function cancelBacktest() {
+  if (_backtestController) _backtestController.abort();
+  const runBtn    = document.getElementById('btRunBtn');
+  const cancelBtn = document.getElementById('btCancelBtn');
+  runBtn.disabled    = false;
+  runBtn.textContent = '▶  RODAR BACKTEST';
+  cancelBtn.style.display = 'none';
+}
+
+function renderBacktestResults(trades) {
+  document.getElementById('btResults').style.display = 'block';
+
+  // ── Estatísticas ──
+  const wins    = trades.filter(t => ['m1','m2','m3'].includes(t.result));
+  const stops   = trades.filter(t => t.result === 'stop');
+  const opens   = trades.filter(t => t.result === 'open');
+  const closed  = trades.filter(t => t.result !== 'open');
+  const winRate = closed.length > 0 ? Math.round(wins.length / closed.length * 100) : null;
+  const avgPnl  = trades.length > 0
+    ? (trades.reduce((s, t) => s + t.pnl, 0) / trades.length).toFixed(1)
+    : null;
+
+  // Win rate por TF
+  const TFS = ['5m','15m','1h'];
+  const tfStats = TFS.map(tf => {
+    const tfTrades = closed.filter(t => t.tf === tf);
+    const tfWins   = tfTrades.filter(t => ['m1','m2','m3'].includes(t.result));
+    return { tf, rate: tfTrades.length > 0 ? Math.round(tfWins.length / tfTrades.length * 100) : null, total: tfTrades.length };
+  });
+
+  // Win rate por direção
+  const longClosed  = closed.filter(t => t.dir === 'buy');
+  const longWins    = longClosed.filter(t => ['m1','m2','m3'].includes(t.result));
+  const shortClosed = closed.filter(t => t.dir === 'sell');
+  const shortWins   = shortClosed.filter(t => ['m1','m2','m3'].includes(t.result));
+  const longRate    = longClosed.length  > 0 ? Math.round(longWins.length  / longClosed.length  * 100) : null;
+  const shortRate   = shortClosed.length > 0 ? Math.round(shortWins.length / shortClosed.length * 100) : null;
+
+  const wrColor  = winRate === null ? '' : winRate >= 60 ? 'green' : winRate >= 40 ? 'yellow' : 'red';
+  const pnlColor = avgPnl === null  ? '' : parseFloat(avgPnl) >= 0 ? 'green' : 'red';
+
+  document.getElementById('btStats').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Total de setups</div>
+      <div class="stat-val">${trades.length}</div>
+      <div class="stat-sub">${wins.length} win · ${stops.length} stop · ${opens.length} aberto</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Win Rate Geral</div>
+      <div class="stat-val ${wrColor}">${winRate !== null ? winRate + '%' : '—'}</div>
+      <div class="stat-sub">de ${closed.length} setups fechados</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">P&amp;L Médio / trade</div>
+      <div class="stat-val ${pnlColor}">${avgPnl !== null ? (parseFloat(avgPnl) >= 0 ? '+' : '') + avgPnl + '%' : '—'}</div>
+      <div class="stat-sub">capital · 10x alavancagem</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Win Rate por TF</div>
+      <div class="stat-val" style="font-size:14px;line-height:1.6">
+        ${tfStats.map(s => `<span style="color:var(--muted)">${s.tf}:</span> <span style="color:${s.rate===null?'var(--muted)':s.rate>=60?'var(--accent)':s.rate>=40?'var(--warn)':'var(--danger)'}">${s.rate !== null ? s.rate + '%' : '—'}</span>`).join('  ')}
+      </div>
+      <div class="stat-sub">${tfStats.map(s => `${s.total} fechados em ${s.tf}`).join(' · ')}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Long vs Short</div>
+      <div class="stat-val" style="font-size:16px">
+        <span style="color:var(--accent)">${longRate !== null ? longRate + '%' : '—'}</span>
+        <span style="font-size:12px;color:var(--muted)"> / </span>
+        <span style="color:var(--danger)">${shortRate !== null ? shortRate + '%' : '—'}</span>
+      </div>
+      <div class="stat-sub">long (${longClosed.length}) · short (${shortClosed.length})</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Breakdown</div>
+      <div class="stat-val" style="font-size:13px;line-height:1.8">
+        <span style="color:var(--danger)">Stop: ${stops.length}</span> ·
+        <span style="color:var(--warn)">M1: ${wins.filter(t=>t.result==='m1').length}</span> ·
+        <span style="color:var(--accent)">M2: ${wins.filter(t=>t.result==='m2').length}</span> ·
+        <span style="color:var(--accent);font-weight:700">M3: ${wins.filter(t=>t.result==='m3').length}</span>
+      </div>
+      <div class="stat-sub">Abertos: ${opens.length}</div>
+    </div>
+  `;
+
+  // ── Top 5 Reasons ──
+  function topReasons(subset, n) {
+    const freq = {};
+    subset.forEach(t => (t.reasons || []).forEach(r => {
+      const key = typeof r === 'string' ? r : (r.text || '');
+      if (key) freq[key] = (freq[key] || 0) + 1;
+    }));
+    return Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0, n);
+  }
+  const topWin  = topReasons(wins,  5);
+  const topLoss = topReasons(stops, 5);
+
+  function reasonsHtml(list) {
+    if (!list.length) return '<div class="bt-reason-row" style="color:var(--muted)">Nenhum dado</div>';
+    return list.map(([text, count]) => `
+      <div class="bt-reason-row">
+        <span>${text.length > 55 ? text.slice(0,55)+'…' : text}</span>
+        <span class="bt-reason-count">${count}×</span>
+      </div>`).join('');
+  }
+
+  document.getElementById('btReasonsBlock').innerHTML = `
+    <div class="bt-reasons-box">
+      <div class="bt-reasons-title win">▲ Top razões — trades vencedores</div>
+      ${reasonsHtml(topWin)}
+    </div>
+    <div class="bt-reasons-box">
+      <div class="bt-reasons-title loss">▼ Top razões — trades perdedores (Stop)</div>
+      ${reasonsHtml(topLoss)}
+    </div>
+  `;
+
+  // ── Tabela ──
+  if (!trades.length) {
+    document.getElementById('btTable').innerHTML = `<p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:16px">Nenhum setup encontrado com score ≥ mínimo selecionado.</p>`;
+    return;
+  }
+
+  const rows = trades.map(t => {
+    const isWin  = ['m1','m2','m3'].includes(t.result);
+    const isStop = t.result === 'stop';
+    const rowCls = isWin ? 'bt-row-win' : isStop ? 'bt-row-loss' : 'bt-row-open';
+    const pnlCls = t.pnl > 0 ? 'bt-pnl-pos' : t.pnl < 0 ? 'bt-pnl-neg' : '';
+    const pnlStr = t.result === 'open' ? '—' : (t.pnl >= 0 ? '+' : '') + t.pnl.toFixed(1) + '%';
+    const dateStr = new Date(t.time).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    const dirLabel = t.dir === 'buy'
+      ? `<span style="color:var(--accent)">LONG</span>`
+      : `<span style="color:var(--danger)">SHORT</span>`;
+    return `
+      <tr class="${rowCls}">
+        <td>${dateStr}</td>
+        <td>${t.coin}</td>
+        <td>${t.tf}</td>
+        <td>${dirLabel}</td>
+        <td>${t.score}</td>
+        <td><span class="bt-badge ${t.result}">${t.result.toUpperCase()}</span></td>
+        <td class="${pnlCls}">${pnlStr}</td>
+      </tr>`;
+  }).join('');
+
+  document.getElementById('btTable').innerHTML = `
+    <div class="bt-table-wrap">
+      <table class="bt-table">
+        <thead>
+          <tr>
+            <th>Data/Hora</th>
+            <th>Coin</th>
+            <th>TF</th>
+            <th>Direção</th>
+            <th>Score</th>
+            <th>Resultado</th>
+            <th>P&amp;L Capital</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
 }
 
 // Inicializar contagem ao carregar
