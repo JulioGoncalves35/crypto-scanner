@@ -1,5 +1,7 @@
 # CLAUDE.md — Crypto Scanner
 
+> **Instrução para o assistente:** Este arquivo é lido automaticamente no início de cada sessão. Ao final de qualquer implementação que altere comportamentos, funções, filtros ou arquitetura do projeto, **atualize este arquivo** para refletir o que mudou — antes de fazer o commit final.
+
 This file documents the codebase structure, development conventions, and workflows for AI assistants working on this repository.
 
 ---
@@ -127,6 +129,9 @@ Both are optional — if they fail, `null` is passed to `analyzeCandles` and the
 - ADX hard filter: setups with ADX < 18 are rejected (sideways market filter)
 - MTF confluence bonus: +6–12 points if same direction on 2+ timeframes
 - MTF conflict penalty: -20 points if lower TF opposes highest TF
+- **Combo penalty — short squeeze risk:** when score < 0 AND RSI < 40 AND F&G < 25 → `score += 20` (reduces SHORT magnitude). Symmetric for LONGs (RSI > 60 AND F&G > 75 → `score -= 20`). Displayed as `"RISCO: ... — Short squeeze iminente"` in reasons.
+- **CVD:** `calcCVD(candles, period=30)` — Cumulative Volume Delta; `±7` pts for rising/falling trend
+- **BOS/CHoCH:** `detectBOSCHoCH(candles, lookback=60)` — Break of Structure (+12/-12) and Change of Character (+22/-22)
 
 ### 6. Analysis Pipeline
 - `analyzeCandles(symbol, tf, candles, fg, fundingRate, openInterest, news)` — full analysis for one coin/timeframe
@@ -269,7 +274,12 @@ python3 -m http.server 8080
 3. No compilation or build step needed.
 
 ### Testing
-There is no automated test suite. Manual testing steps:
+Automated unit tests via Vitest (251 tests across 8 files):
+```bash
+npx vitest run
+```
+
+Manual testing steps:
 - Open `painel.html` in a browser
 - Select a few coins and click "Escanear" (Scan)
 - Verify cards render with correct score/direction badges
@@ -278,10 +288,12 @@ There is no automated test suite. Manual testing steps:
 
 ### Git workflow
 ```bash
-git add painel.html
+git add painel-core.js painel.html
 git commit -m "descriptive message"
 git push -u origin <branch>
 ```
+
+> **Note:** `painel-core.js` and `painel.html` share the same core logic (analysis engine, scoring, indicators). Changes to one **must be mirrored** in the other.
 
 ---
 
@@ -305,3 +317,6 @@ git push -u origin <branch>
 - **MTF deduplication:** After scanning, only the highest-scored setup per coin is shown. Lower-scored timeframes for the same coin are intentionally hidden.
 - **Journal version key:** The `_v2` suffix was introduced after a schema change. If the data shape changes again, bump to `_v3` and add a migration function.
 - **AbortError vs timeout:** `fetchJSON` uses a local `AbortController` for per-request timeouts (10s). This produces an `AbortError` identical to a user-cancellation abort. **Always check `signal?.aborted` before re-throwing** in catch blocks — otherwise a single timed-out request will cancel the entire scan. The pattern is: `if (e.name === 'AbortError' && signal?.aborted) throw e;`
+- **Stop mínimo por timeframe:** `analyzeCandles` rejeita setups onde o stop final (após ajuste de liquidação) for menor que `TF_MIN_STOP[tf]` (5m:0.8%, 15m:1.2%, 30m:1.5%, 1h:2%, 4h:3%, 1D:5%). Isso previne stop hunts em alavancagens altas (ex: 50x em 15M produz stop de 0.75% — inviável).
+- **Combo short squeeze / bull trap:** O scoring penaliza combinações de RSI oversold + F&G Medo Extremo em setups SHORT (e vice-versa para LONGs). Essa combinação sozinha não aparece nos sinais individuais com força suficiente mas é um forte indicador de reversão de curto prazo.
+- **painel-core.js vs painel.html:** Os dois arquivos contêm o mesmo motor de análise. Qualquer mudança no motor (scoring, indicadores, filtros) deve ser aplicada nos dois arquivos.

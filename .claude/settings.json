@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"systemMessage\": \"📝 Lembrete: se houve mudanças no código nessa sessão, peça ao Claude para atualizar o CLAUDE.md antes do commit final.\"}'",
+            "statusMessage": "Verificando documentação..."
+          }
+        ]
+      }
+    ]
+  }
+}
