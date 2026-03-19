@@ -3908,9 +3908,13 @@ async function runBacktest(signal, minScore, selectedTFs, selectedCoins, selecte
         const { result, mfePct, maePct, closePrice } = simulateOutcome(setup, futureCandles);
         const pnl                                = calcBacktestPnL(setup, result, LEVERAGE, closePrice);
 
-        // % do caminho percorrido em direção ao M1 (útil para "Aberto")
-        const m1Dist = Math.abs(setup.m1.price - setup.entry) / setup.entry * 100;
-        const m1Progress = m1Dist > 0 ? Math.round(mfePct / m1Dist * 100) : 0;
+        // Distâncias % entre entry e cada nível de risco/alvo
+        const stopDist    = Math.abs(setup.entry - setup.stopPrice) / setup.entry * 100;
+        const m1Dist      = Math.abs(setup.m1.price - setup.entry)  / setup.entry * 100;
+        const m2Dist      = Math.abs(setup.m2.price - setup.entry)  / setup.entry * 100;
+        const m3Dist      = Math.abs(setup.m3.price - setup.entry)  / setup.entry * 100;
+        // % do caminho ATÉ O STOP que o preço percorreu (0%=sem pressão, 100%=tocou o stop)
+        const maePressure = stopDist > 0 ? Math.round(maePct / stopDist * 100) : 0;
 
         trades.push({
           time:       entryTime,
@@ -3922,7 +3926,11 @@ async function runBacktest(signal, minScore, selectedTFs, selectedCoins, selecte
           pnl,
           mfePct,
           maePct,
-          m1Progress, // % do caminho até M1 que o preço percorreu
+          stopDist,
+          m1Dist,
+          m2Dist,
+          m3Dist,
+          maePressure,
           entry:      setup.entry,
           stop:       setup.stopPrice,
           m1:         setup.m1.price,
@@ -4020,9 +4028,11 @@ function cancelBacktest() {
 function calcPatternHitRates(trades) {
   const map = {};
   for (const t of trades) {
-    const isWin  = ['m1','m2','m3'].includes(t.result);
-    const isLoss = t.result === 'stop';
-    if (!isWin && !isLoss) continue; // ignora abertos (não resolvidos)
+    const isWin  = ['m1','m2','m3'].includes(t.result)
+                || (t.result === 'timeout' && t.pnl > 0);
+    const isLoss = t.result === 'stop'
+                || (t.result === 'timeout' && t.pnl < 0);
+    if (!isWin && !isLoss) continue; // ignora open e timeout com P&L=0
     for (const r of (t.reasons || [])) {
       if (!map[r]) map[r] = { wins: 0, losses: 0 };
       if (isWin)  map[r].wins++;
@@ -4063,7 +4073,7 @@ function buildInsightsHtml(trades, wins, stops, opens, closed, allTFs, tfStats, 
 
   const patternSection = `
     <div class="bt-reasons-box full">
-      <div class="bt-reasons-title" style="color:var(--accent2)">◈ Taxa de Acerto por Padrão / Indicador — fechados (wins + stops)</div>
+      <div class="bt-reasons-title" style="color:var(--accent2)">◈ Taxa de Acerto por Padrão / Indicador — fechados + timeouts (win/stop/timeout±P&L)</div>
       ${hitRates.length === 0
         ? '<div class="bt-reason-row" style="color:var(--muted)">Dados insuficientes (mín. 3 ocorrências por padrão)</div>'
         : patternRows}
@@ -4169,10 +4179,14 @@ function renderBacktestResults(trades, periods, rejStats, leverage = 10) {
     ? Math.round((m1s.length*1 + m2s.length*2 + m3s.length*3) / (wins.length * 3) * 100)
     : null;
 
-  // MFE médio nos Abertos (% do M1 atingido)
-  const avgM1Progress = opens.length > 0
-    ? Math.round(opens.reduce((s,t) => s + t.m1Progress, 0) / opens.length)
-    : null;
+  // Pressão nos Stops — quantos trades chegaram perto do stop antes de reverter
+  const nearMissStop   = trades.filter(t => t.maePressure >= 70).length;
+  const nearMissPct    = trades.length > 0 ? Math.round(nearMissStop / trades.length * 100) : 0;
+  const pressure0_25   = trades.filter(t => t.maePressure < 25).length;
+  const pressure25_50  = trades.filter(t => t.maePressure >= 25 && t.maePressure < 50).length;
+  const pressure50_75  = trades.filter(t => t.maePressure >= 50 && t.maePressure < 75).length;
+  const pressure75p    = trades.filter(t => t.maePressure >= 75).length;
+  const pressureCardColor = nearMissPct < 20 ? 'var(--accent)' : nearMissPct < 40 ? 'var(--warn)' : 'var(--danger)';
 
   // Win rate por TF — derivado dos TFs realmente presentes nos trades
   const TF_ORDER = ['5m','15m','30m','1h','4h','1D'];
@@ -4278,6 +4292,16 @@ function renderBacktestResults(trades, periods, rejStats, leverage = 10) {
         ? `P&L médio ao sair no fechamento · ${timeouts.length} trades · ${Math.round(timeouts.filter(t=>t.pnl>0).length/timeouts.length*100)}% positivos`
         : 'nenhum trade encerrado por timeout'}</div>
     </div>
+    <div class="stat-card">
+      <div class="stat-label">Pressão nos Stops ⚠</div>
+      <div class="stat-val" style="color:${pressureCardColor}">${nearMissPct}%</div>
+      <div class="stat-sub">
+        near-miss ≥70% do stop · ${nearMissStop} trades<br>
+        <span style="font-size:9px">
+          0–25%: ${pressure0_25} · 25–50%: ${pressure25_50} · 50–75%: ${pressure50_75} · 75%+: ${pressure75p}
+        </span>
+      </div>
+    </div>
   `;
 
   // ── Top 5 Reasons ──
@@ -4348,6 +4372,7 @@ function renderBacktestResults(trades, periods, rejStats, leverage = 10) {
     // MFE e MAE formatados
     const mfeStr = t.mfePct > 0 ? '+' + t.mfePct.toFixed(1) + '%' : '—';
     const maeStr = t.maePct > 0 ? '-' + t.maePct.toFixed(1) + '%' : '—';
+    const pressureColor = t.maePressure >= 75 ? 'var(--danger)' : t.maePressure >= 50 ? 'var(--warn)' : 'var(--muted)';
 
     // Hint para timeout
     const openHint = isTimeout
@@ -4364,6 +4389,12 @@ function renderBacktestResults(trades, periods, rejStats, leverage = 10) {
         <td><b>${t.coin}</b> <span style="color:var(--muted);font-size:10px">${t.tf}</span></td>
         <td>${dirLabel}</td>
         <td>
+          <div style="display:flex;flex-direction:column;gap:1px;font-size:10px">
+            <span style="color:var(--danger)">↓ ${(t.stopDist||0).toFixed(1)}%</span>
+            <span style="color:var(--accent)">↑ ${(t.m1Dist||0).toFixed(1)}%</span>
+          </div>
+        </td>
+        <td>
           <div class="bt-result-cell">
             <span><span class="bt-badge ${t.result}">${t.result.toUpperCase()}</span> <span class="bt-stars">${stars[t.result]}</span>${openHint}</span>
             <span class="bt-score-sub">Score ${t.score}</span>
@@ -4373,7 +4404,7 @@ function renderBacktestResults(trades, periods, rejStats, leverage = 10) {
         <td>
           <div class="bt-mfemae">
             <span class="bt-mfe" title="Max Favorable Excursion">▲ ${mfeStr}</span>
-            <span class="bt-mae" title="Max Adverse Excursion">▼ ${maeStr}</span>
+            <span class="bt-mae" title="Max Adverse Excursion">▼ ${maeStr} <span style="font-size:9px;color:${pressureColor}">(${t.maePressure}%)</span></span>
           </div>
         </td>
       </tr>`;
@@ -4387,9 +4418,10 @@ function renderBacktestResults(trades, periods, rejStats, leverage = 10) {
             <th>Data/Hora</th>
             <th>Par</th>
             <th>Dir</th>
+            <th title="Distância % do entry ao stop (↓) e ao M1 (↑)">Stop · M1</th>
             <th>Resultado</th>
             <th>P&amp;L Capital</th>
-            <th title="Max Favorable / Max Adverse Excursion">MFE / MAE</th>
+            <th title="Max Favorable / Max Adverse Excursion · (% do caminho até o stop)">MFE / MAE</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>

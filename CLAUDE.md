@@ -90,6 +90,10 @@ Code sections are separated by `// ───────────────
 - `buildInsightsHtml(...)` — renders 3 insight sections: pattern hit rate table, LONG/SHORT breakdown, P&L distribution bars
 - `renderBacktestResults(trades, periods, rejStats, leverage)` — full results renderer
 - **Trade results:** `m1` / `m2` / `m3` (target hit) · `stop` (stop-loss hit) · `timeout` (horizon exhausted, exit at close price) · `open` (never resolved — should not appear with normal/short horizons)
+- **Trade object extra fields:** `stopDist` (% entry→stop) · `m1Dist/m2Dist/m3Dist` (% entry→target) · `maePressure` (% of stop distance the price reached, 0–100+; ≥70 = near-miss)
+- **Pressure card:** "Pressão nos Stops" shows % of trades with maePressure ≥ 70 and distribution across 4 bands (0–25 / 25–50 / 50–75 / 75+)
+- **Table columns:** Data/Hora · Par · Dir · **Stop · M1** (% distances) · Resultado · P&L · MFE/MAE (with pressure % in parentheses)
+- **`calcPatternHitRates`:** includes timeouts — timeout with pnl > 0 = win, pnl < 0 = loss
 - **Controls:** score mínimo, alavancagem (5x/10x/20x/50x), horizonte (curto/normal/longo), moedas (BTC/ETH/SOL/BNB/XRP/ADA/AVAX, multi-select), timeframes
 - **Default coins:** BTC + ETH (pre-checked); other 5 coins opt-in
 - **Horizon — future window per TF:**
