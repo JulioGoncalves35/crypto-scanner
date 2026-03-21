@@ -1338,6 +1338,59 @@ function calcVWAP(candles) {
 }
 
 // ─────────────────────────────────────────
+// VOLUME PROFILE — POC, VAH, VAL
+// ─────────────────────────────────────────
+function calcVolumeProfile(candles, bins = 50) {
+  if (candles.length < 20) return null;
+
+  const allHighs = candles.map(c => c.high);
+  const allLows  = candles.map(c => c.low);
+  const rangeHigh = Math.max(...allHighs);
+  const rangeLow  = Math.min(...allLows);
+  const range = rangeHigh - rangeLow;
+  if (range <= 0) return null;
+
+  const binSize = range / bins;
+  const volumeBins = new Array(bins).fill(0);
+
+  for (const c of candles) {
+    const candleRange = c.high - c.low;
+    if (candleRange <= 0) continue;
+    const startBin = Math.floor((c.low - rangeLow) / binSize);
+    const endBin   = Math.min(bins - 1, Math.floor((c.high - rangeLow) / binSize));
+    const binsSpanned = Math.max(1, endBin - startBin + 1);
+    const volPerBin = c.volume / binsSpanned;
+    for (let b = startBin; b <= endBin; b++) {
+      if (b >= 0 && b < bins) volumeBins[b] += volPerBin;
+    }
+  }
+
+  let pocBin = 0;
+  let maxVol = 0;
+  for (let b = 0; b < bins; b++) {
+    if (volumeBins[b] > maxVol) { maxVol = volumeBins[b]; pocBin = b; }
+  }
+  const poc = rangeLow + (pocBin + 0.5) * binSize;
+
+  const totalVolume = volumeBins.reduce((a, b) => a + b, 0);
+  const valueAreaTarget = totalVolume * 0.70;
+  let vaVolume = volumeBins[pocBin];
+  let vaLow = pocBin, vaHigh = pocBin;
+  while (vaVolume < valueAreaTarget && (vaLow > 0 || vaHigh < bins - 1)) {
+    const addLow  = vaLow  > 0       ? volumeBins[vaLow  - 1] : 0;
+    const addHigh = vaHigh < bins - 1 ? volumeBins[vaHigh + 1] : 0;
+    if (addHigh >= addLow && vaHigh < bins - 1) { vaHigh++; vaVolume += addHigh; }
+    else if (vaLow > 0)                          { vaLow--;  vaVolume += addLow; }
+    else                                         { vaHigh++; vaVolume += addHigh; }
+  }
+
+  const vah = rangeLow + (vaHigh + 1) * binSize;
+  const val = rangeLow + vaLow * binSize;
+
+  return { poc, vah, val, rangeHigh, rangeLow };
+}
+
+// ─────────────────────────────────────────
 // OBV — On Balance Volume (tendência)
 // ─────────────────────────────────────────
 function calcOBVTrend(candles, period = 20) {
@@ -1977,19 +2030,20 @@ function _calcTechIndicators(candles, closes) {
   const dblPattern  = detectDoubleTopBottom(candles);
   const bosChoch    = detectBOSCHoCH(candles);
   const cvd         = calcCVD(candles);
+  const volProfile  = calcVolumeProfile(candles);
 
   return { price, rsiArr, rsi, ema9, ema21, ema200,
     macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
     bb, atr, volRatio, levels, vwap, obvTrend, stochRSI,
     patterns, divergences, adx, emaCross, mktStruct, triangle, dblPattern,
-    bosChoch, cvd };
+    bosChoch, cvd, volProfile };
 }
 
 // Fase 2: calcular score e razões com base nos indicadores
 function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) {
   const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
     ema9, ema21, ema200, bb, vwap, obvTrend, volRatio, patterns, divergences, adx,
-    emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd } = ind;
+    emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd, volProfile } = ind;
 
   let score = 0;
   const reasons = [], indicators = [];
@@ -2048,6 +2102,44 @@ function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) 
     if      (price > vwap * 1.002) { score += 7; reasons.push({text:'Acima do VWAP',type:'positive'}); }
     else if (price < vwap * 0.998) { score -= 7; reasons.push({text:'Abaixo do VWAP',type:'negative'}); }
     indicators.push({name:'VWAP',reading:'$'+vwap.toFixed(vwap>=1?2:4),color:price>vwap?'var(--accent)':'var(--danger)'});
+  }
+
+  // Volume Profile — POC, VAH, VAL
+  if (volProfile != null) {
+    const { poc, vah, val } = volProfile;
+    const pocDist = Math.abs(price - poc) / price;
+    const fmtVP = v => '$' + v.toFixed(v >= 1 ? 2 : 4);
+
+    if (pocDist < 0.005) {
+      reasons.push({ text: `Preço no POC ${fmtVP(poc)} — zona de maior volume negociado`, type: 'neutral' });
+    } else if (price > poc) {
+      score += 6;
+      reasons.push({ text: `Preço acima do POC ${fmtVP(poc)} — suporte de volume`, type: 'positive' });
+    } else {
+      score -= 6;
+      reasons.push({ text: `Preço abaixo do POC ${fmtVP(poc)} — resistência de volume`, type: 'negative' });
+    }
+
+    const inValueArea = price >= val && price <= vah;
+    if (inValueArea) {
+      reasons.push({ text: `Dentro da Value Area [${fmtVP(val)} – ${fmtVP(vah)}]`, type: 'neutral' });
+    }
+
+    if (price < val) {
+      score += 5;
+      reasons.push({ text: `Abaixo da Value Area (VAL ${fmtVP(val)}) — possível retorno ao POC`, type: 'positive' });
+    }
+
+    if (price > vah) {
+      score -= 5;
+      reasons.push({ text: `Acima da Value Area (VAH ${fmtVP(vah)}) — possível retorno ao POC`, type: 'negative' });
+    }
+
+    indicators.push({
+      name: 'Volume Profile',
+      reading: `POC ${fmtVP(poc)} · VAH ${fmtVP(vah)} · VAL ${fmtVP(val)}`,
+      color: price > poc ? 'var(--accent)' : price < poc ? 'var(--danger)' : 'var(--warn)'
+    });
   }
 
   // OBV
@@ -2317,6 +2409,7 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
     patterns, divergences, conditionalEntry,
     emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd,
     vwap, obvTrend, stochRSI,
+    volProfile: ind.volProfile ?? null,
     candles,
     mtfConfluence: null, // preenchido depois em runRealAnalysis
     fundingRate,
@@ -2980,6 +3073,45 @@ function openModal(d) {
         ${d.mtfConfluence.tfs.map(tf=>`<span class="mtf-tf-pill ${d.mtfConfluence.dir==='sell'?'sell':''}">${tf.toUpperCase()}</span>`).join('')}
       </div>
     </div>` : ''}
+
+    ${d.volProfile ? (() => {
+      const { poc, vah, val, rangeHigh, rangeLow } = d.volProfile;
+      const range = rangeHigh - rangeLow;
+      const pocPct   = range > 0 ? ((poc - rangeLow) / range * 100).toFixed(1) : 50;
+      const vahPct   = range > 0 ? ((vah - rangeLow) / range * 100).toFixed(1) : 70;
+      const valPct   = range > 0 ? ((val - rangeLow) / range * 100).toFixed(1) : 30;
+      const pricePct = range > 0 ? Math.min(100, Math.max(0, ((d.entry - rangeLow) / range * 100))).toFixed(1) : 50;
+      const fmt = v => '$' + v.toFixed(v >= 1 ? 2 : 4);
+      return `
+<div class="analysis-block">
+  <h4>Volume Profile</h4>
+  <div style="position:relative;height:80px;background:var(--surface2);border-radius:8px;overflow:hidden;margin-bottom:10px;border:1px solid var(--border)">
+    <div style="position:absolute;left:0;right:0;
+      bottom:${valPct}%;height:${vahPct - valPct}%;
+      background:rgba(0,136,255,0.12);border-top:1px solid rgba(0,136,255,0.3);border-bottom:1px solid rgba(0,136,255,0.3)"></div>
+    <div style="position:absolute;left:0;right:0;bottom:${pocPct}%;height:2px;background:var(--warn);box-shadow:0 0 6px var(--warn)">
+      <span style="position:absolute;right:8px;top:-9px;font-family:var(--mono);font-size:9px;color:var(--warn)">POC</span>
+    </div>
+    <div style="position:absolute;left:0;right:0;bottom:${pricePct}%;height:1px;background:var(--accent);opacity:0.7">
+      <span style="position:absolute;left:8px;top:-9px;font-family:var(--mono);font-size:9px;color:var(--accent)">Preço</span>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-family:var(--mono);font-size:11px">
+    <div style="text-align:center">
+      <div style="color:var(--muted);font-size:10px">VAH</div>
+      <div style="color:var(--accent2)">${fmt(vah)}</div>
+    </div>
+    <div style="text-align:center">
+      <div style="color:var(--muted);font-size:10px">POC</div>
+      <div style="color:var(--warn)">${fmt(poc)}</div>
+    </div>
+    <div style="text-align:center">
+      <div style="color:var(--muted);font-size:10px">VAL</div>
+      <div style="color:var(--accent2)">${fmt(val)}</div>
+    </div>
+  </div>
+</div>`;
+    })() : ''}
 
     <div class="analysis-block">
       <h4>Indicadores técnicos</h4>
