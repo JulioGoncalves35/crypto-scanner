@@ -142,6 +142,66 @@ function calcVWAP(candles) {
   return cumVol > 0 ? cumTPV / cumVol : null;
 }
 
+// ─────────────────────────────────────────
+// VOLUME PROFILE — POC, VAH, VAL
+// ─────────────────────────────────────────
+function calcVolumeProfile(candles, bins = 50) {
+  if (candles.length < 20) return null;
+
+  // Determinar range de preço da janela
+  const allHighs = candles.map(c => c.high);
+  const allLows  = candles.map(c => c.low);
+  const rangeHigh = Math.max(...allHighs);
+  const rangeLow  = Math.min(...allLows);
+  const range = rangeHigh - rangeLow;
+  if (range <= 0) return null;
+
+  const binSize = range / bins;
+
+  // Inicializar bins com volume zero
+  const volumeBins = new Array(bins).fill(0);
+
+  // Distribuir volume de cada candle pelo range coberto (high - low)
+  // Método: cada candle "preenche" os bins que seu range toca, proporcional à sobreposição
+  for (const c of candles) {
+    const candleRange = c.high - c.low;
+    if (candleRange <= 0) continue;
+    const startBin = Math.floor((c.low - rangeLow) / binSize);
+    const endBin   = Math.min(bins - 1, Math.floor((c.high - rangeLow) / binSize));
+    const binsSpanned = Math.max(1, endBin - startBin + 1);
+    const volPerBin = c.volume / binsSpanned;
+    for (let b = startBin; b <= endBin; b++) {
+      if (b >= 0 && b < bins) volumeBins[b] += volPerBin;
+    }
+  }
+
+  // POC = bin com maior volume
+  let pocBin = 0;
+  let maxVol = 0;
+  for (let b = 0; b < bins; b++) {
+    if (volumeBins[b] > maxVol) { maxVol = volumeBins[b]; pocBin = b; }
+  }
+  const poc = rangeLow + (pocBin + 0.5) * binSize;
+
+  // Value Area: 70% do volume total, partindo do POC e expandindo para os lados
+  const totalVolume = volumeBins.reduce((a, b) => a + b, 0);
+  const valueAreaTarget = totalVolume * 0.70;
+  let vaVolume = volumeBins[pocBin];
+  let vaLow = pocBin, vaHigh = pocBin;
+  while (vaVolume < valueAreaTarget && (vaLow > 0 || vaHigh < bins - 1)) {
+    const addLow  = vaLow  > 0       ? volumeBins[vaLow  - 1] : 0;
+    const addHigh = vaHigh < bins - 1 ? volumeBins[vaHigh + 1] : 0;
+    if (addHigh >= addLow && vaHigh < bins - 1) { vaHigh++; vaVolume += addHigh; }
+    else if (vaLow > 0)                          { vaLow--;  vaVolume += addLow; }
+    else                                         { vaHigh++; vaVolume += addHigh; }
+  }
+
+  const vah = rangeLow + (vaHigh + 1) * binSize;
+  const val = rangeLow + vaLow * binSize;
+
+  return { poc, vah, val, rangeHigh, rangeLow };
+}
+
 function calcOBVTrend(candles, period = 20) {
   if (candles.length < period + 1) return 'neutral';
   let obv = 0;
@@ -851,18 +911,19 @@ function _calcTechIndicators(candles, closes) {
   const dblPattern  = detectDoubleTopBottom(candles);
   const bosChoch    = detectBOSCHoCH(candles);
   const cvd         = calcCVD(candles);
+  const volProfile  = calcVolumeProfile(candles);
 
   return { price, rsiArr, rsi, ema9, ema21, ema200,
     macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
     bb, atr, volRatio, levels, vwap, obvTrend, stochRSI,
     patterns, divergences, adx, emaCross, mktStruct, triangle, dblPattern,
-    bosChoch, cvd };
+    bosChoch, cvd, volProfile };
 }
 
 function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) {
   const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
     ema9, ema21, ema200, bb, vwap, obvTrend, volRatio, patterns, divergences, adx,
-    emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd } = ind;
+    emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd, volProfile } = ind;
 
   let score = 0;
   const reasons = [], indicators = [];
@@ -915,6 +976,44 @@ function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) 
     if      (price > vwap * 1.002) { score += 7; reasons.push({text:'Acima do VWAP',type:'positive'}); }
     else if (price < vwap * 0.998) { score -= 7; reasons.push({text:'Abaixo do VWAP',type:'negative'}); }
     indicators.push({name:'VWAP',reading:'$'+vwap.toFixed(vwap>=1?2:4),color:price>vwap?'var(--accent)':'var(--danger)'});
+  }
+
+  // Volume Profile — POC, VAH, VAL
+  if (volProfile != null) {
+    const { poc, vah, val } = volProfile;
+    const pocDist = Math.abs(price - poc) / price;
+    const fmtVP = v => '$' + v.toFixed(v >= 1 ? 2 : 4);
+
+    if (pocDist < 0.005) {
+      reasons.push({ text: `Preço no POC ${fmtVP(poc)} — zona de maior volume negociado`, type: 'neutral' });
+    } else if (price > poc) {
+      score += 6;
+      reasons.push({ text: `Preço acima do POC ${fmtVP(poc)} — suporte de volume`, type: 'positive' });
+    } else {
+      score -= 6;
+      reasons.push({ text: `Preço abaixo do POC ${fmtVP(poc)} — resistência de volume`, type: 'negative' });
+    }
+
+    const inValueArea = price >= val && price <= vah;
+    if (inValueArea) {
+      reasons.push({ text: `Dentro da Value Area [${fmtVP(val)} – ${fmtVP(vah)}]`, type: 'neutral' });
+    }
+
+    if (price < val) {
+      score += 5;
+      reasons.push({ text: `Abaixo da Value Area (VAL ${fmtVP(val)}) — possível retorno ao POC`, type: 'positive' });
+    }
+
+    if (price > vah) {
+      score -= 5;
+      reasons.push({ text: `Acima da Value Area (VAH ${fmtVP(vah)}) — possível retorno ao POC`, type: 'negative' });
+    }
+
+    indicators.push({
+      name: 'Volume Profile',
+      reading: `POC ${fmtVP(poc)} · VAH ${fmtVP(vah)} · VAL ${fmtVP(val)}`,
+      color: price > poc ? 'var(--accent)' : price < poc ? 'var(--danger)' : 'var(--warn)'
+    });
   }
 
   if (obvTrend === 'rising')  { score += 6; reasons.push({text:'OBV em ascensão (acumulação)',type:'positive'}); }
@@ -1163,6 +1262,7 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
     patterns, divergences, conditionalEntry,
     emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd,
     vwap, obvTrend, stochRSI,
+    volProfile: ind.volProfile ?? null,
     candles,
     mtfConfluence: null,
     fundingRate,
@@ -1254,7 +1354,7 @@ export {
   CORS_PROXIES, TF_MAP, TF_ORDER,
   // Indicators
   calcEMA, calcRSI, calcMACD, calcBollinger, calcATR, calcADX,
-  avgVol, findLevels, calcVWAP, calcOBVTrend, calcStochRSI, calcCVD,
+  avgVol, findLevels, calcVWAP, calcOBVTrend, calcStochRSI, calcCVD, calcVolumeProfile,
   // Patterns
   detectCandlePatterns, detectDivergences, detectEMACross,
   detectMarketStructure, detectTriangle, detectDoubleTopBottom, detectBOSCHoCH,

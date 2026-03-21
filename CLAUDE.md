@@ -133,6 +133,7 @@ Both are optional — if they fail, `null` is passed to `analyzeCandles` and the
 | `calcOBV(candles)` | On-Balance Volume |
 | `calcATR(candles, period)` | Average True Range |
 | `calcStochRSI(data)` | Stochastic RSI |
+| `calcVolumeProfile(candles, bins=50)` | Volume Profile — POC, VAH, VAL |
 | `_calcTechIndicators(candles)` | Orchestrates all indicator calculations |
 
 ### 4. Pattern Detection
@@ -153,6 +154,7 @@ Both are optional — if they fail, `null` is passed to `analyzeCandles` and the
 - **Combo penalty — short squeeze risk:** when score < 0 AND RSI < 40 AND F&G < 25 → `score += 20` (reduces SHORT magnitude). Symmetric for LONGs (RSI > 60 AND F&G > 75 → `score -= 20`). Displayed as `"RISCO: ... — Short squeeze iminente"` in reasons.
 - **CVD:** `calcCVD(candles, period=30)` — Cumulative Volume Delta; `±7` pts for rising/falling trend
 - **BOS/CHoCH:** `detectBOSCHoCH(candles, lookback=60)` — Break of Structure (+12/-12) and Change of Character (+22/-22)
+- **Volume Profile:** `calcVolumeProfile(candles, bins=50)` — distributes volume by price level (50 bins). Returns `{ poc, vah, val, rangeHigh, rangeLow }`. Scoring: price above POC `+6` / below POC `-6`; price below VAL adds `+5` (potential mean-reversion); price above VAH adds `-5`. Guard uses `!= null` (handles both `null` and `undefined`). Displayed as a visual bar in the modal (Value Area band + POC line + current price marker). Backtest: VP reasons appear automatically in `calcPatternHitRates` hit-rate table via the `reasons` array — no extra code needed.
 
 ### 6. Analysis Pipeline
 - `analyzeCandles(symbol, tf, candles, fg, fundingRate, openInterest, news)` — full analysis for one coin/timeframe

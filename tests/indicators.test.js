@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   calcEMA, calcRSI, calcMACD, calcBollinger,
   calcATR, calcADX, avgVol, findLevels, calcVWAP, calcOBVTrend, calcStochRSI,
+  calcVolumeProfile,
 } from '../painel-core.js';
 import { makeTrendingCandles, makeFlatCandles, makeDowntrendCandles } from './fixtures/candles.js';
 
@@ -341,5 +342,67 @@ describe('findLevels', () => {
     const last = bands[bands.length - 1];
     expect(last.upper).toBeGreaterThan(last.mid);
     expect(last.mid).toBeGreaterThan(last.lower);
+  });
+});
+
+// ─── calcVolumeProfile ────────────────────────────────────────────────────────
+describe('calcVolumeProfile', () => {
+  it('returns null for fewer than 20 candles', () => {
+    const candles = makeTrendingCandles(10);
+    expect(calcVolumeProfile(candles)).toBeNull();
+  });
+
+  it('returns null when all candles have same high and low (range = 0)', () => {
+    const candles = Array.from({ length: 30 }, (_, i) => ({
+      time: i, open: 100, high: 100, low: 100, close: 100, volume: 1000,
+    }));
+    expect(calcVolumeProfile(candles)).toBeNull();
+  });
+
+  it('returns object with poc, vah, val, rangeHigh, rangeLow for valid input', () => {
+    const candles = makeTrendingCandles(50, 100, 1);
+    const result = calcVolumeProfile(candles);
+    expect(result).not.toBeNull();
+    expect(result).toHaveProperty('poc');
+    expect(result).toHaveProperty('vah');
+    expect(result).toHaveProperty('val');
+    expect(result).toHaveProperty('rangeHigh');
+    expect(result).toHaveProperty('rangeLow');
+  });
+
+  it('poc is within [rangeLow, rangeHigh]', () => {
+    const candles = makeTrendingCandles(60, 200, 2);
+    const { poc, rangeHigh, rangeLow } = calcVolumeProfile(candles);
+    expect(poc).toBeGreaterThanOrEqual(rangeLow);
+    expect(poc).toBeLessThanOrEqual(rangeHigh);
+  });
+
+  it('val <= poc <= vah', () => {
+    const candles = makeTrendingCandles(100, 50, 0.5);
+    const { poc, vah, val } = calcVolumeProfile(candles);
+    expect(val).toBeLessThanOrEqual(poc);
+    expect(poc).toBeLessThanOrEqual(vah);
+  });
+
+  it('vah > val (value area has positive width)', () => {
+    const candles = makeTrendingCandles(80, 100, 1);
+    const { vah, val } = calcVolumeProfile(candles);
+    expect(vah).toBeGreaterThan(val);
+  });
+
+  it('works with downtrending candles', () => {
+    const candles = makeDowntrendCandles(50, 200, 1);
+    const result = calcVolumeProfile(candles);
+    expect(result).not.toBeNull();
+    const { poc, vah, val } = result;
+    expect(val).toBeLessThanOrEqual(poc);
+    expect(poc).toBeLessThanOrEqual(vah);
+  });
+
+  it('custom bins parameter is respected (bins=10 still returns valid result)', () => {
+    const candles = makeTrendingCandles(40, 100, 1);
+    const result = calcVolumeProfile(candles, 10);
+    expect(result).not.toBeNull();
+    expect(result.poc).toBeGreaterThan(0);
   });
 });
