@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { applyMTFScoring } from '../painel-core.js';
+import { applyMTFScoring, getMTFWeight } from '../painel-core.js';
 
 // ─── Setup factory ───────────────────────────────────────────────────────────
 let _idSeq = 1;
@@ -42,6 +42,35 @@ function makeSetup(overrides = {}) {
   return setup;
 }
 
+// ─── getMTFWeight ─────────────────────────────────────────────────────────────
+describe('getMTFWeight', () => {
+  it('5m+4h returns 14', () => {
+    expect(getMTFWeight('5m', '4h')).toBe(14);
+  });
+
+  it('15m+1h returns 8', () => {
+    expect(getMTFWeight('15m', '1h')).toBe(8);
+  });
+
+  it('4h+1D returns 10', () => {
+    expect(getMTFWeight('4h', '1D')).toBe(10);
+  });
+
+  it('5m+1D returns 16', () => {
+    expect(getMTFWeight('5m', '1D')).toBe(16);
+  });
+
+  it('unknown pair returns 6 (fallback)', () => {
+    expect(getMTFWeight('unknown', 'tf')).toBe(6);
+    expect(getMTFWeight('30m', '1D')).toBe(6); // not in table
+  });
+
+  it('is symmetric (tf1+tf2 == tf2+tf1)', () => {
+    expect(getMTFWeight('5m', '1h')).toBe(getMTFWeight('1h', '5m'));
+    expect(getMTFWeight('15m', '4h')).toBe(getMTFWeight('4h', '15m'));
+  });
+});
+
 // ─── Confluence bonus ────────────────────────────────────────────────────────
 describe('applyMTFScoring — confluence bonus', () => {
   it('single setup per coin gets no bonus', () => {
@@ -51,28 +80,29 @@ describe('applyMTFScoring — confluence bonus', () => {
     expect(result[0].mtfConfluence).toBeNull();
   });
 
-  it('2 TFs same direction → +6 bonus (Math.min(18, (2-1)*6))', () => {
+  it('2 TFs same direction → weighted bonus (15m+1h = 8 pts)', () => {
     const setups = [
       makeSetup({ coin: 'BTC', dir: 'buy', score: 60, timeframe: '15m' }),
       makeSetup({ coin: 'BTC', dir: 'buy', score: 65, timeframe: '1h' }),
     ];
     const result = applyMTFScoring(setups);
-    // Best score is 65 → 65+6=71
-    expect(result[0].score).toBe(71);
+    // Best score is 65 → 65+8=73
+    expect(result[0].score).toBe(73);
   });
 
-  it('3 TFs same direction → +12 bonus (Math.min(18, (3-1)*6))', () => {
+  it('3 TFs same direction → sum of all pairs with cap 25 (5m+15m+1h = 6+10+8=24)', () => {
     const setups = [
       makeSetup({ coin: 'ETH', dir: 'buy', score: 60, timeframe: '5m' }),
       makeSetup({ coin: 'ETH', dir: 'buy', score: 65, timeframe: '15m' }),
       makeSetup({ coin: 'ETH', dir: 'buy', score: 70, timeframe: '1h' }),
     ];
     const result = applyMTFScoring(setups);
-    // (3-1)*6=12, best score = 70+12=82
-    expect(result[0].score).toBe(82);
+    // getMTFWeight(5m,15m)=6, getMTFWeight(5m,1h)=10, getMTFWeight(15m,1h)=8 → total=24, capped at 25 → 24
+    // best score = 70+24=94
+    expect(result[0].score).toBe(94);
   });
 
-  it('4+ TFs same direction caps bonus at 18 (Math.min(18, (4-1)*6))', () => {
+  it('4+ TFs same direction caps bonus at 25 (5m+15m+1h+4h pairs sum >> 25)', () => {
     const setups = [
       makeSetup({ coin: 'SOL', dir: 'sell', score: 60, timeframe: '5m' }),
       makeSetup({ coin: 'SOL', dir: 'sell', score: 60, timeframe: '15m' }),
@@ -80,8 +110,9 @@ describe('applyMTFScoring — confluence bonus', () => {
       makeSetup({ coin: 'SOL', dir: 'sell', score: 60, timeframe: '4h' }),
     ];
     const result = applyMTFScoring(setups);
-    // 4 TFs → Math.min(18, (4-1)*6)=18 → 60+18=78
-    expect(result[0].score).toBe(78);
+    // pairs: 5m+15m=6, 5m+1h=10, 5m+4h=14, 15m+1h=8, 15m+4h=12, 1h+4h=10 → total=60, cap=25
+    // 60+25=85
+    expect(result[0].score).toBe(85);
   });
 
   it('score is capped at 100 after bonus', () => {
@@ -93,17 +124,22 @@ describe('applyMTFScoring — confluence bonus', () => {
     expect(result[0].score).toBe(100);
   });
 
-  it('mtfConfluence is set with correct dir, count, and tfs', () => {
+  it('mtfConfluence has hardTFs, softTFs, bonus, dir, count, tfs', () => {
     const setups = [
       makeSetup({ coin: 'BTC', dir: 'buy', score: 60, timeframe: '15m' }),
       makeSetup({ coin: 'BTC', dir: 'buy', score: 70, timeframe: '1h' }),
     ];
     const result = applyMTFScoring(setups);
-    expect(result[0].mtfConfluence).not.toBeNull();
-    expect(result[0].mtfConfluence.dir).toBe('buy');
-    expect(result[0].mtfConfluence.count).toBe(2);
-    expect(result[0].mtfConfluence.tfs).toContain('15m');
-    expect(result[0].mtfConfluence.tfs).toContain('1h');
+    const mtf = result[0].mtfConfluence;
+    expect(mtf).not.toBeNull();
+    expect(mtf.dir).toBe('buy');
+    expect(mtf.count).toBe(2);
+    expect(mtf.hardTFs).toContain('15m');
+    expect(mtf.hardTFs).toContain('1h');
+    expect(mtf.softTFs).toEqual([]);
+    expect(mtf.bonus).toBe(8); // getMTFWeight(15m,1h)=8
+    expect(mtf.tfs).toContain('15m');
+    expect(mtf.tfs).toContain('1h');
   });
 
   it('confluence reason is prepended to reasons array', () => {
@@ -126,23 +162,61 @@ describe('applyMTFScoring — confluence bonus', () => {
     const result = applyMTFScoring(setups);
     // No confluence bonus since each direction has only 1 setup
     // Only 1 survives dedup (highest score = sell at 70, minus potential conflict penalty)
-    // Conflict: buy on 15m vs sell on 1h — buy is lower TF opposing higher TF sell → -20 penalty
+    // Conflict: buy on 15m vs sell on 1h — buy is lower TF opposing higher TF sell → penalty
     // sell wins dedup anyway
     expect(result).toHaveLength(1);
+  });
+
+  it('soft confirms contribute to bonus but appear in softTFs not hardTFs', () => {
+    const hardSetups = [
+      makeSetup({ coin: 'BTC', dir: 'buy', score: 70, timeframe: '15m' }),
+    ];
+    const softSetups = [
+      makeSetup({ coin: 'BTC', dir: 'buy', score: 60, timeframe: '1h' }),
+    ];
+    const result = applyMTFScoring(hardSetups, softSetups);
+    const mtf = result[0].mtfConfluence;
+    expect(mtf).not.toBeNull();
+    expect(mtf.hardTFs).toEqual(['15m']);
+    expect(mtf.softTFs).toEqual(['1h']);
+    expect(mtf.bonus).toBe(8); // getMTFWeight(15m,1h)=8
+    // score: 70 + 8 = 78
+    expect(result[0].score).toBe(78);
+  });
+
+  it('soft confirms for wrong coin are ignored', () => {
+    const hardSetups = [
+      makeSetup({ coin: 'BTC', dir: 'buy', score: 70, timeframe: '15m' }),
+    ];
+    const softSetups = [
+      makeSetup({ coin: 'ETH', dir: 'buy', score: 60, timeframe: '1h' }), // different coin
+    ];
+    const result = applyMTFScoring(hardSetups, softSetups);
+    expect(result[0].mtfConfluence).toBeNull(); // no confluence — no matching coin soft confirm
   });
 });
 
 // ─── Conflict penalty ────────────────────────────────────────────────────────
 describe('applyMTFScoring — conflict penalty', () => {
-  it('lower TF opposing higher TF direction gets -20 penalty', () => {
+  it('lower TF opposing higher TF with gap >= 2 gets -20 penalty (15m vs 1h, gap=2)', () => {
     const setups = [
       makeSetup({ coin: 'BTC', dir: 'buy',  score: 60, timeframe: '15m' }), // lower TF, opposing
       makeSetup({ coin: 'BTC', dir: 'sell', score: 70, timeframe: '1h' }),  // higher TF
     ];
     applyMTFScoring(setups);
+    // TF_ORDER: 15m=idx1, 1h=idx3, gap=2 → penalty=20
     // The buy/15m setup should have score reduced by 20 → 60-20=40
-    // (We can't get this from result because dedup removes it — check the input objects which are mutated)
     expect(setups[0].score).toBe(40);
+  });
+
+  it('lower TF opposing adjacent TF (gap=1) gets -8 penalty (5m vs 15m)', () => {
+    const setups = [
+      makeSetup({ coin: 'BTC', dir: 'buy',  score: 60, timeframe: '5m' }),  // lower TF, gap=1
+      makeSetup({ coin: 'BTC', dir: 'sell', score: 70, timeframe: '15m' }), // higher TF
+    ];
+    applyMTFScoring(setups);
+    // TF_ORDER: 5m=idx0, 15m=idx1, gap=1 → penalty=8
+    expect(setups[0].score).toBe(52); // 60-8=52
   });
 
   it('higher TF does not get conflict penalty', () => {
@@ -157,20 +231,20 @@ describe('applyMTFScoring — conflict penalty', () => {
 
   it('conflict penalty does not go below 0', () => {
     const setups = [
-      makeSetup({ coin: 'BTC', dir: 'buy',  score: 10, timeframe: '15m' }), // will be penalized
+      makeSetup({ coin: 'BTC', dir: 'buy',  score: 10, timeframe: '15m' }), // will be penalized -20
       makeSetup({ coin: 'BTC', dir: 'sell', score: 80, timeframe: '4h' }),
     ];
     applyMTFScoring(setups);
     expect(setups[0].score).toBe(0); // Math.max(0, 10-20)
   });
 
-  it('contra-tendência reason is prepended', () => {
+  it('conflict reason text includes "Conflito"', () => {
     const setups = [
       makeSetup({ coin: 'ETH', dir: 'buy',  score: 60, timeframe: '15m' }),
       makeSetup({ coin: 'ETH', dir: 'sell', score: 70, timeframe: '1h' }),
     ];
     applyMTFScoring(setups);
-    const reason = setups[0].reasons.find(r => r.text.includes('Contra-tendência'));
+    const reason = setups[0].reasons.find(r => r.text.includes('Conflito'));
     expect(reason).toBeDefined();
   });
 
@@ -181,8 +255,8 @@ describe('applyMTFScoring — conflict penalty', () => {
     ];
     applyMTFScoring(setups);
     // buy/15m should NOT be penalized — same direction as buy/1h
-    // 2 TFs same direction → Math.min(18, (2-1)*6) = +6 bonus
-    expect(setups[0].score).toBe(66); // 60 + 6 bonus
+    // 2 TFs same direction → getMTFWeight(15m,1h)=8 bonus
+    expect(setups[0].score).toBe(68); // 60 + 8 bonus
   });
 });
 
@@ -205,9 +279,9 @@ describe('applyMTFScoring — deduplication', () => {
       makeSetup({ coin: 'BTC', dir: 'buy', score: 70, timeframe: '1h' }),
     ];
     const result = applyMTFScoring(setups);
-    // Both get +6 (2 TFs, Math.min(18,(2-1)*6)=6), so 1h setup (70+6=76) wins over 15m (60+6=66)
+    // Both get +8 (getMTFWeight(15m,1h)=8), so 1h setup (70+8=78) wins over 15m (60+8=68)
     expect(result[0].timeframe).toBe('1h');
-    expect(result[0].score).toBe(76);
+    expect(result[0].score).toBe(78);
   });
 
   it('different coins are not deduplicated together', () => {

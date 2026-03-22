@@ -28,6 +28,25 @@ const TIMEFRAMES_BY_MODE = {
 
 const JOURNAL_KEY = 'cryptoscanner_journal_v2';
 
+// Pesos de confluência multi-TF — quanto cada par de TFs adiciona ao score
+const MTF_CONFLUENCE_WEIGHTS = {
+  '5m+15m':  6,  '15m+5m':  6,
+  '5m+1h':  10,  '1h+5m':  10,
+  '5m+4h':  14,  '4h+5m':  14,
+  '5m+1D':  16,  '1D+5m':  16,
+  '15m+1h':  8,  '1h+15m':  8,
+  '15m+4h': 12,  '4h+15m': 12,
+  '15m+1D': 14,  '1D+15m': 14,
+  '30m+1h':  8,  '1h+30m':  8,
+  '30m+4h': 12,  '4h+30m': 12,
+  '1h+4h':  10,  '4h+1h':  10,
+  '1h+1D':  14,  '1D+1h':  14,
+  '4h+1D':  10,  '1D+4h':  10,
+};
+function getMTFWeight(tf1, tf2) {
+  return MTF_CONFLUENCE_WEIGHTS[`${tf1}+${tf2}`] ?? 6;
+}
+
 // ─────────────────────────────────────────
 // TECHNICAL INDICATORS
 // ─────────────────────────────────────────
@@ -1279,41 +1298,68 @@ const TF_ORDER = ['5m','15m','30m','1h','4h','1D'];
 /**
  * Apply MTF confluence bonus, conflict penalty, deduplication, and sort.
  * Mutates the score and reasons on each setup, then deduplicates and sorts.
- * @param {Array} results - array of setup objects from analyzeCandles
+ * @param {Array} results - array of setup objects from analyzeCandles (passed score filter)
+ * @param {Array} softResults - setups below score threshold but with directional signal (optional)
  * @returns {Array} deduplicated and sorted results
  */
-function applyMTFScoring(results) {
+function applyMTFScoring(results, softResults = []) {
   // Group by coin
   const coinGroups = {};
   results.forEach(r => { if (!coinGroups[r.coin]) coinGroups[r.coin]=[]; coinGroups[r.coin].push(r); });
 
+  // Index soft confirms by coin+dir for fast lookup
+  const softByCoindAndDir = {};
+  softResults.forEach(r => {
+    const key = `${r.coin}_${r.dir}`;
+    if (!softByCoindAndDir[key]) softByCoindAndDir[key] = [];
+    softByCoindAndDir[key].push(r);
+  });
+
   Object.entries(coinGroups).forEach(([coin, setups]) => {
-    const buySetups  = setups.filter(s => s.dir === 'buy');
-    const sellSetups = setups.filter(s => s.dir === 'sell');
+    // Confluence bonus for 2+ TFs in same direction (using weighted pairs)
+    ['buy', 'sell'].forEach(dir => {
+      const dirSetups = setups.filter(s => s.dir === dir);
+      if (dirSetups.length === 0) return;
 
-    // Confluence bonus for 2+ TFs in same direction
-    if (buySetups.length >= 2) {
-      const tfs = buySetups.map(s => s.timeframe);
-      const bonus = Math.min(18, (buySetups.length - 1) * 6);
-      buySetups.forEach(s => {
-        s.score = Math.min(100, s.score + bonus);
-        s.mtfConfluence = { dir:'buy', count:buySetups.length, tfs };
-        if (!s.reasons.find(r=>r.text.includes('Confluência')))
-          s.reasons.unshift({ text:`Confluência ${buySetups.length} TFs ↑ (${tfs.join('+')})`, type:'positive', isMTF:true });
-      });
-    }
-    if (sellSetups.length >= 2) {
-      const tfs = sellSetups.map(s => s.timeframe);
-      const bonus = Math.min(18, (sellSetups.length - 1) * 6);
-      sellSetups.forEach(s => {
-        s.score = Math.min(100, s.score + bonus);
-        s.mtfConfluence = { dir:'sell', count:sellSetups.length, tfs };
-        if (!s.reasons.find(r=>r.text.includes('Confluência')))
-          s.reasons.unshift({ text:`Confluência ${sellSetups.length} TFs ↓ (${tfs.join('+')})`, type:'negative', isMTF:true });
-      });
-    }
+      // Soft confirms: same coin+dir below score threshold, not already in hard results
+      const softConfirms = (softByCoindAndDir[`${coin}_${dir}`] || [])
+        .filter(s => !dirSetups.some(d => d.timeframe === s.timeframe));
 
-    // Conflict penalty: lower TF opposing highest TF
+      const allConfirmingTFs = [...dirSetups, ...softConfirms];
+      if (allConfirmingTFs.length < 2) return;
+
+      const tfs = allConfirmingTFs.map(s => s.timeframe);
+      let totalBonus = 0;
+      for (let i = 0; i < tfs.length; i++)
+        for (let j = i + 1; j < tfs.length; j++)
+          totalBonus += getMTFWeight(tfs[i], tfs[j]);
+      const bonus = Math.min(25, totalBonus);
+
+      const hardTFs = dirSetups.map(s => s.timeframe);
+      const softTFs = softConfirms.map(s => s.timeframe);
+
+      dirSetups.forEach(s => {
+        s.score = Math.min(100, s.score + bonus);
+        s.mtfConfluence = {
+          dir,
+          count: allConfirmingTFs.length,
+          tfs: [...hardTFs, ...softTFs],
+          hardTFs,
+          softTFs,
+          bonus,
+        };
+        if (!s.reasons.find(r => r.text.includes('Confluência'))) {
+          const softNote = softTFs.length > 0 ? ` + ${softTFs.join('+')} (dir.)` : '';
+          s.reasons.unshift({
+            text: `Confluência ${hardTFs.join('+')}${softNote} ${dir === 'buy' ? '↑' : '↓'} (+${bonus} pts)`,
+            type: dir === 'buy' ? 'positive' : 'negative',
+            isMTF: true,
+          });
+        }
+      });
+    });
+
+    // Graduated conflict penalty: lower TF opposing highest TF
     if (setups.length >= 2) {
       const highestTF = setups.reduce((prev, curr) =>
         TF_ORDER.indexOf(curr.timeframe) > TF_ORDER.indexOf(prev.timeframe) ? curr : prev
@@ -1321,9 +1367,11 @@ function applyMTFScoring(results) {
       setups.forEach(s => {
         const sIsLower = TF_ORDER.indexOf(s.timeframe) < TF_ORDER.indexOf(highestTF.timeframe);
         if (sIsLower && s.dir !== highestTF.dir) {
-          s.score = Math.max(0, s.score - 20);
-          if (!s.reasons.find(r => r.text.includes('Contra-tendência')))
-            s.reasons.unshift({ text: `⚠ Contra-tendência ${highestTF.timeframe}`, type: 'negative' });
+          const tfGap = TF_ORDER.indexOf(highestTF.timeframe) - TF_ORDER.indexOf(s.timeframe);
+          const penalty = tfGap >= 2 ? 20 : 8;
+          s.score = Math.max(0, s.score - penalty);
+          if (!s.reasons.find(r => r.text.includes('Conflito')))
+            s.reasons.unshift({ text: `Conflito: ${s.timeframe} vs ${highestTF.timeframe} (-${penalty} pts)`, type: 'negative' });
         }
       });
     }
@@ -1352,6 +1400,7 @@ export {
   FIB_NORMAL, FIB_MAX, FIB_FIXED2, FIB_FIXED3,
   TIMEFRAMES_BY_MODE, JOURNAL_KEY,
   CORS_PROXIES, TF_MAP, TF_ORDER,
+  MTF_CONFLUENCE_WEIGHTS, getMTFWeight,
   // Indicators
   calcEMA, calcRSI, calcMACD, calcBollinger, calcATR, calcADX,
   avgVol, findLevels, calcVWAP, calcOBVTrend, calcStochRSI, calcCVD, calcVolumeProfile,
