@@ -1149,6 +1149,25 @@ const TIMEFRAMES_BY_MODE = {
   both: ['5m','15m','30m','1h','4h','1D'],
 };
 
+// Pesos de confluência multi-TF — quanto cada par de TFs adiciona ao score
+const MTF_CONFLUENCE_WEIGHTS = {
+  '5m+15m':  6,  '15m+5m':  6,
+  '5m+1h':  10,  '1h+5m':  10,
+  '5m+4h':  14,  '4h+5m':  14,
+  '5m+1D':  16,  '1D+5m':  16,
+  '15m+1h':  8,  '1h+15m':  8,
+  '15m+4h': 12,  '4h+15m': 12,
+  '15m+1D': 14,  '1D+15m': 14,
+  '30m+1h':  8,  '1h+30m':  8,
+  '30m+4h': 12,  '4h+30m': 12,
+  '1h+4h':  10,  '4h+1h':  10,
+  '1h+1D':  14,  '1D+1h':  14,
+  '4h+1D':  10,  '1D+4h':  10,
+};
+function getMTFWeight(tf1, tf2) {
+  return MTF_CONFLUENCE_WEIGHTS[`${tf1}+${tf2}`] ?? 6;
+}
+
 // ─────────────────────────────────────────
 // API + PROXIES
 // ─────────────────────────────────────────
@@ -2503,6 +2522,7 @@ async function runRealAnalysis(signal = null) {
   let ok=0, fail=0;
   const fundingCache = {};
   const oiCache = {};
+  const candlesCache = {}; // { 'COIN_tf': candles[] } — evita requests duplicados no soft pass
 
   for (const coin of coins) {
     // Buscar Funding Rate (uma vez por coin)
@@ -2545,7 +2565,9 @@ async function runRealAnalysis(signal = null) {
       try {
         addLog(`Buscando ${coin}/USDT — ${tf}...`);
         document.getElementById('progressText').textContent = `${coin}/USDT — ${tf}`;
-        const candles = await fetchCandles(coin, tf, signal);
+        const cacheKey = `${coin}_${tf}`;
+        if (!candlesCache[cacheKey]) candlesCache[cacheKey] = await fetchCandles(coin, tf, signal);
+        const candles = candlesCache[cacheKey];
         if (candles) {
           ok++;
           const result = analyzeCandles(coin, tf, candles, fg, fundingRate, openInterest, []);
@@ -2587,51 +2609,95 @@ async function runRealAnalysis(signal = null) {
     if (ethC) document.getElementById('ethPrice').textContent = '$'+ethC[ethC.length-1].close.toLocaleString('en-US',{maximumFractionDigits:0});
   } catch(e) { if (e.name === 'AbortError') throw e; console.warn('Erro ao atualizar preços do header', e.message); }
 
-  // ── CONFLUÊNCIA MULTI-TIMEFRAME ──
+  // ── CONFIRMAÇÕES SUAVES — TFs abaixo do score mínimo mas com direção ──
+  // Usa candles já em cache (sem requests adicionais de rede)
+  const softResults = [];
+  for (const coin of coins) {
+    for (const tf of tfs) {
+      const alreadyHasResult = results.some(r => r.coin === coin && r.timeframe === tf);
+      if (alreadyHasResult) continue;
+      const candles = candlesCache[`${coin}_${tf}`];
+      if (!candles) continue;
+      try {
+        const softResult = analyzeCandles(coin, tf, candles, fg,
+          fundingCache[coin] ?? null, oiCache[coin] ?? null, [], 50); // scoreThreshold=50
+        if (softResult) softResults.push(softResult);
+      } catch(e) {
+        if (e.name === 'AbortError' && signal?.aborted) throw e;
+      }
+    }
+  }
+
+  // ── CONFLUÊNCIA MULTI-TIMEFRAME (sistema de pesos por par) ──
   // Após coletar todos os resultados, agrupa por moeda e aplica bônus de score
   const coinGroups = {};
   results.forEach(r => { if (!coinGroups[r.coin]) coinGroups[r.coin]=[]; coinGroups[r.coin].push(r); });
+
+  // Indexar softResults por coin+dir para consulta rápida
+  const softByCoindAndDir = {};
+  softResults.forEach(r => {
+    const key = `${r.coin}_${r.dir}`;
+    if (!softByCoindAndDir[key]) softByCoindAndDir[key] = [];
+    softByCoindAndDir[key].push(r);
+  });
+
+  const TF_ORDER_MTF = ['5m','15m','30m','1h','4h','1D'];
   Object.entries(coinGroups).forEach(([coin, setups]) => {
-    const buySetups  = setups.filter(s => s.dir === 'buy');
-    const sellSetups = setups.filter(s => s.dir === 'sell');
+    // Confluência ponderada por par de TFs
+    ['buy', 'sell'].forEach(dir => {
+      const dirSetups = setups.filter(s => s.dir === dir);
+      if (dirSetups.length === 0) return;
 
-    // Long confluente em 2+ timeframes
-    if (buySetups.length >= 2) {
-      const tfs = buySetups.map(s => s.timeframe);
-      const bonus = Math.min(18, (buySetups.length - 1) * 6);
-      buySetups.forEach(s => {
+      const softConfirms = (softByCoindAndDir[`${coin}_${dir}`] || [])
+        .filter(s => !dirSetups.some(d => d.timeframe === s.timeframe));
+
+      const allConfirmingTFs = [...dirSetups, ...softConfirms];
+      if (allConfirmingTFs.length < 2) return;
+
+      const tfs = allConfirmingTFs.map(s => s.timeframe);
+      let totalBonus = 0;
+      for (let i = 0; i < tfs.length; i++)
+        for (let j = i + 1; j < tfs.length; j++)
+          totalBonus += getMTFWeight(tfs[i], tfs[j]);
+      const bonus = Math.min(25, totalBonus);
+
+      const hardTFs = dirSetups.map(s => s.timeframe);
+      const softTFs = softConfirms.map(s => s.timeframe);
+
+      dirSetups.forEach(s => {
         s.score = Math.min(100, s.score + bonus);
-        s.mtfConfluence = { dir:'buy', count:buySetups.length, tfs };
-        // Adiciona reason de destaque no topo
-        if (!s.reasons.find(r=>r.text.includes('Confluência')))
-          s.reasons.unshift({ text:`Confluência ${buySetups.length} TFs ↑ (${tfs.join('+')})`, type:'positive', isMTF:true });
+        s.mtfConfluence = {
+          dir,
+          count: allConfirmingTFs.length,
+          tfs: [...hardTFs, ...softTFs],
+          hardTFs,
+          softTFs,
+          bonus,
+        };
+        if (!s.reasons.find(r => r.text.includes('Confluência'))) {
+          const softNote = softTFs.length > 0 ? ` + ${softTFs.join('+')} (dir.)` : '';
+          s.reasons.unshift({
+            text: `Confluência ${hardTFs.join('+')}${softNote} ${dir === 'buy' ? '↑' : '↓'} (+${bonus} pts)`,
+            type: dir === 'buy' ? 'positive' : 'negative',
+            isMTF: true,
+          });
+        }
       });
-    }
+    });
 
-    // Short confluente em 2+ timeframes
-    if (sellSetups.length >= 2) {
-      const tfs = sellSetups.map(s => s.timeframe);
-      const bonus = Math.min(18, (sellSetups.length - 1) * 6);
-      sellSetups.forEach(s => {
-        s.score = Math.min(100, s.score + bonus);
-        s.mtfConfluence = { dir:'sell', count:sellSetups.length, tfs };
-        if (!s.reasons.find(r=>r.text.includes('Confluência')))
-          s.reasons.unshift({ text:`Confluência ${sellSetups.length} TFs ↓ (${tfs.join('+')})`, type:'negative', isMTF:true });
-      });
-    }
-
-    // Penalidade por contra-tendência: setup de TF menor conflita com TF maior
+    // Penalidade graduada por conflito de direção entre TFs
     if (setups.length >= 2) {
-      const TF_ORDER = ['5m','15m','30m','1h','4h','1D'];
       const highestTF = setups.reduce((prev, curr) =>
-        TF_ORDER.indexOf(curr.timeframe) > TF_ORDER.indexOf(prev.timeframe) ? curr : prev
+        TF_ORDER_MTF.indexOf(curr.timeframe) > TF_ORDER_MTF.indexOf(prev.timeframe) ? curr : prev
       );
       setups.forEach(s => {
-        const sIsLower = TF_ORDER.indexOf(s.timeframe) < TF_ORDER.indexOf(highestTF.timeframe);
+        const sIsLower = TF_ORDER_MTF.indexOf(s.timeframe) < TF_ORDER_MTF.indexOf(highestTF.timeframe);
         if (sIsLower && s.dir !== highestTF.dir) {
-          s.score = Math.max(0, s.score - 20);
-          if (!s.reasons.find(r => r.text.includes('Contra-tendência')))
-            s.reasons.unshift({ text: `⚠ Contra-tendência ${highestTF.timeframe}`, type: 'negative' });
+          const tfGap = TF_ORDER_MTF.indexOf(highestTF.timeframe) - TF_ORDER_MTF.indexOf(s.timeframe);
+          const penalty = tfGap >= 2 ? 20 : 8;
+          s.score = Math.max(0, s.score - penalty);
+          if (!s.reasons.find(r => r.text.includes('Conflito')))
+            s.reasons.unshift({ text: `Conflito: ${s.timeframe} vs ${highestTF.timeframe} (-${penalty} pts)`, type: 'negative' });
         }
       });
     }
@@ -2828,7 +2894,7 @@ function renderGroupCard(coin, setups) {
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:140px">
           <div class="direction-badge ${d.dir}">${isLong?'▲ LONG':'▼ SHORT'}</div>
-          ${d.mtfConfluence ? `<span class="mtf-badge ${d.mtfConfluence.dir==='sell'?'mtf-sell':''}">⊕ MTF ${d.mtfConfluence.count}×</span>` : ''}
+          ${d.mtfConfluence ? `<span class="mtf-badge ${d.mtfConfluence.dir==='sell'?'mtf-sell':''}">⊕ MTF ${d.mtfConfluence.hardTFs ? d.mtfConfluence.hardTFs.join('+') : d.mtfConfluence.count+'×'}${d.mtfConfluence.softTFs && d.mtfConfluence.softTFs.length > 0 ? `<span style="opacity:0.6;font-size:9px"> +${d.mtfConfluence.softTFs.join('+')} dir.</span>` : ''}</span>` : ''}
         </div>
         <div class="score-row" style="flex:1;margin:0 12px">
           <span class="score-label">SCORE</span>
@@ -3061,16 +3127,20 @@ function openModal(d) {
     </div>` : ''}
 
     ${d.mtfConfluence ? `
-    <div class="modal-section">
-      <h4>Confluência Multi-Timeframe ⊕</h4>
-      <p style="font-family:var(--mono);font-size:12px;color:var(--text);line-height:1.8;margin-bottom:10px;">
+    <div class="modal-section" style="background:linear-gradient(135deg,rgba(0,229,160,0.05),rgba(0,136,255,0.05));border:1px solid rgba(0,229,160,0.2);border-radius:12px;padding:14px 16px;margin-bottom:12px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;margin-bottom:8px">⊕ CONFLUÊNCIA MULTI-TIMEFRAME</div>
+      <p style="font-family:var(--sans);font-size:13px;color:var(--text);line-height:1.7;margin-bottom:10px;">
         Sinal <strong style="color:${d.mtfConfluence.dir==='buy'?'var(--accent)':'var(--danger)'}">
         ${d.mtfConfluence.dir==='buy'?'▲ LONG':'▼ SHORT'}</strong> confirmado em
-        <strong>${d.mtfConfluence.count} timeframes simultaneamente</strong> — setup de alta convicção.
-        Score bônus aplicado: <span style="color:var(--accent2)">+${Math.min(12,d.mtfConfluence.count*6)} pts</span>
+        <strong>${d.mtfConfluence.hardTFs ? d.mtfConfluence.hardTFs.length : d.mtfConfluence.count} timeframe${(d.mtfConfluence.hardTFs ? d.mtfConfluence.hardTFs.length : d.mtfConfluence.count) > 1 ? 's' : ''}</strong>
+        — setup de alta convicção.
+        Score bônus aplicado: <span style="color:var(--accent2)">+${d.mtfConfluence.bonus ?? Math.min(25, d.mtfConfluence.count * 8)} pts</span>
       </p>
       <div class="mtf-grid">
-        ${d.mtfConfluence.tfs.map(tf=>`<span class="mtf-tf-pill ${d.mtfConfluence.dir==='sell'?'sell':''}">${tf.toUpperCase()}</span>`).join('')}
+        ${(d.mtfConfluence.hardTFs || d.mtfConfluence.tfs || []).map(tf=>`<span class="mtf-tf-pill ${d.mtfConfluence.dir==='sell'?'sell':''}">${tf.toUpperCase()}</span>`).join('')}
+        ${d.mtfConfluence.softTFs && d.mtfConfluence.softTFs.length > 0 ? `
+          <span style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-left:4px">+direcional:</span>
+          ${d.mtfConfluence.softTFs.map(tf=>`<span class="mtf-tf-pill ${d.mtfConfluence.dir==='sell'?'sell':''}" style="opacity:0.5">${tf.toUpperCase()}</span>`).join('')}` : ''}
       </div>
     </div>` : ''}
 
