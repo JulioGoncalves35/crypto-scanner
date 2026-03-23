@@ -3936,7 +3936,7 @@ async function fetchCandlesBacktest(symbol, tf, limit, signal) {
 // MFE = Max Favorable Excursion (quanto o preço foi a favor)
 // MAE = Max Adverse Excursion  (quanto o preço foi contra)
 function simulateOutcome(setup, futureCandles) {
-  const { entry, stopPrice, dir } = setup;
+  const { entry, stop: stopPrice, dir } = setup;
   const m1 = setup.m1.price;
   const m2 = setup.m2.price;
   const m3 = setup.m3.price;
@@ -3981,7 +3981,7 @@ function _simResult(result, entry, mfeAbs, maeAbs) {
 
 // Calcula P&L em % do capital para um trade simulado
 function calcBacktestPnL(setup, result, leverage, closePrice) {
-  const { entry, stopPrice, dir } = setup;
+  const { entry, stop: stopPrice, dir } = setup;
   const feeImpact = ROUND_TRIP_FEE * leverage * 100;
 
   if (result === 'open') return 0;
@@ -4111,7 +4111,7 @@ async function runBacktest(signal, minScore, selectedTFs, selectedCoins, selecte
         const pnl                                = calcBacktestPnL(setup, result, LEVERAGE, closePrice);
 
         // Distâncias % entre entry e cada nível de risco/alvo
-        const stopDist    = Math.abs(setup.entry - setup.stopPrice) / setup.entry * 100;
+        const stopDist    = Math.abs(setup.entry - setup.stop) / setup.entry * 100;
         const m1Dist      = Math.abs(setup.m1.price - setup.entry)  / setup.entry * 100;
         const m2Dist      = Math.abs(setup.m2.price - setup.entry)  / setup.entry * 100;
         const m3Dist      = Math.abs(setup.m3.price - setup.entry)  / setup.entry * 100;
@@ -4134,7 +4134,7 @@ async function runBacktest(signal, minScore, selectedTFs, selectedCoins, selecte
           m3Dist,
           maePressure,
           entry:      setup.entry,
-          stop:       setup.stopPrice,
+          stop:       setup.stop,
           m1:         setup.m1.price,
           m2:         setup.m2.price,
           m3:         setup.m3.price,
