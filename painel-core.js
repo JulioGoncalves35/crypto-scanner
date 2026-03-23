@@ -1186,11 +1186,12 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
   const CANDLES_PER_DAY = { '5m': 288, '15m': 96, '30m': 48, '1h': 24, '4h': 6, '1D': 1 };
   const candlesPerDay = CANDLES_PER_DAY[tf] ?? 24;
   const MIN_DAILY_VOLUME_USDT = 5_000_000;
-  const daysToCheck = Math.min(3, Math.floor(candles.length / candlesPerDay));
-  if (daysToCheck >= 1) {
-    const recentCandles = candles.slice(-(candlesPerDay * daysToCheck));
-    const totalVolumeUSDT = recentCandles.reduce((sum, c) => sum + c.volume * c.close, 0);
-    const avgDailyVolumeUSDT = totalVolumeUSDT / daysToCheck;
+  {
+    // Extrapola volume diário a partir dos candles disponíveis (corrige bug no backtest de 5m
+    // onde WINDOW=200 < candlesPerDay=288 fazia daysToCheck=0 e pulava o filtro inteiro)
+    const sampleCandles = candles.slice(-Math.min(candlesPerDay * 3, candles.length));
+    const totalVolumeUSDT = sampleCandles.reduce((sum, c) => sum + c.volume * c.close, 0);
+    const avgDailyVolumeUSDT = (totalVolumeUSDT / sampleCandles.length) * candlesPerDay;
     if (avgDailyVolumeUSDT < MIN_DAILY_VOLUME_USDT) return null;
   }
 

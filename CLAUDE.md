@@ -84,7 +84,7 @@ Code sections are separated by `// ───────────────
 - **Location:** `painel.html` only (not in `painel-core.js`)
 - `fetchCandlesBacktest(symbol, tf, limit, signal)` — fetches up to 1000 candles for backtest
 - `simulateOutcome(setup, futureCandles)` — walks future candles checking stop/m3/m2/m1 (highest target first); returns `{ result, mfePct, maePct, closePrice? }`. If horizon exhausted without resolution, returns `result='timeout'` with `closePrice` = last candle close
-- `calcBacktestPnL(setup, result, leverage, closePrice)` — P&L % calculation; handles `'timeout'` using `closePrice` vs entry for real P&L
+- `calcBacktestPnL(setup, result, leverage, closePrice)` — P&L % calculation; handles `'timeout'` using `closePrice` vs entry for real P&L. **Stop-loss exits incluem 0.05% de slippage fixo** (`+SLIPPAGE=0.0005`) sobre a distância do stop para simular execução realista a mercado
 - `runBacktest(signal, minScore, selectedTFs, selectedCoins, selectedLeverage, horizon)` — sliding window orchestrator (WINDOW=200, STEP=10, LIMIT=1000)
 - `calcPatternHitRates(trades)` — per-indicator win rate from closed trades (min 3 occurrences, excludes open/timeout trades)
 - `buildInsightsHtml(...)` — renders 3 insight sections: pattern hit rate table, LONG/SHORT breakdown, P&L distribution bars
@@ -343,3 +343,5 @@ git push -u origin <branch>
 - **Stop mínimo por timeframe:** `analyzeCandles` rejeita setups onde o stop final (após ajuste de liquidação) for menor que `TF_MIN_STOP[tf]` (5m:0.8%, 15m:1.2%, 30m:1.5%, 1h:2%, 4h:3%, 1D:5%). Isso previne stop hunts em alavancagens altas (ex: 50x em 15M produz stop de 0.75% — inviável).
 - **Combo short squeeze / bull trap:** O scoring penaliza combinações de RSI oversold + F&G Medo Extremo em setups SHORT (e vice-versa para LONGs). Essa combinação sozinha não aparece nos sinais individuais com força suficiente mas é um forte indicador de reversão de curto prazo.
 - **painel-core.js vs painel.html:** Os dois arquivos contêm o mesmo motor de análise. Qualquer mudança no motor (scoring, indicadores, filtros) deve ser aplicada nos dois arquivos.
+- **Filtro de liquidez — extrapolação:** `analyzeCandles` usa os candles disponíveis para extrapolar volume diário (`(totalVol / sampleLen) * candlesPerDay`), sem exigir dias completos. Corrige bug onde backtest de 5m com WINDOW=200 (< 288 candles/dia) pulava o filtro inteiro (`daysToCheck=0`).
+- **Fetches sequenciais em `runRealAnalysis`:** O scanner ao vivo usa `await` sequencial (não `Promise.all`) intencionalmente para não esgotar os proxies CORS por rate limit. Não converter para concorrência.
