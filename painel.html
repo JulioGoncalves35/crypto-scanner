@@ -897,6 +897,14 @@ main { padding: 20px 14px 60px; }
         <label class="bt-tf-check"><input type="checkbox" value="4h"  id="btTf4h"  checked> 4h <span style="font-size:9px;color:var(--accent);margin-left:2px">~167d</span></label>
       </div>
     </div>
+    <div class="bt-control-group">
+      <label class="bt-label">Direção</label>
+      <select id="btDirSelect" class="bt-select">
+        <option value="both" selected>Ambos</option>
+        <option value="buy">Só LONG ▲</option>
+        <option value="sell">Só SHORT ▼</option>
+      </select>
+    </div>
     <button id="btRunBtn" onclick="startBacktest()" class="bt-run-btn">▶  RODAR BACKTEST</button>
     <button id="btCancelBtn" onclick="cancelBacktest()" class="bt-cancel-btn" style="display:none">✕  CANCELAR</button>
   </div>
@@ -4006,7 +4014,7 @@ function calcBacktestPnL(setup, result, leverage, closePrice) {
 }
 
 // Orquestração principal do backtest
-async function runBacktest(signal, minScore, selectedTFs, selectedCoins, selectedLeverage, horizon) {
+async function runBacktest(signal, minScore, selectedTFs, selectedCoins, selectedLeverage, horizon, dirFilter = 'both') {
   const COINS    = selectedCoins;
   const LEVERAGE = selectedLeverage;
   const FG_VALUE = 50; // neutro — sem fetch histórico de F&G
@@ -4106,6 +4114,7 @@ async function runBacktest(signal, minScore, selectedTFs, selectedCoins, selecte
 
         if (!setup) { rejStats.nullReturns++; continue; }
         if (setup.score < minScore) { rejStats.scoreFailed++; continue; }
+        if (dirFilter !== 'both' && setup.dir !== dirFilter) continue;
         rejStats.passed++;
 
         const entryTime                          = windowCandles[windowCandles.length - 1].time;
@@ -4188,6 +4197,9 @@ function startBacktest() {
   // Lê horizonte temporal
   const selectedHorizon = document.getElementById('btHorizonSelect').value;
 
+  // Lê filtro de direção
+  const selectedDir = document.getElementById('btDirSelect').value;
+
   const runBtn    = document.getElementById('btRunBtn');
   const cancelBtn = document.getElementById('btCancelBtn');
   runBtn.disabled = true;
@@ -4201,7 +4213,7 @@ function startBacktest() {
   document.getElementById('btProgressWrap').classList.add('visible');
   document.getElementById('btResults').style.display = 'none';
 
-  runBacktest(signal, minScore, selectedTFs, selectedCoins, selectedLeverage, selectedHorizon)
+  runBacktest(signal, minScore, selectedTFs, selectedCoins, selectedLeverage, selectedHorizon, selectedDir)
     .then(({ trades, periods, rejStats, leverage }) => {
       if (signal.aborted) return;
       renderBacktestResults(trades, periods, rejStats, leverage);
