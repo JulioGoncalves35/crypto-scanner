@@ -1035,8 +1035,14 @@ function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) 
     });
   }
 
-  if (obvTrend === 'rising')  { score += 6; reasons.push({text:'OBV em ascensão (acumulação)',type:'positive'}); }
-  if (obvTrend === 'falling') { score -= 6; reasons.push({text:'OBV em queda (distribuição)',type:'negative'}); }
+  // OBV — direction-aware: sinal contraditório não pontua (ex: OBV subindo em setup SHORT)
+  if (obvTrend === 'rising') {
+    if (score >= 0) { score += 6; reasons.push({text:'OBV em ascensão (acumulação)',type:'positive'}); }
+    else            { reasons.push({text:'OBV em ascensão (contradiz SHORT)',type:'neutral'}); }
+  } else if (obvTrend === 'falling') {
+    if (score <= 0) { score -= 6; reasons.push({text:'OBV em queda (distribuição)',type:'negative'}); }
+    else            { reasons.push({text:'OBV em queda (contradiz LONG)',type:'neutral'}); }
+  }
   indicators.push({name:'OBV (tendência)',reading:obvTrend==='rising'?'Acumulação ↑':obvTrend==='falling'?'Distribuição ↓':'Neutro',color:obvTrend==='rising'?'var(--accent)':obvTrend==='falling'?'var(--danger)':'var(--muted)'});
 
   const vp = ((volRatio-1)*100).toFixed(0);
@@ -1241,6 +1247,11 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
   const TF_MIN_STOP = { '5m': 0.008, '15m': 0.012, '30m': 0.015, '1h': 0.020, '4h': 0.030, '1D': 0.050 };
   const tfMinStop = TF_MIN_STOP[tf] ?? 0.015;
   if (Math.abs(stop - entry) / entry < tfMinStop) return null;
+
+  // Rejeitar setup se o stop ficou largo demais para o timeframe (alta volatilidade = risco desproporcional)
+  const TF_MAX_STOP = { '5m': 0.020, '15m': 0.020, '30m': 0.025, '1h': 0.035, '4h': 0.055, '1D': 0.080 };
+  const tfMaxStop = TF_MAX_STOP[tf] ?? 0.040;
+  if (Math.abs(stop - entry) / entry > tfMaxStop) return null;
 
   const {m1:m1p, m2:m2p, m3:m3p} = calcMetas(dir, entry, stop, options.rr);
 
