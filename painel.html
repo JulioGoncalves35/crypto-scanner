@@ -656,7 +656,7 @@ main { padding: 20px 14px 60px; }
     <button class="nav-tab active" onclick="switchTab('scanner', this)">Scanner</button>
     <button class="nav-tab" onclick="switchTab('journal', this)" id="journalTab">Diário <span class="tab-count" id="journalCount">0</span></button>
     <button class="nav-tab" onclick="switchTab('history', this)" id="historyTab">HISTORICO <span class="tab-count" id="histCount">0</span></button>
-    <button class="nav-tab" onclick="switchTab('backtest', this)" id="backtestTab">Backtest</button>
+    <button class="nav-tab" onclick="switchTab('backtest', this)" id="backtestTab">Backtest <span style="font-size:9px;opacity:0.5;font-weight:400">v3</span></button>
   </div>
   <div class="header-status">
     <div class="dot"></div>
@@ -2429,11 +2429,6 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
   const TF_MIN_STOP = { '5m': 0.008, '15m': 0.012, '30m': 0.015, '1h': 0.020, '4h': 0.030, '1D': 0.050 };
   const tfMinStop = TF_MIN_STOP[tf] ?? 0.015;
   if (Math.abs(stop - entry) / entry < tfMinStop) return null;
-
-  // Rejeitar setup se o stop ficou largo demais para o timeframe (alta volatilidade = risco desproporcional)
-  const TF_MAX_STOP = { '5m': 0.020, '15m': 0.020, '30m': 0.025, '1h': 0.035, '4h': 0.055, '1D': 0.080 };
-  const tfMaxStop = TF_MAX_STOP[tf] ?? 0.040;
-  if (Math.abs(stop - entry) / entry > tfMaxStop) return null;
 
   // Metas Fibonacci
   const {m1:m1p, m2:m2p, m3:m3p} = calcMetas(dir, entry, stop);

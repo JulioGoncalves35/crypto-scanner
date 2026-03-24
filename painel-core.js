@@ -1242,11 +1242,6 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
   const tfMinStop = TF_MIN_STOP[tf] ?? 0.015;
   if (Math.abs(stop - entry) / entry < tfMinStop) return null;
 
-  // Rejeitar setup se o stop ficou largo demais para o timeframe (alta volatilidade = risco desproporcional)
-  const TF_MAX_STOP = { '5m': 0.020, '15m': 0.020, '30m': 0.025, '1h': 0.035, '4h': 0.055, '1D': 0.080 };
-  const tfMaxStop = TF_MAX_STOP[tf] ?? 0.040;
-  if (Math.abs(stop - entry) / entry > tfMaxStop) return null;
-
   const {m1:m1p, m2:m2p, m3:m3p} = calcMetas(dir, entry, stop, options.rr);
 
   const fmtPct = v => { const n = parseFloat(v); return (n > 0 ? '+' : '') + n.toFixed(2) + '%'; };
