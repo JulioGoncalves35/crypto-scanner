@@ -878,14 +878,51 @@ main { padding: 20px 14px 60px; }
     </div>
     <div class="bt-control-group" style="flex-direction:column;align-items:flex-start;gap:5px">
       <label class="bt-label">Moedas</label>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px">
+        <button onclick="(function(){document.querySelectorAll('.bt-coin-cb').forEach(c=>c.checked=true)})()" style="font-size:10px;padding:2px 7px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:3px;cursor:pointer">Todas</button>
+        <button onclick="(function(){document.querySelectorAll('.bt-coin-cb').forEach(c=>c.checked=false)})()" style="font-size:10px;padding:2px 7px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:3px;cursor:pointer">Nenhuma</button>
+        <button onclick="(function(){document.querySelectorAll('.bt-coin-cb').forEach(c=>c.checked=['BTC','ETH','SOL','BNB','XRP','ADA','AVAX'].includes(c.value))})()" style="font-size:10px;padding:2px 7px;background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:3px;cursor:pointer">Top 7</button>
+      </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap" id="btCoinsGroup">
-        <label class="bt-tf-check"><input type="checkbox" value="BTC"  class="bt-coin-cb" checked> BTC</label>
-        <label class="bt-tf-check"><input type="checkbox" value="ETH"  class="bt-coin-cb" checked> ETH</label>
-        <label class="bt-tf-check"><input type="checkbox" value="SOL"  class="bt-coin-cb"> SOL</label>
-        <label class="bt-tf-check"><input type="checkbox" value="BNB"  class="bt-coin-cb"> BNB</label>
-        <label class="bt-tf-check"><input type="checkbox" value="XRP"  class="bt-coin-cb"> XRP</label>
-        <label class="bt-tf-check"><input type="checkbox" value="ADA"  class="bt-coin-cb"> ADA</label>
-        <label class="bt-tf-check"><input type="checkbox" value="AVAX" class="bt-coin-cb"> AVAX</label>
+        <label class="bt-tf-check"><input type="checkbox" value="BTC"      class="bt-coin-cb" checked> BTC</label>
+        <label class="bt-tf-check"><input type="checkbox" value="ETH"      class="bt-coin-cb" checked> ETH</label>
+        <label class="bt-tf-check"><input type="checkbox" value="SOL"      class="bt-coin-cb"> SOL</label>
+        <label class="bt-tf-check"><input type="checkbox" value="BNB"      class="bt-coin-cb"> BNB</label>
+        <label class="bt-tf-check"><input type="checkbox" value="XRP"      class="bt-coin-cb"> XRP</label>
+        <label class="bt-tf-check"><input type="checkbox" value="ADA"      class="bt-coin-cb"> ADA</label>
+        <label class="bt-tf-check"><input type="checkbox" value="AVAX"     class="bt-coin-cb"> AVAX</label>
+        <label class="bt-tf-check"><input type="checkbox" value="DOT"      class="bt-coin-cb"> DOT</label>
+        <label class="bt-tf-check"><input type="checkbox" value="LINK"     class="bt-coin-cb"> LINK</label>
+        <label class="bt-tf-check"><input type="checkbox" value="MATIC"    class="bt-coin-cb"> MATIC</label>
+        <label class="bt-tf-check"><input type="checkbox" value="UNI"      class="bt-coin-cb"> UNI</label>
+        <label class="bt-tf-check"><input type="checkbox" value="ATOM"     class="bt-coin-cb"> ATOM</label>
+        <label class="bt-tf-check"><input type="checkbox" value="LTC"      class="bt-coin-cb"> LTC</label>
+        <label class="bt-tf-check"><input type="checkbox" value="FIL"      class="bt-coin-cb"> FIL</label>
+        <label class="bt-tf-check"><input type="checkbox" value="NEAR"     class="bt-coin-cb"> NEAR</label>
+        <label class="bt-tf-check"><input type="checkbox" value="APT"      class="bt-coin-cb"> APT</label>
+        <label class="bt-tf-check"><input type="checkbox" value="ARB"      class="bt-coin-cb"> ARB</label>
+        <label class="bt-tf-check"><input type="checkbox" value="OP"       class="bt-coin-cb"> OP</label>
+        <label class="bt-tf-check"><input type="checkbox" value="INJ"      class="bt-coin-cb"> INJ</label>
+        <label class="bt-tf-check"><input type="checkbox" value="WLD"      class="bt-coin-cb"> WLD</label>
+        <label class="bt-tf-check"><input type="checkbox" value="SEI"      class="bt-coin-cb"> SEI</label>
+        <label class="bt-tf-check"><input type="checkbox" value="TIA"      class="bt-coin-cb"> TIA</label>
+        <label class="bt-tf-check"><input type="checkbox" value="BLUR"     class="bt-coin-cb"> BLUR</label>
+        <label class="bt-tf-check"><input type="checkbox" value="1000PEPE" class="bt-coin-cb"> PEPE</label>
+        <label class="bt-tf-check"><input type="checkbox" value="DOGE"     class="bt-coin-cb"> DOGE</label>
+        <label class="bt-tf-check"><input type="checkbox" value="ETC"      class="bt-coin-cb"> ETC</label>
+        <label class="bt-tf-check"><input type="checkbox" value="AAVE"     class="bt-coin-cb"> AAVE</label>
+        <label class="bt-tf-check"><input type="checkbox" value="MKR"      class="bt-coin-cb"> MKR</label>
+        <label class="bt-tf-check"><input type="checkbox" value="SNX"      class="bt-coin-cb"> SNX</label>
+        <label class="bt-tf-check"><input type="checkbox" value="CRV"      class="bt-coin-cb"> CRV</label>
+        <label class="bt-tf-check"><input type="checkbox" value="LDO"      class="bt-coin-cb"> LDO</label>
+        <label class="bt-tf-check"><input type="checkbox" value="RPL"      class="bt-coin-cb"> RPL</label>
+        <label class="bt-tf-check"><input type="checkbox" value="GMX"      class="bt-coin-cb"> GMX</label>
+        <label class="bt-tf-check"><input type="checkbox" value="PENDLE"   class="bt-coin-cb"> PENDLE</label>
+        <label class="bt-tf-check"><input type="checkbox" value="WIF"      class="bt-coin-cb"> WIF</label>
+        <label class="bt-tf-check"><input type="checkbox" value="BONK"     class="bt-coin-cb"> BONK</label>
+        <label class="bt-tf-check"><input type="checkbox" value="JTO"      class="bt-coin-cb"> JTO</label>
+        <label class="bt-tf-check"><input type="checkbox" value="PYTH"     class="bt-coin-cb"> PYTH</label>
+        <label class="bt-tf-check"><input type="checkbox" value="STRK"     class="bt-coin-cb"> STRK</label>
       </div>
     </div>
     <div class="bt-control-group" style="flex-direction:column;align-items:flex-start;gap:5px">

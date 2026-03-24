@@ -3,7 +3,10 @@
     "allow": [
       "Bash(cd \"C:\\\\Users\\\\julio\\\\Documents\\\\github\\\\crypto-scanner\" && npx vitest run 2>&1)",
       "Bash(cd \"C:\\\\Users\\\\julio\\\\Documents\\\\github\\\\crypto-scanner\" && npx vitest run 2>&1; echo \"EXIT:$?\")",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(python3 -c \":*)",
+      "Bash(node -e \":*)",
+      "Bash(ls -la C:UsersjulioDocumentsgithubcrypto-scanner/*.pdf)"
     ]
   }
 }
