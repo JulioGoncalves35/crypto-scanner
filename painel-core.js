@@ -1035,14 +1035,8 @@ function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) 
     });
   }
 
-  // OBV — direction-aware: sinal contraditório não pontua (ex: OBV subindo em setup SHORT)
-  if (obvTrend === 'rising') {
-    if (score >= 0) { score += 6; reasons.push({text:'OBV em ascensão (acumulação)',type:'positive'}); }
-    else            { reasons.push({text:'OBV em ascensão (contradiz SHORT)',type:'neutral'}); }
-  } else if (obvTrend === 'falling') {
-    if (score <= 0) { score -= 6; reasons.push({text:'OBV em queda (distribuição)',type:'negative'}); }
-    else            { reasons.push({text:'OBV em queda (contradiz LONG)',type:'neutral'}); }
-  }
+  if (obvTrend === 'rising')  { score += 6; reasons.push({text:'OBV em ascensão (acumulação)',type:'positive'}); }
+  if (obvTrend === 'falling') { score -= 6; reasons.push({text:'OBV em queda (distribuição)',type:'negative'}); }
   indicators.push({name:'OBV (tendência)',reading:obvTrend==='rising'?'Acumulação ↑':obvTrend==='falling'?'Distribuição ↓':'Neutro',color:obvTrend==='rising'?'var(--accent)':obvTrend==='falling'?'var(--danger)':'var(--muted)'});
 
   const vp = ((volRatio-1)*100).toFixed(0);
