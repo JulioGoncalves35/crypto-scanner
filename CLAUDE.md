@@ -108,7 +108,7 @@ Code sections are separated by `// ───────────────
 
 **Price checker:** Every 5 minutes, fetches current price via `GET /v5/market/tickers` and runs state machine for each active trade.
 
-**Trade statuses:** `active` → `m1` → `m2` → `m3` | `stop` | `stopped_at_entry` | `expired`
+**Trade statuses:** `active` → `m1` → `m2` → `m3` | `stop` | `stopped_at_entry` | `expired` | `manual`
 
 **SQLite tables:** `trades`, `paper_account`, `scan_log`. Uses Node.js built-in `node:sqlite` (no compilation needed).
 
@@ -117,10 +117,23 @@ Code sections are separated by `// ───────────────
 - `GET /api/account` — capital + stats
 - `POST /api/account/setup` — configure account
 - `GET /api/trades`, `/api/trades/active` — trade list
+- `POST /api/trades/:id/close` — close active trade manually at current Bybit price
 - `POST /api/scan/manual` — trigger immediate scan
 - `GET /api/scan/status` — scan running?
 
 **painel.html integration:** Checks backend on load with 2s timeout. Shows "Backend" tab with online/offline indicator, account stats, active trades table, history table, manual scan button, and account config form. Falls back gracefully when offline.
+
+**Active trades table features:**
+- "📊" button per row: fetches live candles and renders a collapsible lightweight-charts candlestick chart with horizontal price lines (Entrada/Stop/M1/M2/M3). Multiple charts can be open simultaneously. Chart row uses class `bk-chart-row`.
+- "✕ Fechar" button per row: confirms, POSTs to `/api/trades/:id/close`, shows P&L, refreshes table.
+- Row click still expands signals (class `bk-sig-row`). Signal row inserts after chart-row if one is open.
+- "↺ Atualizar" button shows loading state and "Atualizado às HH:MM" timestamp on completion.
+- Chart instances stored in `_bkChartInstances` map; destroyed on row collapse to avoid memory leaks.
+
+**Journal — backend entries pitfall:**
+- Backend trades saved to journal have string IDs like `"bk-1712345678900-BTCUSDT-15m"`, while manual saves use numeric timestamp IDs (`Date.now()`).
+- All inline event handlers in `renderEntryHTML` (updateResult, deleteEntry, checkSetupNow, updateNotes) must quote the id: `'${e.id}'` — without quotes, string IDs produce invalid JS.
+- All `find(x => x.id === id)` / `filter(x => x.id !== id)` comparisons use `String(x.id) === String(id)` to handle both types correctly.
 
 ### 10. Backtest System — REMOVED (replaced by backend live history)
 

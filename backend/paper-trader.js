@@ -181,8 +181,7 @@ function _closePartial(trade, closePrice, fraction, newStatus) {
   const capitalFraction    = trade.capital_allocated * fraction;
   const newCapitalReturned = parseFloat((trade.capital_returned + capitalFraction + slicePnl).toFixed(2));
 
-  const isFinalClose = ['stop', 'm3', 'stopped_at_entry', 'expired'].includes(newStatus)
-    || (newStatus === 'm3'); // m3 always final
+  const isFinalClose = ['stop', 'm3', 'stopped_at_entry', 'expired', 'manual'].includes(newStatus);
 
   const updates = {
     status: newStatus,
@@ -211,4 +210,17 @@ function _closePartial(trade, closePrice, fraction, newStatus) {
   console.log(`[paper-trader] ${action} ${trade.direction.toUpperCase()} ${trade.coin} → ${newStatus} | slice pnl=$${slicePnl} | total pnl=$${newPnl}`);
 
   return { ...trade, ...updates };
+}
+
+// ─── Manual close ─────────────────────────────────────────────────────────────
+
+/**
+ * Close a position manually at a given price (e.g. user-initiated from the UI).
+ * Closes the remaining open fraction and sets status to 'manual'.
+ */
+export function closeManualAt(trade, price) {
+  const alreadyClosed = _alreadyClosedFraction(trade.status);
+  const remaining = parseFloat((1 - alreadyClosed).toFixed(4));
+  if (remaining <= 0) return null;
+  return _closePartial(trade, price, remaining, 'manual');
 }

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getTrades, getActiveTrades, getTrade, getStats } from '../db.js';
+import { closeManualAt } from '../paper-trader.js';
 
 const router = Router();
 
@@ -86,6 +87,30 @@ router.get('/:id', (req, res) => {
 // GET /api/trades/stats — win rate, avg PnL, totals
 router.get('/meta/stats', (_req, res) => {
   res.json(getStats());
+});
+
+// POST /api/trades/:id/close — close a position manually at current market price
+router.post('/:id/close', async (req, res) => {
+  const trade = getTrade(req.params.id);
+  if (!trade) return res.status(404).json({ error: 'Trade não encontrado' });
+  if (!['active', 'm1', 'm2'].includes(trade.status))
+    return res.status(400).json({ error: 'Trade já encerrado' });
+
+  let price;
+  try {
+    const tickerUrl = `https://api.bybit.com/v5/market/tickers?category=linear&symbol=${encodeURIComponent(trade.coin)}`;
+    const resp = await fetch(tickerUrl);
+    const json = await resp.json();
+    price = parseFloat(json?.result?.list?.[0]?.lastPrice);
+  } catch (_) {}
+
+  if (!price || isNaN(price))
+    return res.status(502).json({ error: 'Falha ao obter preço atual da Bybit' });
+
+  const result = closeManualAt(trade, price);
+  if (!result) return res.status(400).json({ error: 'Nada a fechar' });
+
+  res.json({ ok: true, price, pnl: result.pnl });
 });
 
 export default router;

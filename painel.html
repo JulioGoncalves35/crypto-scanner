@@ -741,8 +741,9 @@ main { padding: 20px 14px 60px; }
     <div style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap">
       <button id="bkScanBtn" onclick="bkManualScan()" style="font-family:var(--mono);font-size:12px;letter-spacing:1.5px;font-weight:700;padding:8px 22px;border-radius:9px;cursor:pointer;border:none;background:var(--accent);color:#000;transition:opacity 0.2s">▶ SCAN MANUAL</button>
       <button onclick="bkShowConfig()" style="font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:7px 16px;border-radius:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text)">⚙ Configurar Conta</button>
-      <button onclick="bkRefresh()" style="font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:7px 16px;border-radius:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted)">↺ Atualizar</button>
+      <button id="bkRefreshBtn" onclick="bkRefresh()" style="font-family:var(--mono);font-size:11px;letter-spacing:1px;padding:7px 16px;border-radius:9px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted)">↺ Atualizar</button>
     </div>
+    <div style="margin-bottom:18px"><span id="bkLastUpdate" style="font-family:var(--mono);font-size:10px;color:var(--muted)"></span></div>
 
     <!-- CONFIG PANEL (hidden by default) -->
     <div id="bkConfigPanel" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px">
@@ -3554,7 +3555,7 @@ function renderEntryHTML(e) {
 
   // Botões de resultado
   const resBtns = ['active','stop','m1','m2','m3'].map(r =>
-    `<button class="res-btn rb-${r}${e.result===r?' active-res':''}" data-res="${r}" onclick="updateResult(${e.id},'${r}')">${resLabel[r]}</button>`
+    `<button class="res-btn rb-${r}${e.result===r?' active-res':''}" data-res="${r}" onclick="updateResult('${e.id}','${r}')">${resLabel[r]}</button>`
   ).join('');
 
   return `<div class="journal-entry je-${e.dir}" id="je-${e.id}">
@@ -3635,7 +3636,7 @@ function renderEntryHTML(e) {
           <label>Marcar como:</label>
           ${resBtns}
         </div>
-        <button class="check-btn" onclick="checkSetupNow(${e.id})">🔍 Verificar agora — buscar candles e preço atual</button>
+        <button class="check-btn" onclick="checkSetupNow('${e.id}')">🔍 Verificar agora — buscar candles e preço atual</button>
         <div class="check-status" id="check-status-${e.id}"></div>
       </div>
 
@@ -3644,12 +3645,12 @@ function renderEntryHTML(e) {
         <div class="jf-section-title">Minhas anotações</div>
         <textarea class="je-notes"
           placeholder="O que me levou a salvar esse setup? O que aconteceu? O que aprendi?"
-          onblur="updateNotes(${e.id}, this.value)">${e.notes || ''}</textarea>
+          onblur="updateNotes('${e.id}', this.value)">${e.notes || ''}</textarea>
       </div>
 
       <div class="je-footer">
         <span class="je-date" style="font-size:10px;color:var(--muted)">Salvo em ${date}</span>
-        <button class="je-delete-btn" onclick="deleteEntry(${e.id})">✕ Remover</button>
+        <button class="je-delete-btn" onclick="deleteEntry('${e.id}')">✕ Remover</button>
       </div>
 
     </div>
@@ -3658,7 +3659,7 @@ function renderEntryHTML(e) {
 
 function updateNotes(id, notes) {
 const entries = loadJournal();
-const e = entries.find(x => x.id === id);
+const e = entries.find(x => String(x.id) === String(id));
 if (!e) return;
 e.notes = notes;
 saveJournal(entries);
@@ -3666,7 +3667,7 @@ saveJournal(entries);
 
 function updateResult(id, result) {
   const entries = loadJournal();
-  const e = entries.find(x => x.id === id);
+  const e = entries.find(x => String(x.id) === String(id));
   if (!e) return;
   e.result = result;
   saveJournal(entries);
@@ -3692,7 +3693,7 @@ function updateResult(id, result) {
 // ─────────────────────────────────────────
 async function checkSetupNow(id) {
   const entries = loadJournal();
-  const e = entries.find(x => x.id === id);
+  const e = entries.find(x => String(x.id) === String(id));
   if (!e) return;
 
   const btn = document.querySelector(`#je-${id} .check-btn`);
@@ -3799,7 +3800,7 @@ async function checkSetupNow(id) {
 
 function deleteEntry(id) {
 if (!confirm('Remover este trade do diário?')) return;
-saveJournal(loadJournal().filter(x => x.id !== id));
+saveJournal(loadJournal().filter(x => String(x.id) !== String(id)));
 renderJournal();
 }
 
@@ -3905,6 +3906,7 @@ function _bkBadge(s) {
     stop:   ['STOP',   'rgba(255,61,107,0.12)', 'var(--danger)' ],
     stopped_at_entry: ['BE', 'rgba(255,255,255,0.06)', 'var(--muted)'],
     expired:['EXP',    'rgba(255,184,0,0.10)',  'var(--warn)'   ],
+    manual: ['MANUAL', 'rgba(255,184,0,0.12)',  'var(--warn)'   ],
   };
   const [l, bg, c] = map[s] || [s, 'rgba(255,255,255,0.06)', 'var(--muted)'];
   return '<span style="display:inline-block;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700;background:' + bg + ';color:' + c + '">' + l + '</span>';
@@ -3929,11 +3931,19 @@ function _bkRenderActive(trades) {
     return;
   }
   let h = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px"><thead><tr>';
-  h += _bkTH('Par') + _bkTH('Dir') + _bkTH('TF') + _bkTH('Entrada','right') + _bkTH('Stop','right') + _bkTH('M1','right') + _bkTH('M2','right') + _bkTH('M3','right') + _bkTH('Aloc.','right') + _bkTH('Status','right') + _bkTH('Score','right');
+  h += _bkTH('Par') + _bkTH('Dir') + _bkTH('TF') + _bkTH('Entrada','right') + _bkTH('Stop','right') + _bkTH('M1','right') + _bkTH('M2','right') + _bkTH('M3','right') + _bkTH('Aloc.','right') + _bkTH('Status','right') + _bkTH('Score','right') + _bkTH('Ações','center');
   h += '</tr></thead><tbody>';
   trades.forEach(t => {
     const dc = t.direction === 'buy' ? 'var(--accent)' : 'var(--danger)';
     const eid = t.id.replace(/'/g, "\\'");
+    const chartArgs = "event,'" + eid + "','" + t.coin + "','" + t.timeframe + "'," + t.entry + "," + t.current_stop + "," + t.m1 + "," + t.m2 + "," + t.m3;
+    const closeArgs = "event,'" + eid + "','" + t.coin + "'";
+    const btnStyle = 'font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);white-space:nowrap';
+    const closeBtnStyle = 'font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid rgba(255,61,107,0.4);background:transparent;color:var(--danger);white-space:nowrap';
+    const actionCell = '<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,0.04);text-align:center;white-space:nowrap">' +
+      '<button onclick="bkToggleChart(' + chartArgs + ')" style="' + btnStyle + '" title="Ver gráfico">📊</button> ' +
+      '<button onclick="bkCloseManual(' + closeArgs + ')" style="' + closeBtnStyle + '" title="Fechar a mercado">✕ Fechar</button>' +
+    '</td>';
     h += '<tr data-bk-id="' + t.id + '" onclick="bkToggleSignals(this)" style="cursor:pointer" title="Clique para ver sinais">' +
       _bkTD(t.coin + ' <span style="color:var(--muted);font-size:9px">' + t.type + '</span>') +
       _bkTD((t.direction === 'buy' ? '▲ LONG' : '▼ SHORT'), '', 'color:' + dc + ';font-weight:700;') +
@@ -3946,6 +3956,7 @@ function _bkRenderActive(trades) {
       _bkTD('$' + (t.capital_allocated||0).toFixed(2), 'right') +
       _bkTD(_bkBadge(t.status), 'right') +
       _bkTD(t.score, 'right', 'color:var(--accent);') +
+      actionCell +
     '</tr>';
   });
   h += '</tbody></table></div>';
@@ -3985,8 +3996,9 @@ async function bkToggleSignals(tr) {
   const id = tr.getAttribute('data-bk-id');
   if (!id) return;
 
-  // Toggle: remove if already open
-  const existing = tr.nextElementSibling;
+  // Toggle: remove if already open (skip chart-row if present)
+  let existing = tr.nextElementSibling;
+  if (existing?.classList.contains('bk-chart-row')) existing = existing.nextElementSibling;
   if (existing && existing.classList.contains('bk-sig-row') && existing.getAttribute('data-bk-for') === id) {
     existing.remove();
     tr.style.background = '';
@@ -4052,7 +4064,119 @@ async function bkToggleSignals(tr) {
     '</div>' +
   '</td>';
 
-  tr.parentNode.insertBefore(sigRow, tr.nextSibling);
+  // Insert after chart-row if one is open, otherwise directly after trade row
+  const afterEl = tr.nextElementSibling?.classList.contains('bk-chart-row') ? tr.nextElementSibling : tr;
+  afterEl.parentNode.insertBefore(sigRow, afterEl.nextSibling);
+}
+
+// ─── Trade chart (collapsible) ────────────────────────────────────────────────
+
+const _bkChartInstances = {};
+
+async function bkToggleChart(e, id, coin, tf, entry, currentStop, m1, m2, m3) {
+  e.stopPropagation();
+  const tr = e.target.closest('tr');
+  if (!tr) return;
+
+  // Toggle off if chart row already open for this trade
+  const nextEl = tr.nextElementSibling;
+  if (nextEl?.classList.contains('bk-chart-row') && nextEl.getAttribute('data-bk-for') === id) {
+    if (_bkChartInstances[id]) { _bkChartInstances[id].remove(); delete _bkChartInstances[id]; }
+    nextEl.remove();
+    return;
+  }
+
+  // Create chart row
+  const chartRow = document.createElement('tr');
+  chartRow.className = 'bk-chart-row';
+  chartRow.setAttribute('data-bk-for', id);
+  const safeId = id.replace(/[^a-zA-Z0-9_-]/g, '_');
+  chartRow.innerHTML =
+    '<td colspan="' + tr.cells.length + '" style="padding:0;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.06)">' +
+      '<div id="bkchart-' + safeId + '" style="height:260px"></div>' +
+      '<p id="bkchartmsg-' + safeId + '" style="font-family:var(--mono);font-size:11px;color:var(--muted);padding:10px 14px;margin:0">Carregando gráfico...</p>' +
+    '</td>';
+  tr.parentNode.insertBefore(chartRow, tr.nextSibling);
+
+  // Fetch candles
+  let candles;
+  try { candles = await fetchCandles(coin, tf); } catch(_) {}
+
+  const msgEl = document.getElementById('bkchartmsg-' + safeId);
+  if (!candles || !candles.length) {
+    if (msgEl) msgEl.textContent = 'Não foi possível carregar os candles.';
+    return;
+  }
+  if (msgEl) msgEl.style.display = 'none';
+
+  const container = document.getElementById('bkchart-' + safeId);
+  if (!container || !window.LightweightCharts) return;
+
+  const samplePrice = candles[candles.length - 1].close;
+  const pricePrecision = samplePrice >= 1000 ? 1 : samplePrice >= 100 ? 2 : samplePrice >= 1 ? 4 : 5;
+  const priceMinMove  = samplePrice >= 1000 ? 0.1 : samplePrice >= 100 ? 0.01 : samplePrice >= 1 ? 0.0001 : 0.00001;
+
+  const chart = LightweightCharts.createChart(container, {
+    layout: { background: { color: '#0a0f14' }, textColor: '#5a6a7a' },
+    grid: { vertLines: { color: 'rgba(255,255,255,0.04)' }, horzLines: { color: 'rgba(255,255,255,0.04)' } },
+    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+    rightPriceScale: { borderColor: 'rgba(255,255,255,0.07)' },
+    timeScale: { borderColor: 'rgba(255,255,255,0.07)', timeVisible: true },
+    width: container.clientWidth,
+    height: 260,
+  });
+
+  const series = chart.addCandlestickSeries({
+    upColor: '#00e5a0', downColor: '#ff3d6b',
+    borderUpColor: '#00e5a0', borderDownColor: '#ff3d6b',
+    wickUpColor: '#00e5a0', wickDownColor: '#ff3d6b',
+    priceFormat: { type: 'price', precision: pricePrecision, minMove: priceMinMove },
+  });
+  series.setData(candles.slice(-120).map(c => ({
+    time: Math.floor(c.time / 1000), open: c.open, high: c.high, low: c.low, close: c.close,
+  })));
+
+  // Horizontal price lines
+  [
+    { price: entry,       color: '#00e5a0',              lineStyle: 0, title: 'Entrada' },
+    { price: currentStop, color: '#ff3d6b',              lineStyle: 0, title: 'Stop'    },
+    { price: m1,          color: 'rgba(255,255,255,0.5)', lineStyle: 2, title: 'M1'     },
+    { price: m2,          color: 'rgba(255,184,0,0.8)',  lineStyle: 2, title: 'M2'      },
+    { price: m3,          color: '#0088ff',              lineStyle: 2, title: 'M3'      },
+  ].forEach(({ price, color, lineStyle, title }) => {
+    series.createPriceLine({ price, color, lineWidth: 1, lineStyle, axisLabelVisible: true, title });
+  });
+
+  chart.timeScale().fitContent();
+  _bkChartInstances[id] = chart;
+
+  const ro = new ResizeObserver(() => { if (container.clientWidth > 0) chart.resize(container.clientWidth, 260); });
+  ro.observe(container);
+}
+
+// ─── Manual close ─────────────────────────────────────────────────────────────
+
+async function bkCloseManual(e, id, coin) {
+  e.stopPropagation();
+  if (!confirm('Fechar posição de ' + coin + ' a mercado?\nO P&L será calculado com base no preço atual.')) return;
+  const btn = e.target;
+  const origText = btn.textContent;
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    const r = await fetch(BACKEND_URL + '/api/trades/' + encodeURIComponent(id) + '/close', { method: 'POST' });
+    const data = await r.json();
+    if (data.ok) {
+      const pnlStr = (data.pnl >= 0 ? '+' : '') + '$' + data.pnl.toFixed(2);
+      alert('Posição fechada a mercado!\nPreço: ' + data.price + '\nP&L desta saída: ' + pnlStr);
+      await bkRefresh();
+    } else {
+      alert('Erro ao fechar: ' + (data.error || 'Desconhecido'));
+      btn.disabled = false; btn.textContent = origText;
+    }
+  } catch(_) {
+    alert('Erro de conexão com o servidor.');
+    btn.disabled = false; btn.textContent = origText;
+  }
 }
 
 async function bkSaveToJournal(id, btn) {
@@ -4132,7 +4256,17 @@ async function bkManualScan() {
   } catch(_) { btn.textContent = 'SCAN MANUAL'; btn.disabled = false; }
 }
 
-async function bkRefresh() { await checkBackend(); }
+async function bkRefresh() {
+  const btn = document.getElementById('bkRefreshBtn');
+  const origText = btn?.textContent;
+  if (btn) { btn.disabled = true; btn.textContent = '↻ Atualizando...'; }
+  try { await checkBackend(); }
+  finally {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+    const ts = document.getElementById('bkLastUpdate');
+    if (ts) ts.textContent = 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR');
+  }
+}
 
 </script>
 </body>
