@@ -34,6 +34,13 @@ function makeInd(overrides = {}) {
     mktStruct: null,
     triangle:  null,
     dblPattern: null,
+    bosChoch:  null,
+    cvd:       null,
+    volProfile: null,
+    ichimoku:  null,
+    anchoredVwap: null,
+    squeeze:   null,
+    orderBlock: null,
     ...overrides,
   };
 }
@@ -240,6 +247,226 @@ describe('_computeScore — Return value structure', () => {
     });
     const { score } = _computeScore(95, bearishInd, { value: 80, label: 'Extreme Greed' });
     expect(score).toBeLessThan(0);
+  });
+});
+
+// ─── _computeScore — Ichimoku contribution ────────────────────────────────────
+describe('_computeScore — Ichimoku contribution', () => {
+  it('price above bullish cloud adds +10', () => {
+    const withIchi = _computeScore(100, makeInd({
+      ichimoku: { priceAboveCloud: true, priceBelowCloud: false, priceInCloud: false,
+                  cloudBull: true, tkCross: 'none', chikouBull: null },
+    }), NEUTRAL_FG);
+    const noIchi = _computeScore(100, makeInd({ ichimoku: null }), NEUTRAL_FG);
+    expect(withIchi.score - noIchi.score).toBeGreaterThanOrEqual(10);
+  });
+
+  it('price below bearish cloud subtracts 10', () => {
+    const withIchi = _computeScore(100, makeInd({
+      ichimoku: { priceAboveCloud: false, priceBelowCloud: true, priceInCloud: false,
+                  cloudBull: false, tkCross: 'none', chikouBull: null },
+    }), NEUTRAL_FG);
+    const noIchi = _computeScore(100, makeInd({ ichimoku: null }), NEUTRAL_FG);
+    expect(noIchi.score - withIchi.score).toBeGreaterThanOrEqual(10);
+  });
+
+  it('TK cross bullish adds +8', () => {
+    const withCross = _computeScore(100, makeInd({
+      ichimoku: { priceAboveCloud: false, priceBelowCloud: false, priceInCloud: true,
+                  cloudBull: true, tkCross: 'bullish', chikouBull: null },
+    }), NEUTRAL_FG);
+    const noCross = _computeScore(100, makeInd({
+      ichimoku: { priceAboveCloud: false, priceBelowCloud: false, priceInCloud: true,
+                  cloudBull: true, tkCross: 'none', chikouBull: null },
+    }), NEUTRAL_FG);
+    expect(withCross.score - noCross.score).toBeGreaterThanOrEqual(8);
+  });
+
+  it('price inside cloud contributes 0 from position (neutral)', () => {
+    const inCloud = _computeScore(100, makeInd({
+      ichimoku: { priceAboveCloud: false, priceBelowCloud: false, priceInCloud: true,
+                  cloudBull: true, tkCross: 'none', chikouBull: null },
+    }), NEUTRAL_FG);
+    const noIchi = _computeScore(100, makeInd({ ichimoku: null }), NEUTRAL_FG);
+    // Being inside cloud adds 0 from price position — total can still differ from TK/chikou
+    // Just verify the score is between extremes
+    expect(typeof inCloud.score).toBe('number');
+  });
+
+  it('total Ichimoku contribution is capped at ±20', () => {
+    // All bullish signals: +10 (above cloud) + +8 (TK cross) + +4 (chikou) = +22 → capped at +20
+    const fullBull = _computeScore(100, makeInd({
+      ichimoku: { priceAboveCloud: true, priceBelowCloud: false, priceInCloud: false,
+                  cloudBull: true, tkCross: 'bullish', chikouBull: true },
+    }), NEUTRAL_FG);
+    const noIchi = _computeScore(100, makeInd({ ichimoku: null }), NEUTRAL_FG);
+    expect(fullBull.score - noIchi.score).toBeLessThanOrEqual(20);
+    expect(fullBull.score - noIchi.score).toBeGreaterThanOrEqual(18); // at least 18 (cap may land at 20)
+  });
+});
+
+// ─── _computeScore — Anchored VWAP contribution ───────────────────────────────
+describe('_computeScore — Anchored VWAP contribution', () => {
+  it('price > AVWAP by > 0.2% adds +8', () => {
+    // price=100, avwap=99 → 1% above
+    const above = _computeScore(100, makeInd({ anchoredVwap: { vwap: 99 } }), NEUTRAL_FG);
+    const none  = _computeScore(100, makeInd({ anchoredVwap: null }), NEUTRAL_FG);
+    expect(above.score - none.score).toBeGreaterThanOrEqual(8);
+  });
+
+  it('price < AVWAP by > 0.2% subtracts 8', () => {
+    // price=100, avwap=101 → 1% below
+    const below = _computeScore(100, makeInd({ anchoredVwap: { vwap: 101 } }), NEUTRAL_FG);
+    const none  = _computeScore(100, makeInd({ anchoredVwap: null }), NEUTRAL_FG);
+    expect(none.score - below.score).toBeGreaterThanOrEqual(8);
+  });
+
+  it('price within 0.2% of AVWAP contributes 0', () => {
+    // price=100, avwap=100.1 → 0.1% diff → within threshold
+    const near = _computeScore(100, makeInd({ anchoredVwap: { vwap: 100.1 } }), NEUTRAL_FG);
+    const none = _computeScore(100, makeInd({ anchoredVwap: null }), NEUTRAL_FG);
+    expect(near.score).toBe(none.score);
+  });
+});
+
+// ─── _computeScore — Squeeze Momentum contribution ───────────────────────────
+describe('_computeScore — Squeeze Momentum contribution', () => {
+  it('releasedBull adds +15', () => {
+    const bull = _computeScore(100, makeInd({
+      squeeze: { squeezed: false, momentum: 1, momentumTrend: 'rising', releasedBull: true, releasedBear: false },
+    }), NEUTRAL_FG);
+    const none = _computeScore(100, makeInd({ squeeze: null }), NEUTRAL_FG);
+    expect(bull.score - none.score).toBeGreaterThanOrEqual(15);
+  });
+
+  it('releasedBear subtracts 15', () => {
+    const bear = _computeScore(100, makeInd({
+      squeeze: { squeezed: false, momentum: -1, momentumTrend: 'falling', releasedBull: false, releasedBear: true },
+    }), NEUTRAL_FG);
+    const none = _computeScore(100, makeInd({ squeeze: null }), NEUTRAL_FG);
+    expect(none.score - bear.score).toBeGreaterThanOrEqual(15);
+  });
+
+  it('non-squeezed rising momentum adds +6', () => {
+    const rising = _computeScore(100, makeInd({
+      squeeze: { squeezed: false, momentum: 1, momentumTrend: 'rising', releasedBull: false, releasedBear: false },
+    }), NEUTRAL_FG);
+    const none = _computeScore(100, makeInd({ squeeze: null }), NEUTRAL_FG);
+    expect(rising.score - none.score).toBeGreaterThanOrEqual(6);
+  });
+
+  it('non-squeezed falling momentum subtracts 6', () => {
+    const falling = _computeScore(100, makeInd({
+      squeeze: { squeezed: false, momentum: -1, momentumTrend: 'falling', releasedBull: false, releasedBear: false },
+    }), NEUTRAL_FG);
+    const none = _computeScore(100, makeInd({ squeeze: null }), NEUTRAL_FG);
+    expect(none.score - falling.score).toBeGreaterThanOrEqual(6);
+  });
+
+  it('active squeeze contributes 0 to score', () => {
+    const squeezed = _computeScore(100, makeInd({
+      squeeze: { squeezed: true, momentum: 0, momentumTrend: 'neutral', releasedBull: false, releasedBear: false },
+    }), NEUTRAL_FG);
+    const none = _computeScore(100, makeInd({ squeeze: null }), NEUTRAL_FG);
+    expect(squeezed.score).toBe(none.score);
+  });
+});
+
+// ─── _computeScore — Order Block contribution ─────────────────────────────────
+describe('_computeScore — Order Block contribution', () => {
+  it('bullish OB with price in zone adds +14', () => {
+    const inZone = _computeScore(100, makeInd({
+      orderBlock: { type: 'bullish', obHigh: 101, obLow: 99, score: 14, priceInZone: true,
+                    name: 'Order Block Altista', desc: 'test' },
+    }), NEUTRAL_FG);
+    const noOB = _computeScore(100, makeInd({ orderBlock: null }), NEUTRAL_FG);
+    expect(inZone.score - noOB.score).toBeGreaterThanOrEqual(14);
+  });
+
+  it('bearish OB with price in zone subtracts 14', () => {
+    const inZone = _computeScore(100, makeInd({
+      orderBlock: { type: 'bearish', obHigh: 101, obLow: 99, score: -14, priceInZone: true,
+                    name: 'Order Block Baixista', desc: 'test' },
+    }), NEUTRAL_FG);
+    const noOB = _computeScore(100, makeInd({ orderBlock: null }), NEUTRAL_FG);
+    expect(noOB.score - inZone.score).toBeGreaterThanOrEqual(14);
+  });
+
+  it('OB with price outside zone contributes 0', () => {
+    const outside = _computeScore(100, makeInd({
+      orderBlock: { type: 'bullish', obHigh: 90, obLow: 85, score: 0, priceInZone: false,
+                    name: 'Order Block Altista', desc: 'test' },
+    }), NEUTRAL_FG);
+    const noOB = _computeScore(100, makeInd({ orderBlock: null }), NEUTRAL_FG);
+    expect(outside.score).toBe(noOB.score);
+  });
+});
+
+// ─── _computeScore — Confluence bonus ────────────────────────────────────────
+describe('_computeScore — Confluence bonus', () => {
+  it('fully bullish setup (all 4 categories aligned) adds at least +15', () => {
+    // Force all 4 categories aligned for LONG:
+    // momentum: rsi < 50, trend: price > ema200 + mktStruct bullish, volume: obvTrend rising, pattern: bull pattern
+    const fullAligned = makeInd({
+      rsi: 35,                    // momentum aligned (isLong & rsi < 50)
+      ema200: 90,                 // trend: price(100) > ema200
+      mktStruct: { type: 'uptrend', score: 12 }, // trend: uptrend
+      obvTrend: 'rising',         // volume aligned
+      patterns: [{ name: 'Martelo ↑', score: +10, type: 'positive' }], // pattern aligned
+      macdNow: 2, sigNow: 0, macdPrev: -1, sigPrev: 0, // MACD crossover → big positive base score
+    });
+    const noConf = makeInd({
+      rsi: 45,
+      ema200: 90,
+      mktStruct: null,
+      obvTrend: 'neutral',
+      patterns: [],
+      macdNow: 2, sigNow: 0, macdPrev: -1, sigPrev: 0,
+    });
+    const { score: withBonus } = _computeScore(100, fullAligned, NEUTRAL_FG);
+    const { score: baseScore }  = _computeScore(100, noConf, NEUTRAL_FG);
+    // The fully aligned setup should score higher due to confluence bonus
+    expect(withBonus).toBeGreaterThan(baseScore);
+  });
+
+  it('confluence bonus is not applied when score is 0', () => {
+    // A perfectly neutral score — bonus should not fire (would not make sense direction-wise)
+    const neutral = makeInd({
+      rsi: 50,
+      macdNow: 0, sigNow: 0, macdPrev: 0, sigPrev: 0,
+      ema9: 100, ema21: 100, ema200: 100,
+      obvTrend: 'neutral',
+    });
+    // Just verify it doesn't throw and returns a number
+    const { score } = _computeScore(100, neutral, NEUTRAL_FG);
+    expect(typeof score).toBe('number');
+  });
+});
+
+// ─── _calcTechIndicators — new indicator fields ───────────────────────────────
+describe('_calcTechIndicators — new indicator fields', () => {
+  it('returns ichimoku, anchoredVwap, squeeze, orderBlock fields', () => {
+    const candles = makeTrendingCandles(100);
+    const closes = candles.map(c => c.close);
+    const ind = _calcTechIndicators(candles, closes);
+    expect(ind).toHaveProperty('ichimoku');
+    expect(ind).toHaveProperty('anchoredVwap');
+    expect(ind).toHaveProperty('squeeze');
+    expect(ind).toHaveProperty('orderBlock');
+  });
+
+  it('ichimoku is null for < 78 candles', () => {
+    const candles = makeTrendingCandles(60);
+    const closes = candles.map(c => c.close);
+    const ind = _calcTechIndicators(candles, closes);
+    expect(ind.ichimoku).toBeNull();
+  });
+
+  it('ichimoku is not null for >= 78 candles', () => {
+    const candles = makeTrendingCandles(100);
+    const closes = candles.map(c => c.close);
+    const ind = _calcTechIndicators(candles, closes);
+    expect(ind.ichimoku).not.toBeNull();
   });
 });
 

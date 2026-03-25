@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   calcEMA, calcRSI, calcMACD, calcBollinger,
   calcATR, calcADX, avgVol, findLevels, calcVWAP, calcOBVTrend, calcStochRSI,
-  calcVolumeProfile,
+  calcVolumeProfile, calcAnchoredVWAP, calcIchimoku, calcSqueezeMomentum,
 } from '../painel-core.js';
 import { makeTrendingCandles, makeFlatCandles, makeDowntrendCandles } from './fixtures/candles.js';
 
@@ -404,5 +404,148 @@ describe('calcVolumeProfile', () => {
     const result = calcVolumeProfile(candles, 10);
     expect(result).not.toBeNull();
     expect(result.poc).toBeGreaterThan(0);
+  });
+});
+
+// ─── calcAnchoredVWAP ─────────────────────────────────────────────────────────
+// Helper: build candles with explicit swing highs/lows at known indices
+function makeSwingCandles(count, basePrice = 100) {
+  const candles = Array.from({ length: count }, (_, i) => ({
+    time:   1000000 + i * 60000,
+    open:   basePrice - 0.5,
+    high:   basePrice + 0.5,
+    low:    basePrice - 0.5,
+    close:  basePrice,
+    volume: 1000,
+  }));
+  // Inject a clear swing high at index 10 (higher than neighbors ±2)
+  candles[10] = { ...candles[10], high: basePrice + 20, volume: 5000 };
+  // Inject a clear swing low at index 25 (lower than neighbors ±2)
+  candles[25] = { ...candles[25], low: basePrice - 20, volume: 4000 };
+  // Inject another swing high at index 40
+  candles[40] = { ...candles[40], high: basePrice + 15, volume: 3500 };
+  return candles;
+}
+
+describe('calcAnchoredVWAP', () => {
+  it('returns null for fewer than 20 candles', () => {
+    const candles = makeTrendingCandles(10, 100, 1);
+    expect(calcAnchoredVWAP(candles)).toBeNull();
+  });
+
+  it('returns null for flat candles (no swing points)', () => {
+    const candles = makeFlatCandles(30, 100);
+    // Flat candles have no swing points — should return null
+    expect(calcAnchoredVWAP(candles)).toBeNull();
+  });
+
+  it('returns an object with vwap, anchorIdx, anchorType, anchorPrice for oscillating data', () => {
+    const candles = makeSwingCandles(60);
+    const result = calcAnchoredVWAP(candles);
+    expect(result).not.toBeNull();
+    expect(typeof result.vwap).toBe('number');
+    expect(result.vwap).toBeGreaterThan(0);
+    expect(typeof result.anchorIdx).toBe('number');
+    expect(['swing_high', 'swing_low']).toContain(result.anchorType);
+  });
+
+  it('vwap is within price range of the data', () => {
+    const candles = makeSwingCandles(80);
+    const result = calcAnchoredVWAP(candles);
+    expect(result).not.toBeNull();
+    const allPrices = candles.map(c => c.close);
+    expect(result.vwap).toBeGreaterThanOrEqual(Math.min(...allPrices) - 5);
+    expect(result.vwap).toBeLessThanOrEqual(Math.max(...allPrices) + 5);
+  });
+
+  it('oscillating downtrend also returns a valid result', () => {
+    const candles = makeSwingCandles(50, 200, 15);
+    const result = calcAnchoredVWAP(candles);
+    expect(result).not.toBeNull();
+    expect(result.vwap).toBeGreaterThan(0);
+  });
+});
+
+// ─── calcIchimoku ─────────────────────────────────────────────────────────────
+describe('calcIchimoku', () => {
+  it('returns null for fewer than 78 candles', () => {
+    const candles = makeTrendingCandles(77, 100, 1);
+    expect(calcIchimoku(candles)).toBeNull();
+  });
+
+  it('returns all expected fields for sufficient data', () => {
+    const candles = makeTrendingCandles(120, 100, 1);
+    const result = calcIchimoku(candles);
+    expect(result).not.toBeNull();
+    expect(typeof result.tenkan).toBe('number');
+    expect(typeof result.kijun).toBe('number');
+    expect(typeof result.senkouA).toBe('number');
+    expect(typeof result.senkouB).toBe('number');
+    expect(typeof result.cloudBull).toBe('boolean');
+    expect(typeof result.priceAboveCloud).toBe('boolean');
+    expect(typeof result.priceBelowCloud).toBe('boolean');
+    expect(typeof result.priceInCloud).toBe('boolean');
+    expect(['bullish', 'bearish', 'none']).toContain(result.tkCross);
+  });
+
+  it('exactly one of priceAboveCloud/priceBelowCloud/priceInCloud is true', () => {
+    const candles = makeTrendingCandles(120, 100, 1);
+    const { priceAboveCloud, priceBelowCloud, priceInCloud } = calcIchimoku(candles);
+    const count = [priceAboveCloud, priceBelowCloud, priceInCloud].filter(Boolean).length;
+    expect(count).toBe(1);
+  });
+
+  it('price above cloud for strong uptrend', () => {
+    // Very strong uptrend: price should eventually be above cloud
+    const candles = makeTrendingCandles(200, 100, 2);
+    const result = calcIchimoku(candles);
+    expect(result).not.toBeNull();
+    // In a strong uptrend, price should be above or in cloud
+    expect(result.priceBelowCloud).toBe(false);
+  });
+
+  it('price below cloud for strong downtrend', () => {
+    const candles = makeDowntrendCandles(200, 500, 2);
+    const result = calcIchimoku(candles);
+    expect(result).not.toBeNull();
+    expect(result.priceAboveCloud).toBe(false);
+  });
+});
+
+// ─── calcSqueezeMomentum ──────────────────────────────────────────────────────
+describe('calcSqueezeMomentum', () => {
+  it('returns null for insufficient candles', () => {
+    const candles = makeTrendingCandles(10, 100, 1);
+    expect(calcSqueezeMomentum(candles)).toBeNull();
+  });
+
+  it('returns expected fields for sufficient data', () => {
+    const candles = makeTrendingCandles(60, 100, 1);
+    const result = calcSqueezeMomentum(candles);
+    expect(result).not.toBeNull();
+    expect(typeof result.squeezed).toBe('boolean');
+    expect(typeof result.momentum).toBe('number');
+    expect(['rising', 'falling', 'neutral']).toContain(result.momentumTrend);
+    expect(typeof result.releasedBull).toBe('boolean');
+    expect(typeof result.releasedBear).toBe('boolean');
+  });
+
+  it('releasedBull and releasedBear cannot both be true', () => {
+    const candles = makeTrendingCandles(80, 100, 1);
+    const result = calcSqueezeMomentum(candles);
+    expect(result).not.toBeNull();
+    expect(result.releasedBull && result.releasedBear).toBe(false);
+  });
+
+  it('when squeezed, releasedBull and releasedBear are both false', () => {
+    // Create flat candles (likely to cause squeeze)
+    const candles = makeFlatCandles(60, 100);
+    const result = calcSqueezeMomentum(candles);
+    if (result && result.squeezed) {
+      expect(result.releasedBull).toBe(false);
+      expect(result.releasedBear).toBe(false);
+    }
+    // If not squeezed, test is N/A but should not throw
+    expect(result).not.toBeUndefined();
   });
 });

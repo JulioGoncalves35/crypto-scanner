@@ -161,6 +161,44 @@ function calcVWAP(candles) {
   return cumVol > 0 ? cumTPV / cumVol : null;
 }
 
+function calcAnchoredVWAP(candles, lookback = 100) {
+  if (candles.length < 20) return null;
+  const slice = candles.slice(-Math.min(lookback, candles.length));
+  const n = slice.length;
+
+  // Encontrar swing highs e lows com ±2 vizinhos
+  const swings = [];
+  for (let i = 2; i < n - 2; i++) {
+    if (slice[i].high > slice[i-1].high && slice[i].high > slice[i-2].high &&
+        slice[i].high > slice[i+1].high && slice[i].high > slice[i+2].high)
+      swings.push({ i, type: 'high', price: slice[i].high, volume: slice[i].volume });
+    if (slice[i].low < slice[i-1].low && slice[i].low < slice[i-2].low &&
+        slice[i].low < slice[i+1].low && slice[i].low < slice[i+2].low)
+      swings.push({ i, type: 'low', price: slice[i].low, volume: slice[i].volume });
+  }
+  if (swings.length === 0) return null;
+
+  // Âncora = swing de maior volume
+  const anchor = swings.reduce((best, s) => s.volume > best.volume ? s : best, swings[0]);
+
+  // VWAP cumulativo da âncora até o candle atual
+  let cumTPV = 0, cumVol = 0;
+  for (let i = anchor.i; i < n; i++) {
+    const c = slice[i];
+    const tp = (c.high + c.low + c.close) / 3;
+    cumTPV += tp * c.volume;
+    cumVol += c.volume;
+  }
+  if (cumVol === 0) return null;
+
+  return {
+    vwap: cumTPV / cumVol,
+    anchorIdx: anchor.i,
+    anchorType: anchor.type === 'high' ? 'swing_high' : 'swing_low',
+    anchorPrice: anchor.price,
+  };
+}
+
 // ─────────────────────────────────────────
 // VOLUME PROFILE — POC, VAH, VAL
 // ─────────────────────────────────────────
@@ -221,6 +259,60 @@ function calcVolumeProfile(candles, bins = 50) {
   return { poc, vah, val, rangeHigh, rangeLow };
 }
 
+function calcIchimoku(candles) {
+  if (candles.length < 78) return null;
+  const n = candles.length;
+
+  const hiHigh = (endIdx, period) => {
+    let h = -Infinity;
+    for (let i = Math.max(0, endIdx - period + 1); i <= endIdx; i++) h = Math.max(h, candles[i].high);
+    return h;
+  };
+  const loLow = (endIdx, period) => {
+    let l = Infinity;
+    for (let i = Math.max(0, endIdx - period + 1); i <= endIdx; i++) l = Math.min(l, candles[i].low);
+    return l;
+  };
+
+  const cur = n - 1;
+  const shift = 26;
+  const cloudBar = cur - shift;
+  if (cloudBar < 52) return null;
+
+  // Tenkan (9) e Kijun (26) atuais e anteriores para detectar cruzamento TK
+  const tenkan     = (hiHigh(cur, 9)    + loLow(cur, 9))    / 2;
+  const kijun      = (hiHigh(cur, 26)   + loLow(cur, 26))   / 2;
+  const tenkanPrev = (hiHigh(cur-1, 9)  + loLow(cur-1, 9))  / 2;
+  const kijunPrev  = (hiHigh(cur-1, 26) + loLow(cur-1, 26)) / 2;
+
+  // Cloud atual = Senkou A/B calculados a partir de cloudBar (estado de 26 bars atrás)
+  const senkouATenkan = (hiHigh(cloudBar, 9)  + loLow(cloudBar, 9))  / 2;
+  const senkouAKijun  = (hiHigh(cloudBar, 26) + loLow(cloudBar, 26)) / 2;
+  const senkouA = (senkouATenkan + senkouAKijun) / 2;
+  const senkouB = (hiHigh(cloudBar, 52) + loLow(cloudBar, 52)) / 2;
+
+  const cloudTop    = Math.max(senkouA, senkouB);
+  const cloudBottom = Math.min(senkouA, senkouB);
+  const cloudBull   = senkouA >= senkouB;
+
+  const currentClose  = candles[cur].close;
+  const priceAboveCloud = currentClose > cloudTop;
+  const priceBelowCloud = currentClose < cloudBottom;
+  const priceInCloud    = !priceAboveCloud && !priceBelowCloud;
+
+  // Cruzamento TK
+  let tkCross = 'none';
+  if (tenkanPrev <= kijunPrev && tenkan > kijun) tkCross = 'bullish';
+  else if (tenkanPrev >= kijunPrev && tenkan < kijun) tkCross = 'bearish';
+
+  // Chikou: close atual vs close de 26 bars atrás
+  const closeShiftAgo = candles[cur - shift].close;
+  const chikouBull = currentClose > closeShiftAgo ? true : currentClose < closeShiftAgo ? false : null;
+
+  return { tenkan, kijun, senkouA, senkouB, cloudBull, cloudTop, cloudBottom,
+    priceAboveCloud, priceBelowCloud, priceInCloud, tkCross, chikouBull };
+}
+
 function calcOBVTrend(candles, period = 20) {
   if (candles.length < period + 1) return 'neutral';
   let obv = 0;
@@ -274,6 +366,56 @@ function calcCVD(candles, period = 30) {
   else                             trend = 'neutral';
 
   return { trend, delta, relativeChange };
+}
+
+function calcSqueezeMomentum(candles, bbPeriod = 20, bbMult = 2.0, kcPeriod = 20, kcMult = 1.5) {
+  if (candles.length < kcPeriod + 5) return null;
+  const closes = candles.map(c => c.close);
+
+  const bbs = calcBollinger(closes, bbPeriod, bbMult);
+  if (!bbs || bbs.length < 3) return null;
+
+  const ema20Arr = calcEMA(closes, kcPeriod);
+  const atrArr   = calcATR(candles, kcPeriod);
+  if (!atrArr || atrArr.length < 3) return null;
+
+  const ema20     = ema20Arr[ema20Arr.length - 1];
+  const ema20Prev = ema20Arr[ema20Arr.length - 2];
+  const atr20     = atrArr[atrArr.length - 1];
+  const atr20Prev = atrArr[atrArr.length - 2];
+  if (ema20 == null || atr20 == null) return null;
+
+  const lastBB = bbs[bbs.length - 1];
+  const prevBB = bbs[bbs.length - 2];
+
+  const kcUpper = ema20 + kcMult * atr20;
+  const kcLower = ema20 - kcMult * atr20;
+  const squeezed = lastBB.upper < kcUpper && lastBB.lower > kcLower;
+
+  // Verificar se estava comprimido no candle anterior
+  let wasSqueezed = false;
+  if (prevBB && ema20Prev != null && atr20Prev != null) {
+    wasSqueezed = prevBB.upper < (ema20Prev + kcMult * atr20Prev) &&
+                  prevBB.lower > (ema20Prev - kcMult * atr20Prev);
+  }
+
+  // Momentum: preço - média de (máxima + mínima do período + EMA20)
+  const n = candles.length;
+  const periodHighs = candles.slice(-kcPeriod).map(c => c.high);
+  const periodLows  = candles.slice(-kcPeriod).map(c => c.low);
+  const hhll = (Math.max(...periodHighs) + Math.min(...periodLows)) / 2;
+  const momentum = closes[n - 1] - (hhll + ema20) / 2;
+
+  const prevHighs = candles.slice(-kcPeriod - 1, -1).map(c => c.high);
+  const prevLows  = candles.slice(-kcPeriod - 1, -1).map(c => c.low);
+  const hhllPrev  = (Math.max(...prevHighs) + Math.min(...prevLows)) / 2;
+  const momentumPrev = closes[n - 2] - (hhllPrev + (ema20Prev ?? ema20)) / 2;
+
+  const momentumTrend = momentum > momentumPrev ? 'rising' : momentum < momentumPrev ? 'falling' : 'neutral';
+  const releasedBull  = wasSqueezed && !squeezed && momentum > 0;
+  const releasedBear  = wasSqueezed && !squeezed && momentum < 0;
+
+  return { squeezed, momentum, momentumTrend, releasedBull, releasedBear };
 }
 
 function calcStochRSI(rsiArr, period = 14) {
@@ -397,6 +539,61 @@ function detectCandlePatterns(candles) {
     patterns.push({ name:'Harami Baixista ↓', type:'negative', score:-8,
       desc:'Momentum altista desacelerando. Aguardar confirmação para short.',
       triggerPrice: c.low, triggerCond:'fechamento abaixo de' });
+  }
+
+  // ── Marubozu Altista ──
+  if (cBull && cBody / cRange >= 0.95) {
+    patterns.push({ name:'Marubozu Altista ↑', type:'positive', score:+12,
+      desc:'Candle puramente altista sem mechas — domínio total dos compradores na sessão.',
+      triggerPrice: null });
+  }
+
+  // ── Marubozu Baixista ──
+  if (cBear && cBody / cRange >= 0.95) {
+    patterns.push({ name:'Marubozu Baixista ↓', type:'negative', score:-12,
+      desc:'Candle puramente baixista sem mechas — domínio total dos vendedores na sessão.',
+      triggerPrice: null });
+  }
+
+  // ── Three Inside Up (harami altista confirmado) ──
+  if (ppBear && ppBody > 0 &&
+      pHigh <= pp.open && pLow >= pp.close && pBody < ppBody * 0.5 &&
+      cBull && c.close > (pp.open + pp.close) / 2) {
+    patterns.push({ name:'Three Inside Up ↑', type:'positive', score:+14,
+      desc:'Harami altista confirmado na terceira vela — reversão de alta com alta confiabilidade.',
+      triggerPrice: null });
+  }
+
+  // ── Three Inside Down (harami baixista confirmado) ──
+  if (ppBull && ppBody > 0 &&
+      pHigh <= pp.close && pLow >= pp.open && pBody < ppBody * 0.5 &&
+      cBear && c.close < (pp.open + pp.close) / 2) {
+    patterns.push({ name:'Three Inside Down ↓', type:'negative', score:-14,
+      desc:'Harami baixista confirmado na terceira vela — reversão de baixa com alta confiabilidade.',
+      triggerPrice: null });
+  }
+
+  // ── Três Soldados Brancos / Três Corvos Negros (requer 5+ candles) ──
+  if (n >= 5) {
+    const ppRange = pp.high - pp.low || 0.0001;
+    if (ppBull && pBull && cBull &&
+        ppBody / ppRange >= 0.6 && pBody / pRange >= 0.6 && cBody / cRange >= 0.6 &&
+        p.open >= Math.min(pp.open, pp.close) && p.open <= Math.max(pp.open, pp.close) &&
+        c.open >= Math.min(p.open, p.close) && c.open <= Math.max(p.open, p.close) &&
+        p.close > pp.close && c.close > p.close) {
+      patterns.push({ name:'Três Soldados Brancos ↑', type:'positive', score:+18,
+        desc:'Três velas altistas consecutivas com corpos expressivos — forte pressão compradora continuada.',
+        triggerPrice: null });
+    }
+    if (ppBear && pBear && cBear &&
+        ppBody / ppRange >= 0.6 && pBody / pRange >= 0.6 && cBody / cRange >= 0.6 &&
+        p.open >= Math.min(pp.open, pp.close) && p.open <= Math.max(pp.open, pp.close) &&
+        c.open >= Math.min(p.open, p.close) && c.open <= Math.max(p.open, p.close) &&
+        p.close < pp.close && c.close < p.close) {
+      patterns.push({ name:'Três Corvos Negros ↓', type:'negative', score:-18,
+        desc:'Três velas baixistas consecutivas com corpos expressivos — forte pressão vendedora continuada.',
+        triggerPrice: null });
+    }
   }
 
   const strong = patterns.filter(x => Math.abs(x.score) >= 15);
@@ -606,6 +803,63 @@ function detectBOSCHoCH(candles, lookback = 60) {
     return { type: 'choch_bearish', score: -22,
       name: 'CHoCH Baixista — Mudança de Caráter ↓',
       desc: `Preço quebrou o suporte estrutural $${lastSwingLow.price.toFixed(lastSwingLow.price >= 1 ? 2 : 4)} em tendência de alta — sinal de reversão. Alta probabilidade de queda mais significativa.` };
+  }
+
+  return null;
+}
+
+function detectOrderBlocks(candles, lookback = 100) {
+  const n = candles.length;
+  if (n < lookback + 5) return null;
+
+  const slice    = candles.slice(-lookback);
+  const sliceLen = slice.length;
+  const price    = candles[n - 1].close;
+
+  const swingHighs = [], swingLows = [];
+  for (let i = 2; i < sliceLen - 2; i++) {
+    if (slice[i].high > slice[i-1].high && slice[i].high > slice[i-2].high &&
+        slice[i].high > slice[i+1].high && slice[i].high > slice[i+2].high)
+      swingHighs.push({ i, price: slice[i].high });
+    if (slice[i].low < slice[i-1].low && slice[i].low < slice[i-2].low &&
+        slice[i].low < slice[i+1].low && slice[i].low < slice[i+2].low)
+      swingLows.push({ i, price: slice[i].low });
+  }
+  if (swingHighs.length < 1 || swingLows.length < 1) return null;
+
+  const fmt = v => '$' + v.toFixed(v >= 1 ? 2 : 4);
+
+  // Bullish OB: procurar candle de quebra acima de um swing high → achar último candle bear antes
+  for (let i = sliceLen - 1; i >= 3; i--) {
+    for (const sh of [...swingHighs].reverse()) {
+      if (sh.i >= i) continue;
+      if (slice[i].close > sh.price && slice[i-1].close <= sh.price) {
+        for (let j = i - 1; j >= Math.max(0, sh.i); j--) {
+          if (slice[j].close < slice[j].open) {
+            const obHigh = slice[j].high, obLow = slice[j].low;
+            const priceInZone = price >= obLow * 0.99 && price <= obHigh * 1.01;
+            return { type: 'bullish_ob', obHigh, obLow, score: +14, priceInZone,
+              name: 'Order Block Altista — zona de demanda institucional',
+              desc: `OB de alta em ${fmt(obLow)}–${fmt(obHigh)}. ${priceInZone ? 'Preço retestando a zona — entrada favorável.' : 'Zona de demanda identificada.'}` };
+          }
+        }
+      }
+    }
+    // Bearish OB: procurar quebra abaixo de um swing low → achar último candle bull antes
+    for (const sl of [...swingLows].reverse()) {
+      if (sl.i >= i) continue;
+      if (slice[i].close < sl.price && slice[i-1].close >= sl.price) {
+        for (let j = i - 1; j >= Math.max(0, sl.i); j--) {
+          if (slice[j].close > slice[j].open) {
+            const obHigh = slice[j].high, obLow = slice[j].low;
+            const priceInZone = price >= obLow * 0.99 && price <= obHigh * 1.01;
+            return { type: 'bearish_ob', obHigh, obLow, score: -14, priceInZone,
+              name: 'Order Block Baixista — zona de oferta institucional',
+              desc: `OB de baixa em ${fmt(obLow)}–${fmt(obHigh)}. ${priceInZone ? 'Preço retestando a zona — entrada favorável.' : 'Zona de oferta identificada.'}` };
+          }
+        }
+      }
+    }
   }
 
   return null;
@@ -931,18 +1185,23 @@ function _calcTechIndicators(candles, closes) {
   const bosChoch    = detectBOSCHoCH(candles);
   const cvd         = calcCVD(candles);
   const volProfile  = calcVolumeProfile(candles);
+  const anchoredVwap = calcAnchoredVWAP(candles);
+  const squeeze      = calcSqueezeMomentum(candles);
+  const ichimoku     = calcIchimoku(candles);
+  const orderBlock   = detectOrderBlocks(candles);
 
   return { price, rsiArr, rsi, ema9, ema21, ema200,
     macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
     bb, atr, volRatio, levels, vwap, obvTrend, stochRSI,
     patterns, divergences, adx, emaCross, mktStruct, triangle, dblPattern,
-    bosChoch, cvd, volProfile };
+    bosChoch, cvd, volProfile, anchoredVwap, squeeze, ichimoku, orderBlock };
 }
 
 function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) {
   const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
     ema9, ema21, ema200, bb, vwap, obvTrend, volRatio, patterns, divergences, adx,
-    emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd, volProfile } = ind;
+    emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd, volProfile,
+    ichimoku, anchoredVwap, squeeze, orderBlock } = ind;
 
   let score = 0;
   const reasons = [], indicators = [];
@@ -997,6 +1256,16 @@ function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) 
     indicators.push({name:'VWAP',reading:'$'+vwap.toFixed(vwap>=1?2:4),color:price>vwap?'var(--accent)':'var(--danger)'});
   }
 
+  // Anchored VWAP
+  if (anchoredVwap != null) {
+    const av = anchoredVwap.vwap;
+    if      (price > av * 1.002) { score += 8; reasons.push({ text: 'AVWAP — Preço acima do VWAP ancorado', type: 'positive' }); }
+    else if (price < av * 0.998) { score -= 8; reasons.push({ text: 'AVWAP — Preço abaixo do VWAP ancorado', type: 'negative' }); }
+    else                         { reasons.push({ text: 'AVWAP — Preço testando o VWAP ancorado', type: 'neutral' }); }
+    indicators.push({ name: 'AVWAP', reading: '$' + av.toFixed(av >= 1 ? 2 : 4),
+      color: price > av * 1.002 ? 'var(--accent)' : price < av * 0.998 ? 'var(--danger)' : 'var(--warn)' });
+  }
+
   // Volume Profile — POC, VAH, VAL
   if (volProfile != null) {
     const { poc, vah, val } = volProfile;
@@ -1032,6 +1301,40 @@ function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) 
       name: 'Volume Profile',
       reading: `POC ${fmtVP(poc)} · VAH ${fmtVP(vah)} · VAL ${fmtVP(val)}`,
       color: price > poc ? 'var(--accent)' : price < poc ? 'var(--danger)' : 'var(--warn)'
+    });
+  }
+
+  // Ichimoku Cloud
+  if (ichimoku != null) {
+    let ichScore = 0;
+    if (ichimoku.priceAboveCloud) {
+      ichScore += 10;
+      reasons.push({ text: 'Ichimoku — Preço acima da nuvem altista', type: 'positive', isPattern: true });
+    } else if (ichimoku.priceBelowCloud) {
+      ichScore -= 10;
+      reasons.push({ text: 'Ichimoku — Preço abaixo da nuvem baixista', type: 'negative', isPattern: true });
+    } else {
+      reasons.push({ text: 'Ichimoku — Preço na nuvem (consolidação)', type: 'neutral' });
+    }
+    if (ichimoku.tkCross === 'bullish') {
+      ichScore += 8;
+      reasons.push({ text: 'Ichimoku — Cruzamento TK altista', type: 'positive', isPattern: true });
+    } else if (ichimoku.tkCross === 'bearish') {
+      ichScore -= 8;
+      reasons.push({ text: 'Ichimoku — Cruzamento TK baixista', type: 'negative', isPattern: true });
+    }
+    if (ichimoku.chikouBull === true) {
+      ichScore += 4;
+      reasons.push({ text: 'Ichimoku — Chikou confirma alta', type: 'positive' });
+    } else if (ichimoku.chikouBull === false) {
+      ichScore -= 4;
+      reasons.push({ text: 'Ichimoku — Chikou confirma baixa', type: 'negative' });
+    }
+    score += Math.max(-20, Math.min(20, ichScore));
+    indicators.push({
+      name: 'Ichimoku Cloud',
+      reading: ichimoku.priceAboveCloud ? 'Acima da nuvem ↑' : ichimoku.priceBelowCloud ? 'Abaixo da nuvem ↓' : 'Na nuvem',
+      color: ichimoku.priceAboveCloud ? 'var(--accent)' : ichimoku.priceBelowCloud ? 'var(--danger)' : 'var(--warn)'
     });
   }
 
@@ -1157,6 +1460,67 @@ function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) 
     reasons.push({ text: bosChoch.name, type: bosChoch.score > 0 ? 'positive' : 'negative', isPattern: true });
   }
 
+  // Squeeze Momentum
+  if (squeeze != null) {
+    if (squeeze.releasedBull) {
+      score += 15;
+      reasons.push({ text: 'Squeeze Momentum — rompimento altista', type: 'positive', isPattern: true });
+    } else if (squeeze.releasedBear) {
+      score -= 15;
+      reasons.push({ text: 'Squeeze Momentum — rompimento baixista', type: 'negative', isPattern: true });
+    } else if (!squeeze.squeezed && squeeze.momentumTrend === 'rising') {
+      score += 6;
+      reasons.push({ text: 'Momentum crescente pós-squeeze', type: 'positive' });
+    } else if (!squeeze.squeezed && squeeze.momentumTrend === 'falling') {
+      score -= 6;
+      reasons.push({ text: 'Momentum em queda pós-squeeze', type: 'negative' });
+    } else if (squeeze.squeezed) {
+      reasons.push({ text: 'Squeeze ativo — aguardar rompimento', type: 'neutral' });
+    }
+    indicators.push({
+      name: 'Squeeze Momentum',
+      reading: squeeze.squeezed ? 'Comprimido ⬛' : squeeze.releasedBull ? 'Rompimento ↑' :
+               squeeze.releasedBear ? 'Rompimento ↓' : squeeze.momentumTrend === 'rising' ? 'Momentum ↑' : 'Momentum ↓',
+      color: (squeeze.releasedBull || (!squeeze.squeezed && squeeze.momentumTrend === 'rising')) ? 'var(--accent)' :
+             (squeeze.releasedBear || (!squeeze.squeezed && squeeze.momentumTrend === 'falling')) ? 'var(--danger)' : 'var(--warn)'
+    });
+  }
+
+  // Order Block
+  if (orderBlock != null && orderBlock.priceInZone) {
+    score += orderBlock.score;
+    reasons.push({ text: orderBlock.name, type: orderBlock.score > 0 ? 'positive' : 'negative', isPattern: true });
+    indicators.push({
+      name: 'Order Block',
+      reading: `Zona ${orderBlock.type === 'bullish_ob' ? 'demanda' : 'oferta'}: ${orderBlock.obLow.toFixed(orderBlock.obLow >= 1 ? 2 : 4)}–${orderBlock.obHigh.toFixed(orderBlock.obHigh >= 1 ? 2 : 4)}`,
+      color: orderBlock.score > 0 ? 'var(--accent)' : 'var(--danger)'
+    });
+  }
+
+  // Bônus de confluência multi-categoria
+  if (score !== 0) {
+    const isLong = score > 0;
+    const momentumAligned = rsi !== null && ((isLong && rsi < 50) || (!isLong && rsi > 50));
+    const trendAligned = (ema200 !== null && ((isLong && price > ema200) || (!isLong && price < ema200))) ||
+                         (mktStruct !== null && ((isLong && mktStruct.type === 'uptrend') || (!isLong && mktStruct.type === 'downtrend'))) ||
+                         (ichimoku !== null && ((isLong && ichimoku.priceAboveCloud) || (!isLong && ichimoku.priceBelowCloud)));
+    const volumeAligned = (isLong && obvTrend === 'rising') || (!isLong && obvTrend === 'falling') ||
+                          (cvd !== null && ((isLong && cvd.trend === 'rising') || (!isLong && cvd.trend === 'falling')));
+    const patternAligned = patterns.some(pat => isLong ? pat.score > 0 : pat.score < 0) ||
+                           divergences.some(d => isLong ? d.score > 0 : d.score < 0) ||
+                           (squeeze !== null && ((isLong && (squeeze.releasedBull || squeeze.momentumTrend === 'rising')) ||
+                                                 (!isLong && (squeeze.releasedBear || squeeze.momentumTrend === 'falling'))));
+    const alignedCount = [momentumAligned, trendAligned, volumeAligned, patternAligned].filter(Boolean).length;
+    if (alignedCount >= 2) {
+      const sign = isLong ? 1 : -1;
+      const confBonus = alignedCount >= 4 ? 15 : alignedCount >= 3 ? 10 : 5;
+      const confLabel = alignedCount >= 4 ? 'Confluência total (4/4 categorias)' :
+                        alignedCount >= 3 ? 'Alta confluência (3/4 categorias)' : 'Confluência moderada (2/4 categorias)';
+      score += sign * confBonus;
+      reasons.push({ text: confLabel, type: isLong ? 'positive' : 'negative' });
+    }
+  }
+
   // Penalidade combo: RSI oversold + F&G Medo Extremo em setup SHORT = risco alto de short squeeze
   if (score < 0 && rsi !== null && rsi < 40 && fg.value < 25) {
     score += 20;
@@ -1168,7 +1532,7 @@ function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) 
     reasons.push({ text: `RISCO: RSI ${rsi.toFixed(1)} + F&G ${fg.value} — Bull trap iminente`, type: 'negative' });
   }
 
-  return { score, reasons, indicators, mxUp, mxDown, mAbove, emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd };
+  return { score, reasons, indicators, mxUp, mxDown, mAbove, emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd, ichimoku, squeeze, orderBlock, anchoredVwap };
 }
 
 /**
@@ -1204,7 +1568,8 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
 
   const safeFg = fg ?? { value: 50, label: 'Neutro' };
   const { score: rawScore, reasons, indicators, mxUp, mxDown, mAbove,
-    emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd } = _computeScore(price, ind, safeFg, fundingRate, openInterest);
+    emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd,
+    ichimoku, squeeze, orderBlock, anchoredVwap } = _computeScore(price, ind, safeFg, fundingRate, openInterest);
 
   const dir       = rawScore >= 0 ? 'buy' : 'sell';
   const normScore = Math.min(100, Math.round(Math.abs(rawScore)));
@@ -1281,6 +1646,7 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
     reasons, indicators, summary,
     patterns, divergences, conditionalEntry,
     emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd,
+    ichimoku, squeeze, orderBlock, anchoredVwap,
     vwap, obvTrend, stochRSI,
     volProfile: ind.volProfile ?? null,
     candles,
@@ -1404,10 +1770,12 @@ export {
   MTF_CONFLUENCE_WEIGHTS, getMTFWeight,
   // Indicators
   calcEMA, calcRSI, calcMACD, calcBollinger, calcATR, calcADX,
-  avgVol, findLevels, calcVWAP, calcOBVTrend, calcStochRSI, calcCVD, calcVolumeProfile,
+  avgVol, findLevels, calcVWAP, calcAnchoredVWAP, calcOBVTrend, calcStochRSI,
+  calcCVD, calcVolumeProfile, calcIchimoku, calcSqueezeMomentum,
   // Patterns
   detectCandlePatterns, detectDivergences, detectEMACross,
   detectMarketStructure, detectTriangle, detectDoubleTopBottom, detectBOSCHoCH,
+  detectOrderBlocks,
   // Risk / Reward
   calcLiqPrice, capReturn, getFibSet, calcMetas,
   // Analysis engine

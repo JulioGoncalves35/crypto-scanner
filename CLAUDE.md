@@ -192,17 +192,31 @@ Both are optional — if they fail, `null` is passed to `analyzeCandles` and the
 | `calcATR(candles, period)` | Average True Range |
 | `calcStochRSI(data)` | Stochastic RSI |
 | `calcVolumeProfile(candles, bins=50)` | Volume Profile — POC, VAH, VAL |
+| `calcAnchoredVWAP(candles, lookback=100)` | VWAP anchored to highest-volume swing point |
+| `calcIchimoku(candles)` | Ichimoku Cloud (Tenkan/Kijun/Senkou A+B/Chikou) |
+| `calcSqueezeMomentum(candles)` | LazyBear Squeeze Momentum (BB inside Keltner) |
 | `_calcTechIndicators(candles)` | Orchestrates all indicator calculations |
 
 ### 4. Pattern Detection
 | Function | Pattern |
 |---|---|
-| `detectCandlePatterns(candles)` | Hammer, Engulfing, Doji, Morning/Evening Star, etc. |
+| `detectCandlePatterns(candles)` | Hammer, Engulfing, Doji, Morning/Evening Star, Marubozu, Three Inside Up/Down, Três Soldados/Corvos, etc. |
 | `detectDivergences(candles, rsi)` | Bullish/Bearish RSI divergences |
 | `detectEMACross(ema9, ema21)` | Golden Cross / Death Cross |
 | `detectMarketStructure(candles)` | Higher highs/lows vs lower highs/lows |
 | `detectTriangle(candles)` | Ascending/Descending/Symmetrical triangles |
 | `detectDoubleTopBottom(candles)` | Double Top / Double Bottom patterns |
+| `detectOrderBlocks(candles, lookback=100)` | Order Block — last opposing candle before a BOS event |
+
+**New candle patterns (added to `detectCandlePatterns`):**
+| Pattern | Score | Condition |
+|---|---|---|
+| Marubozu Altista ↑ | +12 | Bull candle body/range ≥ 95% (no wicks) |
+| Marubozu Baixista ↓ | -12 | Bear candle body/range ≥ 95% |
+| Three Inside Up ↑ | +14 | Large bear → harami (body 35–50% of pp) → bull closing above pp midpoint |
+| Three Inside Down ↓ | -14 | Mirror of Three Inside Up |
+| Três Soldados Brancos ↑ | +18 | 3 consecutive bull candles, each opening inside prior body, body/range ≥ 60%, closing higher |
+| Três Corvos Negros ↓ | -18 | Mirror of Três Soldados Brancos |
 
 ### 5. Scoring Engine
 - `_computeScore(indicators, patterns, direction)` — returns 0–100 score
@@ -213,6 +227,11 @@ Both are optional — if they fail, `null` is passed to `analyzeCandles` and the
 - **CVD:** `calcCVD(candles, period=30)` — Cumulative Volume Delta; `±7` pts for rising/falling trend
 - **BOS/CHoCH:** `detectBOSCHoCH(candles, lookback=60)` — Break of Structure (+12/-12) and Change of Character (+22/-22)
 - **Volume Profile:** `calcVolumeProfile(candles, bins=50)` — distributes volume by price level (50 bins). Returns `{ poc, vah, val, rangeHigh, rangeLow }`. Scoring: price above POC `+6` / below POC `-6`; price below VAL adds `+5` (potential mean-reversion); price above VAH adds `-5`. Guard uses `!= null` (handles both `null` and `undefined`). Displayed as a visual bar in the modal (Value Area band + POC line + current price marker). Backtest: VP reasons appear automatically in `calcPatternHitRates` hit-rate table via the `reasons` array — no extra code needed.
+- **Ichimoku Cloud:** `calcIchimoku(candles)` — requires ≥78 candles. Returns null otherwise. Scoring (capped at ±20 total): price above/below cloud ±10, TK cross ±8, Chikou confirmation ±4. Displays neutral (0) when price is inside the cloud.
+- **Anchored VWAP:** `calcAnchoredVWAP(candles, lookback=100)` — anchored to highest-volume swing point within lookback. Requires swing points to exist (returns null for monotonic/flat data). Scoring: price >0.2% above → +8, >0.2% below → -8, within 0.2% → 0.
+- **Squeeze Momentum:** `calcSqueezeMomentum(candles)` — LazyBear style. BB (20,2.0) inside Keltner (EMA20 ± 1.5×ATR20) = squeeze active. Scoring: `releasedBull/releasedBear` ±15, post-squeeze rising/falling momentum ±6, active squeeze = 0 (display only).
+- **Order Block:** `detectOrderBlocks(candles, lookback=100)` — last opposing candle before a BOS event. Scoring: ±14 only when price is inside the OB zone (99%–101% of ob range). Returns null when no BOS found. Does not overlap with BOS/CHoCH scoring (OB = reteste da zona, BOS = evento do break).
+- **Confluência multi-categoria:** Applied at the end of `_computeScore` (before combo penalties). Checks 4 categories: momentum (RSI), trend (EMA200/mktStruct/Ichimoku), volume (OBV/CVD), pattern (candle patterns/divergences/Squeeze). Awards: 2 aligned → ±5, 3 aligned → ±10, 4 aligned → ±15. Guard: only fires when `score !== 0`.
 
 ### 6. Analysis Pipeline
 - `analyzeCandles(symbol, tf, candles, fg, fundingRate, openInterest, news)` — full analysis for one coin/timeframe
@@ -409,3 +428,8 @@ git push -u origin <branch>
 - **Fetches sequenciais em `runRealAnalysis`:** O scanner ao vivo usa `await` sequencial (não `Promise.all`) intencionalmente para não esgotar os proxies CORS por rate limit. Não converter para concorrência.
 - **Aba Backtest removida:** O sistema de backtest foi completamente removido do `painel.html`. O histórico real acumulado pelo backend (SQLite) substitui esse papel.
 - **OBV age como filtro implícito de SHORTs fracos:** OBV em ascensão adiciona +6 ao score independente de direção. Em setups SHORT (score < 0), esse +6 reduz a magnitude do score — SHORTs com OBV contraditório perdem força e podem não passar o threshold de score mínimo. **Nunca tornar o OBV direction-aware/neutro** — testes mostraram que neutralizar o OBV para SHORTs quebra esse mecanismo de filtragem, permitindo 30+ trades extras de baixa qualidade (39% WR) e piorando o P&L de +5% para -2%.
+- **Ichimoku mínimo 78 candles:** `calcIchimoku` retorna null silenciosamente para menos de 78 candles (52 período + 26 shift). Em timeframes de 4h/1D o limite de 200 candles é suficiente. Em 5m/15m com `limit=200` também. Não reduzir o lookback.
+- **calcAnchoredVWAP retorna null sem swings:** A função depende de swing highs/lows com ±2 vizinhos. Dados monotônicos ou planos (trending fixtures em testes) não têm swing points — a função retorna null. Testes devem usar candles com picos/vales explícitos.
+- **Order Block vs BOS/CHoCH — sem sobreposição:** `detectOrderBlocks` pontua o reteste da zona de origem do BOS. `detectBOSCHoCH` pontua o próprio evento de break. São fases distintas e não há double-counting.
+- **Confluência — não aplica em score=0:** O bônus de confluência usa `if (score !== 0)` para evitar computar direção em score perfeitamente neutro. Isso é intencional.
+- **Three Inside Up/Down vs Morning/Evening Star:** Ambos usam `ppBear + harami + c confirmação`. Morning Star requer `pBody < ppBody * 0.35`; Three Inside Up requer `pBody < ppBody * 0.5`. Para candles com pBody entre 35%–50% de ppBody, apenas Three Inside Up é ativado. Abaixo de 35%, **ambos** podem ser ativados simultaneamente — porém Morning Star (score +18) é "strong" (≥15) e suprime Three Inside Up (+14) via filtro de força.
