@@ -1272,7 +1272,7 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
   return {
     coin, pair:`${coin}/USDT`, dir,
     score: normScore, timeframe: tf, leverage: lev,
-    entry, stop, liqPrice, stopAdjusted,
+    entry, stop, liqPrice, entryToLiqDist, stopAdjusted,
     stopPct: fmtPct(stopPctRaw),
     m1:{ price:m1p, pct:fmtPct((m1p-entry)/entry*100), cap:capM1 },
     m2:{ price:m2p, pct:fmtPct((m2p-entry)/entry*100), cap:capM2 },

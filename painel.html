@@ -2513,7 +2513,7 @@ async function runRealAnalysis(signal = null) {
       if (!candles) continue;
       try {
         const softResult = analyzeCandles(coin, tf, candles, fg,
-          fundingCache[coin] ?? null, oiCache[coin] ?? null, [], 50); // scoreThreshold=50
+          fundingCache[coin] ?? null, oiCache[coin] ?? null, [], parseInt(state.score) - 15); // scoreThreshold dinâmico, igual ao backend
         if (softResult) softResults.push(softResult);
       } catch(e) {
         if (e.name === 'AbortError' && signal?.aborted) throw e;
