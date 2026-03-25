@@ -70,6 +70,9 @@ function initSchema() {
     );
   `);
 
+  // Migration: add analysis_json column if not present (existing DBs)
+  try { db.exec('ALTER TABLE trades ADD COLUMN analysis_json TEXT'); } catch (_) {}
+
   // Seed default account row if not present
   const existing = db.prepare('SELECT id FROM paper_account WHERE id = 1').get();
   if (!existing) {
@@ -144,13 +147,13 @@ export function insertTrade(trade) {
   getDb().prepare(`
     INSERT INTO trades
       (id, coin, direction, timeframe, type, score, entry, stop, current_stop,
-       m1, m2, m3, stop_pct, leverage, found_at, status, capital_allocated, signals)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)
+       m1, m2, m3, stop_pct, leverage, found_at, status, capital_allocated, signals, analysis_json)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?)
   `).run(
     trade.id, trade.coin, trade.direction, trade.timeframe, trade.type,
     trade.score, trade.entry, trade.stop, trade.current_stop,
     trade.m1, trade.m2, trade.m3, trade.stop_pct, trade.leverage,
-    trade.found_at, trade.capital_allocated, trade.signals
+    trade.found_at, trade.capital_allocated, trade.signals, trade.analysis_json ?? null
   );
 }
 

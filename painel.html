@@ -3933,7 +3933,8 @@ function _bkRenderActive(trades) {
   h += '</tr></thead><tbody>';
   trades.forEach(t => {
     const dc = t.direction === 'buy' ? 'var(--accent)' : 'var(--danger)';
-    h += '<tr>' +
+    const eid = t.id.replace(/'/g, "\\'");
+    h += '<tr data-bk-id="' + t.id + '" onclick="bkToggleSignals(this)" style="cursor:pointer" title="Clique para ver sinais">' +
       _bkTD(t.coin + ' <span style="color:var(--muted);font-size:9px">' + t.type + '</span>') +
       _bkTD((t.direction === 'buy' ? '▲ LONG' : '▼ SHORT'), '', 'color:' + dc + ';font-weight:700;') +
       _bkTD(t.timeframe, '', 'color:var(--muted);') +
@@ -3965,7 +3966,7 @@ function _bkRenderHistory(trades) {
     const pc = (t.pnl||0) >= 0 ? 'var(--accent)' : 'var(--danger)';
     const ps = (t.pnl||0) >= 0 ? '+' : '';
     const dt = new Date(t.found_at).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-    h += '<tr>' +
+    h += '<tr data-bk-id="' + t.id + '" onclick="bkToggleSignals(this)" style="cursor:pointer" title="Clique para ver sinais">' +
       _bkTD(dt, '', 'color:var(--muted);white-space:nowrap;') +
       _bkTD(t.coin) +
       _bkTD((t.direction === 'buy' ? '▲' : '▼') + ' ' + t.timeframe, '', 'color:' + dc + ';font-weight:700;') +
@@ -3976,6 +3977,111 @@ function _bkRenderHistory(trades) {
   });
   h += '</tbody></table></div>';
   el.innerHTML = h;
+}
+
+// ─── Inline signals expand ────────────────────────────────────────────────────
+
+async function bkToggleSignals(tr) {
+  const id = tr.getAttribute('data-bk-id');
+  if (!id) return;
+
+  // Toggle: remove if already open
+  const existing = tr.nextElementSibling;
+  if (existing && existing.classList.contains('bk-sig-row') && existing.getAttribute('data-bk-for') === id) {
+    existing.remove();
+    tr.style.background = '';
+    return;
+  }
+
+  tr.style.background = 'rgba(255,255,255,0.04)';
+
+  // Fetch trade details
+  let trade;
+  try {
+    const r = await fetch(BACKEND_URL + '/api/trades/' + encodeURIComponent(id));
+    trade = await r.json();
+  } catch(_) {
+    tr.style.background = '';
+    return;
+  }
+
+  // Parse signals
+  let signals = [];
+  if (trade.analysis_json) {
+    try {
+      const analysis = JSON.parse(trade.analysis_json);
+      signals = analysis.reasons || [];
+    } catch(_) {}
+  }
+  if (!signals.length && trade.signals) {
+    try {
+      const raw = JSON.parse(trade.signals);
+      signals = raw.map(r => typeof r === 'string' ? {text: r, type: 'neutral'} : r);
+    } catch(_) {}
+  }
+
+  const colspan = tr.cells.length;
+
+  let tags = '';
+  if (signals.length) {
+    tags = '<div class="reasons" style="margin:0">' +
+      signals.map(r => {
+        const cls = r.type === 'positive' ? 'positive' : r.type === 'negative' ? 'negative' : 'neutral';
+        const extras = [];
+        if (r.isMTF) extras.push('MTF');
+        if (r.isPattern || r.isPat) extras.push('PAD');
+        if (r.isDivergence || r.isDiv) extras.push('DIV');
+        const badge = extras.length ? ' <span style="opacity:0.6;font-size:9px">[' + extras.join(',') + ']</span>' : '';
+        return '<span class="reason-tag ' + cls + '">' + r.text + badge + '</span>';
+      }).join('') +
+    '</div>';
+  } else {
+    tags = '<span style="font-family:var(--mono);font-size:10px;color:var(--muted)">Análise completa não disponível para esta trade (capturada antes da atualização).</span>';
+  }
+
+  const sigRow = document.createElement('tr');
+  sigRow.className = 'bk-sig-row';
+  sigRow.setAttribute('data-bk-for', id);
+  sigRow.innerHTML = '<td colspan="' + colspan + '" style="padding:10px 14px 14px;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.06)">' +
+    tags +
+    '<div style="margin-top:10px">' +
+      '<button onclick="bkSaveToJournal(\'' + id.replace(/'/g, "\\'") + '\', this)" ' +
+        'style="font-family:var(--mono);font-size:10px;padding:4px 12px;background:var(--accent);color:#000;border:none;border-radius:4px;cursor:pointer;font-weight:700">' +
+        'Salvar no Diário' +
+      '</button>' +
+    '</div>' +
+  '</td>';
+
+  tr.parentNode.insertBefore(sigRow, tr.nextSibling);
+}
+
+async function bkSaveToJournal(id, btn) {
+  btn.disabled = true;
+  btn.textContent = '...';
+  try {
+    const r = await fetch(BACKEND_URL + '/api/trades/' + encodeURIComponent(id) + '/journal');
+    if (!r.ok) throw new Error('not found');
+    const entry = await r.json();
+
+    const entries = loadJournal();
+    const dup = entries.find(e =>
+      e.coin === entry.coin &&
+      e.timeframe === entry.timeframe &&
+      Math.abs(parseFloat(e.entry) - parseFloat(entry.entry)) < 0.001
+    );
+    if (dup) {
+      btn.textContent = 'Já no Diário';
+      return;
+    }
+    entries.unshift(entry);
+    saveJournal(entries);
+    updateJournalCount();
+    btn.textContent = '✓ Salvo!';
+    btn.style.background = 'var(--warn)';
+  } catch(_) {
+    btn.textContent = 'Erro';
+    btn.disabled = false;
+  }
 }
 
 function bkShowConfig() {

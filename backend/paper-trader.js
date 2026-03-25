@@ -72,7 +72,22 @@ export async function openPosition(setup) {
     leverage,
     found_at:           now,
     capital_allocated,
-    signals:            JSON.stringify((setup.reasons || []).map(r => r.text)),
+    signals:            JSON.stringify(setup.reasons || []),
+    analysis_json:      JSON.stringify({
+      reasons:        setup.reasons       || [],
+      indicators:     setup.indicators    || [],
+      summary:        setup.summary       || '',
+      liq_price:      setup.liqPrice      ?? null,
+      stop_adjusted:  setup.stopAdjusted  || false,
+      stop_pct_str:   setup.stopPct       || '',
+      m1_cap:         setup.m1?.cap       ?? null,
+      m2_cap:         setup.m2?.cap       ?? null,
+      m3_cap:         setup.m3?.cap       ?? null,
+      m1_pct:         setup.m1?.pct       || '',
+      m2_pct:         setup.m2?.pct       || '',
+      m3_pct:         setup.m3?.pct       || '',
+      mtf_confluence: setup.mtfConfluence ?? null,
+    }),
   };
 
   insertTrade(trade);
