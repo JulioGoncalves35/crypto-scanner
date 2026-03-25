@@ -5,7 +5,14 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "server": "node --no-warnings=ExperimentalWarning backend/server.js",
+    "dev": "node --no-warnings=ExperimentalWarning --watch backend/server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "node-cron": "^3.0.3"
   },
   "devDependencies": {
     "vitest": "^1.6.0",

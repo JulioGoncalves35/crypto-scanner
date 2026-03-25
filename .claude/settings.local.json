@@ -8,7 +8,16 @@
       "Bash(node -e \":*)",
       "Bash(ls -la C:UsersjulioDocumentsgithubcrypto-scanner/*.pdf)",
       "Bash(sort -k6,7)",
-      "Bash(head -30 grep -n \"OBV\\\\|TF_MIN_STOP\\\\|minStop\" \"C:\\\\Users\\\\julio\\\\Documents\\\\github\\\\crypto-scanner\\\\painel-core.js\")"
+      "Bash(head -30 grep -n \"OBV\\\\|TF_MIN_STOP\\\\|minStop\" \"C:\\\\Users\\\\julio\\\\Documents\\\\github\\\\crypto-scanner\\\\painel-core.js\")",
+      "Bash(find /c/Users/julio/Documents/github/crypto-scanner -type f -name *.html -o -name *.js -o -name *.json -o -name package.json)",
+      "Bash(wc:*)",
+      "Bash(npm install:*)",
+      "Bash(node -e \"const {DatabaseSync} = require\\(''node:sqlite''\\); console.log\\(''node:sqlite OK''\\)\")",
+      "Bash(node --input-type=module -e \"import {DatabaseSync} from ''node:sqlite''; console.log\\(''node:sqlite OK''\\)\")",
+      "Bash(node inject-backend.js)",
+      "Bash(rm inject-backend.js)",
+      "Bash(cd:*)",
+      "Bash(npm test:*)"
     ]
   }
 }

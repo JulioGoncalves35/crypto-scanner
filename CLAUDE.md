@@ -18,10 +18,26 @@ UI language: **Portuguese (pt-BR)**.
 
 ```
 crypto-scanner/
-└── painel.html      ← Entire application (3,000+ lines): HTML + embedded CSS + embedded JS
+├── painel.html          ← Frontend SPA (~4,034 lines): HTML + CSS + JS (standalone)
+├── painel-core.js       ← Pure analysis engine (shared by browser + backend)
+├── backend/
+│   ├── server.js        ← Express server (port 3001), cron jobs
+│   ├── db.js            ← SQLite via node:sqlite (Node 22.5+ built-in)
+│   ├── scanner.js       ← Auto-scan engine (imports painel-core.js)
+│   ├── paper-trader.js  ← Capital allocation + position state machine
+│   ├── price-checker.js ← Cron: checks stop/targets every 5 min
+│   └── routes/
+│       ├── trades.js    ← GET /api/trades, /api/trades/active
+│       ├── account.js   ← GET/POST /api/account
+│       └── scan.js      ← POST /api/scan/manual
+├── data/
+│   └── scanner.db       ← SQLite database (gitignored)
+└── tests/               ← Vitest test suite (268 tests)
 ```
 
-This is a **monolithic single-file application**. There is no build system, no package.json, and no external tooling required. Everything runs in the browser.
+**The frontend (`painel.html`) works fully standalone** even when the backend is offline. The backend adds automated scanning, paper trading, and persistent history.
+
+**Backend requires Node.js 22.5+** (uses built-in `node:sqlite`). Start with: `npm run server`
 
 ---
 
@@ -80,8 +96,37 @@ const TIMEFRAMES_BY_MODE = {
 
 Code sections are separated by `// ─────────────────────` divider comments.
 
-### 9. Backtest System
-- **Location:** `painel.html` only (not in `painel-core.js`)
+### 9. Backend Server
+
+**Location:** `backend/` folder. Runs on `http://localhost:3001`.
+
+**Auto-scan:** Every 15 minutes via `node-cron`. Scans all 39 default coins in "both" mode (all TFs). Skips coins with an active trade. Applies MTF confluence identically to the frontend.
+
+**Paper trading:** Opens positions when `score >= min_score` AND `active_positions < max_positions` AND `current_capital >= alloc_pct%`. Default: 2% per trade, max 5 positions.
+
+**Exit strategy (33/33/34):** Closes 33% at M1 (moves stop to entry), 33% at M2, 34% at M3. Also handles `expired` (horizon exhausted) and `stopped_at_entry` (stop hit after M1 at breakeven).
+
+**Price checker:** Every 5 minutes, fetches current price via `GET /v5/market/tickers` and runs state machine for each active trade.
+
+**Trade statuses:** `active` → `m1` → `m2` → `m3` | `stop` | `stopped_at_entry` | `expired`
+
+**SQLite tables:** `trades`, `paper_account`, `scan_log`. Uses Node.js built-in `node:sqlite` (no compilation needed).
+
+**REST API endpoints:**
+- `GET /api/health` — server status
+- `GET /api/account` — capital + stats
+- `POST /api/account/setup` — configure account
+- `GET /api/trades`, `/api/trades/active` — trade list
+- `POST /api/scan/manual` — trigger immediate scan
+- `GET /api/scan/status` — scan running?
+
+**painel.html integration:** Checks backend on load with 2s timeout. Shows "Backend" tab with online/offline indicator, account stats, active trades table, history table, manual scan button, and account config form. Falls back gracefully when offline.
+
+### 10. Backtest System — REMOVED (replaced by backend live history)
+
+The backtest tab and all JS functions were removed (~650 lines). The backend's accumulated trade history serves as real-data replacement. The following functions no longer exist in `painel.html`:
+
+- **Location:** `painel.html` only (not in `painel-core.js`) — REMOVED
 - `fetchCandlesBacktest(symbol, tf, limit, signal)` — fetches up to 1000 candles for backtest
 - `simulateOutcome(setup, futureCandles)` — walks future candles checking stop/m3/m2/m1 (highest target first); returns `{ result, mfePct, maePct, closePrice? }`. If horizon exhausted without resolution, returns `result='timeout'` with `closePrice` = last candle close
 - `calcBacktestPnL(setup, result, leverage, closePrice)` — P&L % calculation; handles `'timeout'` using `closePrice` vs entry for real P&L. **Stop-loss exits incluem 0.05% de slippage fixo** (`+SLIPPAGE=0.0005`) sobre a distância do stop para simular execução realista a mercado
@@ -345,5 +390,5 @@ git push -u origin <branch>
 - **painel-core.js vs painel.html:** Os dois arquivos contêm o mesmo motor de análise. Qualquer mudança no motor (scoring, indicadores, filtros) deve ser aplicada nos dois arquivos.
 - **Filtro de liquidez — extrapolação:** `analyzeCandles` usa os candles disponíveis para extrapolar volume diário (`(totalVol / sampleLen) * candlesPerDay`), sem exigir dias completos. Corrige bug onde backtest de 5m com WINDOW=200 (< 288 candles/dia) pulava o filtro inteiro (`daysToCheck=0`).
 - **Fetches sequenciais em `runRealAnalysis`:** O scanner ao vivo usa `await` sequencial (não `Promise.all`) intencionalmente para não esgotar os proxies CORS por rate limit. Não converter para concorrência.
-- **Versão do Backtest:** A aba "Backtest" exibe um número de versão discreto (ex: `v3`). Incrementar esse número a cada atualização no sistema de backtest (scoring, filtros, horizonte, cálculo de P&L, etc.) para que o usuário saiba que a página foi atualizada. Localização: `painel.html` linha do `id="backtestTab"`.
+- **Aba Backtest removida:** O sistema de backtest foi completamente removido do `painel.html`. O histórico real acumulado pelo backend (SQLite) substitui esse papel.
 - **OBV age como filtro implícito de SHORTs fracos:** OBV em ascensão adiciona +6 ao score independente de direção. Em setups SHORT (score < 0), esse +6 reduz a magnitude do score — SHORTs com OBV contraditório perdem força e podem não passar o threshold de score mínimo. **Nunca tornar o OBV direction-aware/neutro** — testes mostraram que neutralizar o OBV para SHORTs quebra esse mecanismo de filtragem, permitindo 30+ trades extras de baixa qualidade (39% WR) e piorando o P&L de +5% para -2%.
