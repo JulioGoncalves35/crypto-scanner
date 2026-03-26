@@ -4180,7 +4180,13 @@ document.addEventListener('DOMContentLoaded', () => {
 // BACKEND INTEGRATION
 // ─────────────────────────────────────────
 
-const BACKEND_URL = localStorage.getItem('cryptoscanner_backend_url') || 'http://localhost:3001';
+const BACKEND_URL = (() => {
+  const saved = localStorage.getItem('cryptoscanner_backend_url');
+  if (saved) return saved;
+  // When served directly by the backend (http://IP:3001/painel.html), use same origin
+  if (location.port === '3001') return location.origin;
+  return 'http://localhost:3001';
+})();
 let backendOnline = false;
 
 async function checkBackend() {
