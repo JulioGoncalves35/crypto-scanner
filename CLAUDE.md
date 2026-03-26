@@ -220,7 +220,8 @@ Both are optional — if they fail, `null` is passed to `analyzeCandles` and the
 
 ### 5. Scoring Engine
 - `_computeScore(indicators, patterns, direction)` — returns 0–100 score
-- ADX hard filter: setups with ADX < 18 are rejected (sideways market filter)
+- ADX hard filter (TF-aware): `TF_ADX_MIN = { '5m': 23, '15m': 22, '30m': 20, '1h': 18, '4h': 18, '1D': 18 }` — scalp TFs need stronger trend confirmation
+- **ADX scoring (4 tiers):** >30 → ±10 (muito forte), >25 → ±6 (forte), 20–25 → -3 (fraca), <20 → -8 (lateral). ADX 20–25 now carries a mild penalty instead of being neutral.
 - MTF confluence bonus: +6–12 points if same direction on 2+ timeframes
 - MTF conflict penalty: -20 points if lower TF opposes highest TF
 - **Combo penalty — short squeeze risk:** when score < 0 AND RSI < 40 AND F&G < 25 → `score += 20` (reduces SHORT magnitude). Symmetric for LONGs (RSI > 60 AND F&G > 75 → `score -= 20`). Displayed as `"RISCO: ... — Short squeeze iminente"` in reasons.
@@ -413,7 +414,7 @@ git push -u origin <branch>
 
 - **CORS errors:** The app uses a proxy chain — if all proxies fail, the app shows mock data with a demo banner. This is expected behavior.
 - **Symbol mismatches:** Bybit uses `1000PEPEUSDT`, `1000BONKUSDT`, etc. for low-price tokens. Verify against Bybit API when adding new coins.
-- **ADX filter:** Setups with ADX < 18 are silently dropped. If a coin never appears in results, it likely has a flat ADX.
+- **ADX filter (TF-aware):** The ADX hard filter varies by timeframe: 5m=23, 15m=22, 30m=20, 1h/4h/1D=18. Scalp TFs require a stronger trend to avoid setups in ranging markets. If a coin never appears in scalp results, it likely has ADX below these thresholds.
 - **MTF deduplication:** After scanning, only the highest-scored setup per coin is shown. Lower-scored timeframes for the same coin are intentionally hidden.
 - **Journal version key:** The `_v2` suffix was introduced after a schema change. If the data shape changes again, bump to `_v3` and add a migration function.
 - **AbortError vs timeout:** `fetchJSON` uses a local `AbortController` for per-request timeouts (10s). This produces an `AbortError` identical to a user-cancellation abort. **Always check `signal?.aborted` before re-throwing** in catch blocks — otherwise a single timed-out request will cancel the entire scan. The pattern is: `if (e.name === 'AbortError' && signal?.aborted) throw e;`

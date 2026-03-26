@@ -2358,10 +2358,12 @@ function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) 
 
   // ADX
   if (adx !== null) {
-    if      (adx > 25) { score += (score>=0?8:-8); reasons.push({text:`ADX ${adx.toFixed(1)} — Tendência forte`,type:score>=0?'positive':'negative'}); }
-    else if (adx < 20) { score -= 5; reasons.push({text:`ADX ${adx.toFixed(1)} — Mercado lateral`,type:'negative'}); }
+    if      (adx > 30) { score += (score>=0?10:-10); reasons.push({text:`ADX ${adx.toFixed(1)} — Tendência muito forte`,type:score>=0?'positive':'negative'}); }
+    else if (adx > 25) { score += (score>=0?6:-6);   reasons.push({text:`ADX ${adx.toFixed(1)} — Tendência forte`,type:score>=0?'positive':'negative'}); }
+    else if (adx < 20) { score -= 8; reasons.push({text:`ADX ${adx.toFixed(1)} — Mercado lateral`,type:'negative'}); }
+    else               { score -= 3; reasons.push({text:`ADX ${adx.toFixed(1)} — Tendência fraca`,type:'negative'}); }
     const adxColor = adx > 25 ? 'var(--accent)' : adx < 20 ? 'var(--danger)' : 'var(--warn)';
-    indicators.push({name:'ADX (14)',reading:`${adx.toFixed(1)} — ${adx>25?'Tendência forte':adx<20?'Mercado lateral':'Tendência moderada'}`,color:adxColor});
+    indicators.push({name:'ADX (14)',reading:`${adx.toFixed(1)} — ${adx>30?'Tendência muito forte':adx>25?'Tendência forte':adx<20?'Mercado lateral':'Tendência fraca'}`,color:adxColor});
   }
 
   // Funding Rate
@@ -2577,8 +2579,9 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
   const ind = _calcTechIndicators(candles, closes);
   const { price, rsi, ema200, atr, levels, vwap, obvTrend, stochRSI, patterns, divergences } = ind;
 
-  // Filtro duro: mercado lateral — sem tendência definida
-  if (ind.adx !== null && ind.adx < 18) return null;
+  // Filtro duro por TF: scalp exige tendência mais forte que swing
+  const TF_ADX_MIN = { '5m': 23, '15m': 22, '30m': 20, '1h': 18, '4h': 18, '1D': 18 };
+  if (ind.adx !== null && ind.adx < (TF_ADX_MIN[tf] ?? 18)) return null;
 
   // Fase 2: score
   const safeFg = fg ?? { value: 50, label: 'Neutro' };
