@@ -748,6 +748,14 @@ main { padding: 20px 14px 60px; }
     <!-- CONFIG PANEL (hidden by default) -->
     <div id="bkConfigPanel" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px">
       <div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:16px">Configurações da Conta</div>
+      <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+        <label style="font-family:var(--mono);font-size:10px;color:var(--muted);display:block;margin-bottom:4px">URL do Servidor</label>
+        <div style="display:flex;gap:8px">
+          <input id="bkUrlInput" type="text" placeholder="http://localhost:3001" style="flex:1;font-family:var(--mono);font-size:12px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);box-sizing:border-box">
+          <button onclick="bkSaveUrl()" style="font-family:var(--mono);font-size:11px;padding:6px 14px;border-radius:7px;cursor:pointer;border:none;background:var(--accent);color:#000;font-weight:700;white-space:nowrap">Salvar URL</button>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:5px">Para acesso pelo celular: use o IP local do computador — ex: <code style="color:var(--text)">http://192.168.1.100:3001</code></div>
+      </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px">
         <div>
           <label style="font-family:var(--mono);font-size:10px;color:var(--muted);display:block;margin-bottom:4px">Capital Inicial (USD)</label>
@@ -4172,7 +4180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // BACKEND INTEGRATION
 // ─────────────────────────────────────────
 
-const BACKEND_URL = 'http://localhost:3001';
+const BACKEND_URL = localStorage.getItem('cryptoscanner_backend_url') || 'http://localhost:3001';
 let backendOnline = false;
 
 async function checkBackend() {
@@ -4569,6 +4577,17 @@ async function bkSaveToJournal(id, btn) {
 function bkShowConfig() {
   const p = document.getElementById('bkConfigPanel');
   p.style.display = p.style.display === 'none' ? 'block' : 'none';
+  if (p.style.display === 'block') {
+    const urlInput = document.getElementById('bkUrlInput');
+    if (urlInput) urlInput.value = localStorage.getItem('cryptoscanner_backend_url') || '';
+  }
+}
+
+function bkSaveUrl() {
+  const val = (document.getElementById('bkUrlInput').value || '').trim().replace(/\/$/, '');
+  if (val) localStorage.setItem('cryptoscanner_backend_url', val);
+  else localStorage.removeItem('cryptoscanner_backend_url');
+  location.reload();
 }
 
 async function bkSaveConfig() {

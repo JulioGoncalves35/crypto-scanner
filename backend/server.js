@@ -85,7 +85,7 @@ cron.schedule('*/5 * * * *', async () => {
 // Initialize DB on startup
 getDb();
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🚀 Crypto Scanner Backend running at http://localhost:${PORT}`);
   console.log(`   Auto-scan: every 15 minutes`);
   console.log(`   Price check: every 5 minutes`);
