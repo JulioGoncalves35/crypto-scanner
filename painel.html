@@ -4596,7 +4596,7 @@ async function bkInitAccount() {
   try {
     await fetch(BACKEND_URL + '/api/account/setup', {
       method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({initial_capital: capital, alloc_pct: 2, max_positions: 5, min_score: 70, leverage: 10}),
+      body: JSON.stringify({initial_capital: capital, alloc_pct: 2, max_positions: 10, min_score: 70, leverage: 10}),
     });
     bkLoadAccount();
   } catch(_) {}

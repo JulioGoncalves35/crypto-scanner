@@ -102,7 +102,7 @@ Code sections are separated by `// ───────────────
 
 **Auto-scan:** Every 15 minutes via `node-cron`. Scans all 39 default coins in "both" mode (all TFs). Skips coins with an active trade. Applies MTF confluence identically to the frontend.
 
-**Paper trading:** Opens positions when `score >= min_score` AND `active_positions < max_positions` AND `current_capital >= alloc_pct%`. Default: 2% per trade, max 5 positions.
+**Paper trading:** Opens positions when `score >= min_score` AND `active_positions < max_positions` AND `current_capital >= alloc_pct%`. Default: 2% per trade, max 10 positions.
 
 **Exit strategy (33/33/34):** Closes 33% at M1 (moves stop to entry), 33% at M2, 34% at M3. Also handles `expired` (horizon exhausted) and `stopped_at_entry` (stop hit after M1 at breakeven).
 

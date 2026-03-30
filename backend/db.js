@@ -54,7 +54,7 @@ function initSchema() {
       initial_capital REAL NOT NULL DEFAULT 1000,
       current_capital REAL NOT NULL DEFAULT 1000,
       alloc_pct REAL NOT NULL DEFAULT 2,
-      max_positions INTEGER NOT NULL DEFAULT 5,
+      max_positions INTEGER NOT NULL DEFAULT 10,
       min_score INTEGER NOT NULL DEFAULT 70,
       leverage INTEGER NOT NULL DEFAULT 10,
       updated_at TEXT NOT NULL
@@ -72,6 +72,14 @@ function initSchema() {
 
   // Migration: add analysis_json column if not present (existing DBs)
   try { db.exec('ALTER TABLE trades ADD COLUMN analysis_json TEXT'); } catch (_) {}
+
+  // Migration: bump max_positions default from 5 to 10 for existing accounts
+  try {
+    const acc = db.prepare('SELECT max_positions FROM paper_account WHERE id = 1').get();
+    if (acc && acc.max_positions === 5) {
+      db.prepare('UPDATE paper_account SET max_positions = 10 WHERE id = 1').run();
+    }
+  } catch (_) {}
 
   // Seed default account row if not present
   const existing = db.prepare('SELECT id FROM paper_account WHERE id = 1').get();
