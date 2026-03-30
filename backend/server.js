@@ -19,8 +19,6 @@
 import express from 'express';
 import cors from 'cors';
 import cron from 'node-cron';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 
 import { getDb } from './db.js';
 import tradesRouter from './routes/trades.js';
@@ -32,16 +30,11 @@ import { checkActiveTrades } from './price-checker.js';
 const app = express();
 const PORT = process.env.PORT || 3001;
 const startedAt = new Date();
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 
 app.use(cors({ origin: '*' })); // open CORS so painel.html (file://) can connect
 app.use(express.json());
-
-// ─── Static (serve painel.html on mobile via http://IP:3001) ──────────────────
-
-app.use(express.static(join(__dirname, '..')));
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
@@ -92,7 +85,7 @@ cron.schedule('*/5 * * * *', async () => {
 // Initialize DB on startup
 getDb();
 
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
   console.log(`\n🚀 Crypto Scanner Backend running at http://localhost:${PORT}`);
   console.log(`   Auto-scan: every 15 minutes`);
   console.log(`   Price check: every 5 minutes`);
