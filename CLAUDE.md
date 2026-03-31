@@ -232,7 +232,8 @@ Both are optional — if they fail, `null` is passed to `analyzeCandles` and the
 - **Anchored VWAP:** `calcAnchoredVWAP(candles, lookback=100)` — anchored to highest-volume swing point within lookback. Requires swing points to exist (returns null for monotonic/flat data). Scoring: price >0.2% above → +8, >0.2% below → -8, within 0.2% → 0.
 - **Squeeze Momentum:** `calcSqueezeMomentum(candles)` — LazyBear style. BB (20,2.0) inside Keltner (EMA20 ± 1.5×ATR20) = squeeze active. Scoring: `releasedBull/releasedBear` ±15, post-squeeze rising/falling momentum ±6, active squeeze = 0 (display only).
 - **Order Block:** `detectOrderBlocks(candles, lookback=100)` — last opposing candle before a BOS event. Scoring: ±14 only when price is inside the OB zone (99%–101% of ob range). Returns null when no BOS found. Does not overlap with BOS/CHoCH scoring (OB = reteste da zona, BOS = evento do break).
-- **Confluência multi-categoria:** Applied at the end of `_computeScore` (before combo penalties). Checks 4 categories: momentum (RSI), trend (EMA200/mktStruct/Ichimoku), volume (OBV/CVD), pattern (candle patterns/divergences/Squeeze). Awards: 2 aligned → ±5, 3 aligned → ±10, 4 aligned → ±15. Guard: only fires when `score !== 0`.
+- **Trendline Break:** `detectTrendlineBreak(candles, lookback=60)` — detects breaks of LTA (Linha de Tendência Altista, ascending support line) and LTB (Linha de Tendência Baixista, descending resistance line). Identifies the 2 most recent swing highs (for LTB) or swing lows (for LTA), projects the line to the current candle, and fires if `prevClose` was on the line side and `lastClose` crossed by ≥0.15%. Scoring: LTB break (bullish) +10, LTA break (bearish) -10. Also contributes to `trendAligned` in the multi-category confluence check. Returns `null` if no valid trendline break found.
+- **Confluência multi-categoria:** Applied at the end of `_computeScore` (before combo penalties). Checks 4 categories: momentum (RSI), trend (EMA200/mktStruct/Ichimoku/**TrendlineBreak**), volume (OBV/CVD), pattern (candle patterns/divergences/Squeeze). Awards: 2 aligned → ±5, 3 aligned → ±10, 4 aligned → ±15. Guard: only fires when `score !== 0`.
 
 ### 6. Analysis Pipeline
 - `analyzeCandles(symbol, tf, candles, fg, fundingRate, openInterest, news)` — full analysis for one coin/timeframe
@@ -324,11 +325,16 @@ The application handles CORS automatically via the proxy fallback chain. No API 
 
 ---
 
-## Default Coins (39 total)
+## Default Coins (41 total)
 
-BTC, ETH, SOL, BNB, ADA, AVAX, DOT, LINK, MATIC, UNI, ATOM, LTC, FIL, NEAR, APT, ARB, OP, INJ, WLD, SEI, TIA, BLUR, 1000PEPE, DOGE, XRP, ETC, AAVE, MKR, SNX, CRV, LDO, RPL, GMX, PENDLE, WIF, BONK, JTO, PYTH, STRK
+BTC, ETH, SOL, BNB, XRP, ADA, AVAX, DOGE, DOT, LINK, POL, LTC, ATOM, UNI,
+INJ, ARB, WLD, SEI, TIA, SUI, APT, OP, IMX, JUP, ONDO, STRK, BLUR, MANTA,
+ORDI, BOME, WIF, ENA, ETHFI, PENDLE, 1000PEPE, HBAR, NEAR, RENDER, TRX, FIL, HYPE
 
-> **Note:** PEPE trades as `1000PEPEUSDT` on Bybit's linear perpetuals market.
+> **Notes:**
+> - PEPE trades as `1000PEPEUSDT` on Bybit's linear perpetuals market.
+> - POL is the renamed MATIC (Polygon).
+> - HYPE is the Hyperliquid native token (HYPEUSDT), added Mar/2026.
 
 ---
 
@@ -434,3 +440,7 @@ git push -u origin <branch>
 - **Order Block vs BOS/CHoCH — sem sobreposição:** `detectOrderBlocks` pontua o reteste da zona de origem do BOS. `detectBOSCHoCH` pontua o próprio evento de break. São fases distintas e não há double-counting.
 - **Confluência — não aplica em score=0:** O bônus de confluência usa `if (score !== 0)` para evitar computar direção em score perfeitamente neutro. Isso é intencional.
 - **Three Inside Up/Down vs Morning/Evening Star:** Ambos usam `ppBear + harami + c confirmação`. Morning Star requer `pBody < ppBody * 0.35`; Three Inside Up requer `pBody < ppBody * 0.5`. Para candles com pBody entre 35%–50% de ppBody, apenas Three Inside Up é ativado. Abaixo de 35%, **ambos** podem ser ativados simultaneamente — porém Morning Star (score +18) é "strong" (≥15) e suprime Three Inside Up (+14) via filtro de força.
+- **detectTrendlineBreak — limitação do lookback curto:** A função usa os 2 swing points mais recentes dentro de `lookback=60` candles. Dados com apenas 1 swing high/low no lookback retornam null. Em timeframes lentos (1D) com 60 candles pode haver poucos swings — isso é esperado. Não reduzir o lookback.
+- **Alavancagem campo numérico livre:** O seletor de alavancagem no frontend é um `<input type="number">` com presets rápidos (5x/10x/20x/25x/50x). A função `setLeverage(v)` faz `Math.max(1, Math.min(125, parseInt(v)||10))` — o backend também aceita qualquer valor inteiro via `/api/account/setup`. Não há mais enum de valores fixos.
+- **Nível de confiança (NV1/NV2/NV3) — só exibição:** O badge NV1/NV2/NV3 nos cards é puramente visual (score 60–72 → NV1 · 73–84 → NV2 · 85+ → NV3). Não afeta scoring nem filtros — é só uma dica de tamanho de posição para o trader.
+- **isWeekendWarning(tf):** Retorna true somente para TFs escalp (5m/15m/30m/1h) quando o horário local é sexta > 18h BRT, sábado ou domingo. TFs swing (4h/1D) não disparam o badge de fim de semana.

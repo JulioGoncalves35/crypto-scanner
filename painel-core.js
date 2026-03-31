@@ -865,6 +865,69 @@ function detectOrderBlocks(candles, lookback = 100) {
   return null;
 }
 
+// ─────────────────────────────────────────
+// TRENDLINE BREAK (LTA / LTB)
+// ─────────────────────────────────────────
+function detectTrendlineBreak(candles, lookback = 60) {
+  const n = candles.length;
+  if (n < lookback + 5) return null;
+
+  const slice    = candles.slice(-lookback);
+  const sliceLen = slice.length;
+
+  const swingHighs = [], swingLows = [];
+  for (let i = 2; i < sliceLen - 2; i++) {
+    if (slice[i].high > slice[i-1].high && slice[i].high > slice[i-2].high &&
+        slice[i].high > slice[i+1].high && slice[i].high > slice[i+2].high)
+      swingHighs.push({ i, price: slice[i].high });
+    if (slice[i].low < slice[i-1].low && slice[i].low < slice[i-2].low &&
+        slice[i].low < slice[i+1].low && slice[i].low < slice[i+2].low)
+      swingLows.push({ i, price: slice[i].low });
+  }
+
+  const lastClose = candles[n - 1].close;
+  const prevClose = candles[n - 2].close;
+  const BREAK_PCT = 0.0015; // 0.15% mínimo para confirmar rompimento
+
+  // LTB (topos decrescentes) — rompimento para cima = sinal altista
+  if (swingHighs.length >= 2) {
+    const sh1 = swingHighs[swingHighs.length - 2];
+    const sh2 = swingHighs[swingHighs.length - 1];
+    if (sh2.price < sh1.price && sh2.i > sh1.i) {
+      const slope     = (sh2.price - sh1.price) / (sh2.i - sh1.i);
+      const projected = sh2.price + slope * (sliceLen - 1 - sh2.i);
+      if (projected > 0 && prevClose <= projected && lastClose > projected * (1 + BREAK_PCT)) {
+        const fp = projected >= 1 ? projected.toFixed(2) : projected.toFixed(4);
+        return {
+          type: 'ltb_break', score: +10,
+          name: 'Quebra de LTB ↑ — Linha de Tendência Baixista rompida',
+          desc: `Preço fechou acima da linha de tendência baixista projetada em $${fp}. Rompimento de LTB sinaliza reversão ou aceleração altista.`
+        };
+      }
+    }
+  }
+
+  // LTA (fundos crescentes) — rompimento para baixo = sinal baixista
+  if (swingLows.length >= 2) {
+    const sl1 = swingLows[swingLows.length - 2];
+    const sl2 = swingLows[swingLows.length - 1];
+    if (sl2.price > sl1.price && sl2.i > sl1.i) {
+      const slope     = (sl2.price - sl1.price) / (sl2.i - sl1.i);
+      const projected = sl2.price + slope * (sliceLen - 1 - sl2.i);
+      if (projected > 0 && prevClose >= projected && lastClose < projected * (1 - BREAK_PCT)) {
+        const fp = projected >= 1 ? projected.toFixed(2) : projected.toFixed(4);
+        return {
+          type: 'lta_break', score: -10,
+          name: 'Quebra de LTA ↓ — Linha de Tendência Altista rompida',
+          desc: `Preço fechou abaixo da linha de tendência altista projetada em $${fp}. Quebra de LTA sinaliza reversão ou aceleração baixista.`
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
 function detectTriangle(candles, lookback = 80) {
   const n = candles.length;
   const slice = candles.slice(-lookback);
@@ -1189,19 +1252,20 @@ function _calcTechIndicators(candles, closes) {
   const squeeze      = calcSqueezeMomentum(candles);
   const ichimoku     = calcIchimoku(candles);
   const orderBlock   = detectOrderBlocks(candles);
+  const trendlineBreak = detectTrendlineBreak(candles);
 
   return { price, rsiArr, rsi, ema9, ema21, ema200,
     macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
     bb, atr, volRatio, levels, vwap, obvTrend, stochRSI,
     patterns, divergences, adx, emaCross, mktStruct, triangle, dblPattern,
-    bosChoch, cvd, volProfile, anchoredVwap, squeeze, ichimoku, orderBlock };
+    bosChoch, cvd, volProfile, anchoredVwap, squeeze, ichimoku, orderBlock, trendlineBreak };
 }
 
 function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) {
   const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
     ema9, ema21, ema200, bb, vwap, obvTrend, volRatio, patterns, divergences, adx,
     emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd, volProfile,
-    ichimoku, anchoredVwap, squeeze, orderBlock } = ind;
+    ichimoku, anchoredVwap, squeeze, orderBlock, trendlineBreak } = ind;
 
   let score = 0;
   const reasons = [], indicators = [];
@@ -1462,6 +1526,12 @@ function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) 
     reasons.push({ text: bosChoch.name, type: bosChoch.score > 0 ? 'positive' : 'negative', isPattern: true });
   }
 
+  // Trendline Break (LTA / LTB)
+  if (trendlineBreak != null) {
+    score += trendlineBreak.score;
+    reasons.push({ text: trendlineBreak.name, type: trendlineBreak.score > 0 ? 'positive' : 'negative', isPattern: true });
+  }
+
   // Squeeze Momentum
   if (squeeze != null) {
     if (squeeze.releasedBull) {
@@ -1505,7 +1575,8 @@ function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) 
     const momentumAligned = rsi !== null && ((isLong && rsi < 50) || (!isLong && rsi > 50));
     const trendAligned = (ema200 !== null && ((isLong && price > ema200) || (!isLong && price < ema200))) ||
                          (mktStruct !== null && ((isLong && mktStruct.type === 'uptrend') || (!isLong && mktStruct.type === 'downtrend'))) ||
-                         (ichimoku !== null && ((isLong && ichimoku.priceAboveCloud) || (!isLong && ichimoku.priceBelowCloud)));
+                         (ichimoku !== null && ((isLong && ichimoku.priceAboveCloud) || (!isLong && ichimoku.priceBelowCloud))) ||
+                         (trendlineBreak != null && ((isLong && trendlineBreak.score > 0) || (!isLong && trendlineBreak.score < 0)));
     const volumeAligned = (isLong && obvTrend === 'rising') || (!isLong && obvTrend === 'falling') ||
                           (cvd !== null && ((isLong && cvd.trend === 'rising') || (!isLong && cvd.trend === 'falling')));
     const patternAligned = patterns.some(pat => isLong ? pat.score > 0 : pat.score < 0) ||
@@ -1534,7 +1605,7 @@ function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) 
     reasons.push({ text: `RISCO: RSI ${rsi.toFixed(1)} + F&G ${fg.value} — Bull trap iminente`, type: 'negative' });
   }
 
-  return { score, reasons, indicators, mxUp, mxDown, mAbove, emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd, ichimoku, squeeze, orderBlock, anchoredVwap };
+  return { score, reasons, indicators, mxUp, mxDown, mAbove, emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd, ichimoku, squeeze, orderBlock, anchoredVwap, trendlineBreak };
 }
 
 /**
