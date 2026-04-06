@@ -21,6 +21,11 @@ const CLOSE_AT_M1 = 0.33;
 const CLOSE_AT_M2 = 0.33;
 const CLOSE_AT_M3 = 0.34;
 
+// Risk cap: reject trade if stop_pct × leverage exceeds this threshold.
+// This ensures no single stop-out wipes more than 50% of allocated capital.
+// Example: 9.9% stop × 10x leverage = 99% → blocked. 3% × 10x = 30% → allowed.
+const MAX_STOP_RISK_MULTIPLIER = 50;
+
 // ─── Open position ───────────────────────────────────────────────────────────
 
 /**
@@ -54,6 +59,17 @@ export async function openPosition(setup) {
   const m3    = parseFloat(setup.m3.price);
 
   const stop_pct = Math.abs((stop - entry) / entry) * 100;
+
+  // Risk cap: block trades where stop × leverage would wipe > 50% of allocated capital
+  const riskMultiplier = stop_pct * leverage;
+  if (riskMultiplier > MAX_STOP_RISK_MULTIPLIER) {
+    console.log(
+      `[paper-trader] SKIP ${setup.dir.toUpperCase()} ${setup.coin}/${setup.timeframe}` +
+      ` — stop too wide: ${stop_pct.toFixed(1)}% × ${leverage}x = ${riskMultiplier.toFixed(0)}%` +
+      ` > ${MAX_STOP_RISK_MULTIPLIER}% cap`
+    );
+    return null;
+  }
 
   const trade = {
     id,

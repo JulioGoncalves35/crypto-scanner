@@ -102,7 +102,12 @@ Code sections are separated by `// ───────────────
 
 **Auto-scan:** Every 15 minutes via `node-cron`. Scans all 39 default coins in "both" mode (all TFs). Skips coins with an active trade. Applies MTF confluence identically to the frontend.
 
-**Paper trading:** Opens positions when `score >= min_score` AND `active_positions < max_positions` AND `current_capital >= alloc_pct%`. Default: 2% per trade, max 10 positions.
+**Paper trading:** Opens positions when `score >= min_score` AND `active_positions < max_positions` AND `current_capital >= alloc_pct%`. Default: 2% per trade, max 10 positions, `min_score = 85`.
+
+**Three backend filters applied before opening any position:**
+1. **Filtro de score mínimo:** `score >= min_score` (default 85 — análise de dados mostrou WR=0% para score 70-79 e WR=9% para 80-84).
+2. **Filtro de tendência macro (BTC EMA200 4h):** `fetchMacroBtcTrend()` compara o preço atual do BTC com sua EMA200 no 4h. Se BTC < EMA200 → macro `'bear'` → bloqueia LONGs. Se BTC > EMA200 → macro `'bull'` → bloqueia SHORTs. Retorna `null` em caso de falha (fail-open: permite todos os setups quando dados insuficientes).
+3. **Cap de risco por trade (`MAX_STOP_RISK_MULTIPLIER = 50`):** Rejeita o trade se `stop_pct × leverage > 50`. Garante que nenhum stop único possa consumir mais de 50% do capital alocado naquela posição. Exemplo: stop de 9.9% com 10x alavancagem = 99% > 50 → bloqueado.
 
 **Exit strategy (33/33/34):** Closes 33% at M1 (moves stop to entry), 33% at M2, 34% at M3. Also handles `expired` (horizon exhausted) and `stopped_at_entry` (stop hit after M1 at breakeven).
 
@@ -444,3 +449,7 @@ git push -u origin <branch>
 - **Alavancagem campo numérico livre:** O seletor de alavancagem no frontend é um `<input type="number">` com presets rápidos (5x/10x/20x/25x/50x). A função `setLeverage(v)` faz `Math.max(1, Math.min(125, parseInt(v)||10))` — o backend também aceita qualquer valor inteiro via `/api/account/setup`. Não há mais enum de valores fixos.
 - **Nível de confiança (NV1/NV2/NV3) — só exibição:** O badge NV1/NV2/NV3 nos cards é puramente visual (score 60–72 → NV1 · 73–84 → NV2 · 85+ → NV3). Não afeta scoring nem filtros — é só uma dica de tamanho de posição para o trader.
 - **isWeekendWarning(tf):** Retorna true somente para TFs escalp (5m/15m/30m/1h) quando o horário local é sexta > 18h BRT, sábado ou domingo. TFs swing (4h/1D) não disparam o badge de fim de semana.
+- **Filtro macro BTC é fail-open:** `fetchMacroBtcTrend()` em `scanner.js` retorna `null` se a busca de candles falhar ou houver menos de 200 candles (ex: API indisponível). Quando `null`, o filtro é ignorado e todos os setups passam — isso é intencional para não paralisar o scanner em caso de instabilidade de rede.
+- **Cap de risco só bloqueia na abertura:** O `MAX_STOP_RISK_MULTIPLIER = 50` em `paper-trader.js` avalia o stop no momento da abertura do trade. Não interfere em trades já abertos. Se o usuário alterar a alavancagem via API após trades abertos, o cap não retroage.
+- **min_score padrão = 85 (migração automática):** `db.js` inclui uma migração que atualiza contas existentes com `min_score = 70` para 85 na inicialização do servidor. Contas configuradas manualmente para outro valor (ex: 80) **não são tocadas** (a migração só dispara exatamente em `70`).
+- **Teste de filtros de scan:** `tests/scanner-filters.test.js` cobre as fórmulas puras do cap de risco e da detecção de tendência macro via EMA200. Não testa integração com banco (requer servidor ativo).

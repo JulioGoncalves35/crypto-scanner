@@ -10,6 +10,7 @@ import {
   applyMTFScoring,
   fetchWithFallback,
   fetchCandles,
+  calcEMA,
 } from '../painel-core.js';
 
 import {
@@ -38,6 +39,33 @@ const DEFAULT_COINS = [
   'CRV','LDO','GMX','PENDLE',
   'WIF','1000PEPE','JTO','PYTH','STRK',
 ];
+
+// ─── Macro trend filter ───────────────────────────────────────────────────────
+
+/**
+ * Determines the macro market trend by comparing BTC's current price to its
+ * 4h EMA200. Returns 'bull', 'bear', or null (fail-open when data unavailable).
+ *
+ * Used to block counter-trend trades:
+ *   - LONG setups are skipped when macro is 'bear'
+ *   - SHORT setups are skipped when macro is 'bull'
+ */
+async function fetchMacroBtcTrend() {
+  try {
+    const candles = await fetchCandles('BTCUSDT', '4h', null);
+    if (!candles || candles.length < 200) return null; // fail-open: insufficient data
+    const closes = candles.map(c => c.close);
+    const ema200 = calcEMA(closes, 200);
+    const currentEma = ema200[ema200.length - 1];
+    const currentPrice = closes[closes.length - 1];
+    const trend = currentPrice > currentEma ? 'bull' : 'bear';
+    console.log(`[scanner] macro BTC trend: ${trend} (price=${currentPrice.toFixed(0)}, EMA200=${currentEma.toFixed(0)})`);
+    return trend;
+  } catch (_) {
+    console.warn('[scanner] macro trend fetch failed — skipping direction filter');
+    return null; // fail-open: allow all directions if unable to determine
+  }
+}
 
 // ─── Auxiliary fetches (same as runRealAnalysis in painel.html) ──────────────
 
@@ -89,6 +117,7 @@ export async function runScan() {
   const tfs = TIMEFRAMES_BY_MODE.both; // ['5m','15m','30m','1h','4h','1D']
 
   const fg = await fetchFearGreed();
+  const macroTrend = await fetchMacroBtcTrend();
 
   let opportunities = 0;
   let skippedActive = 0;
@@ -150,6 +179,16 @@ export async function runScan() {
     for (const setup of dedupedSetups) {
       // Re-check score after MTF adjustments
       if (setup.score < parseInt(min_score)) continue;
+
+      // Macro trend filter: skip trades that go counter to BTC's 4h EMA200 trend
+      if (macroTrend === 'bear' && setup.dir === 'buy') {
+        console.log(`[scanner] SKIP ${symbol} LONG — macro BTC bearish (price < EMA200 4h)`);
+        continue;
+      }
+      if (macroTrend === 'bull' && setup.dir === 'sell') {
+        console.log(`[scanner] SKIP ${symbol} SHORT — macro BTC bullish (price > EMA200 4h)`);
+        continue;
+      }
 
       try {
         const trade = await openPosition(setup);

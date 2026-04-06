@@ -55,7 +55,7 @@ function initSchema() {
       current_capital REAL NOT NULL DEFAULT 1000,
       alloc_pct REAL NOT NULL DEFAULT 2,
       max_positions INTEGER NOT NULL DEFAULT 10,
-      min_score INTEGER NOT NULL DEFAULT 70,
+      min_score INTEGER NOT NULL DEFAULT 85,
       leverage INTEGER NOT NULL DEFAULT 10,
       updated_at TEXT NOT NULL
     );
@@ -78,6 +78,15 @@ function initSchema() {
     const acc = db.prepare('SELECT max_positions FROM paper_account WHERE id = 1').get();
     if (acc && acc.max_positions === 5) {
       db.prepare('UPDATE paper_account SET max_positions = 10 WHERE id = 1').run();
+    }
+  } catch (_) {}
+
+  // Migration: bump min_score from 70 to 85 for existing accounts still on old default
+  try {
+    const acc = db.prepare('SELECT min_score FROM paper_account WHERE id = 1').get();
+    if (acc && acc.min_score === 70) {
+      db.prepare('UPDATE paper_account SET min_score = 85 WHERE id = 1').run();
+      console.log('[db] migrated min_score 70 → 85');
     }
   } catch (_) {}
 
