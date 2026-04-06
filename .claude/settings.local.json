@@ -23,7 +23,8 @@
       "Bash(git commit:*)",
       "Bash(node:*)",
       "Bash(ls backend/*.db)",
-      "Bash(ls data/*.db)"
+      "Bash(ls data/*.db)",
+      "Bash(python3 -c ':*)"
     ]
   }
 }
