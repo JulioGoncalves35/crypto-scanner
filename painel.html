@@ -783,10 +783,13 @@ main { padding: 20px 14px 60px; }
             style="font-family:var(--mono);font-size:12px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);width:100%">
         </div>
       </div>
-      <div style="margin-top:14px;display:flex;gap:10px">
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
         <button onclick="bkSaveConfig()" style="font-family:var(--mono);font-size:11px;padding:7px 18px;border-radius:8px;cursor:pointer;border:none;background:var(--accent);color:#000;font-weight:700">Salvar</button>
         <button onclick="document.getElementById('bkConfigPanel').style.display='none'" style="font-family:var(--mono);font-size:11px;padding:7px 14px;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted)">Cancelar</button>
         <span id="bkConfigMsg" style="font-family:var(--mono);font-size:10px;color:var(--accent);display:none;align-self:center"></span>
+        <div style="flex:1"></div>
+        <button onclick="bkResetCapital()" style="font-family:var(--mono);font-size:10px;padding:6px 13px;border-radius:8px;cursor:pointer;border:1px solid var(--warn);background:transparent;color:var(--warn)">Zerar Capital</button>
+        <button onclick="bkResetFull()" style="font-family:var(--mono);font-size:10px;padding:6px 13px;border-radius:8px;cursor:pointer;border:1px solid #c0392b;background:transparent;color:#c0392b">Reset Total</button>
       </div>
     </div>
 
@@ -4706,6 +4709,37 @@ async function bkSaveConfig() {
     const msg = document.getElementById('bkConfigMsg');
     msg.textContent = '✓ Salvo'; msg.style.display = 'inline';
     setTimeout(() => { msg.style.display = 'none'; document.getElementById('bkConfigPanel').style.display = 'none'; }, 1500);
+  } catch(_) {}
+}
+
+async function bkResetCapital() {
+  if (!confirm('Zerar o capital atual de volta ao capital inicial?\n\nOs trades do histórico serão mantidos.')) return;
+  try {
+    const r = await fetch(BACKEND_URL + '/api/account/reset', {
+      method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ mode: 'capital' }),
+    });
+    const acc = await r.json();
+    _bkRenderStats(acc);
+    const msg = document.getElementById('bkConfigMsg');
+    msg.textContent = '✓ Capital zerado'; msg.style.display = 'inline';
+    setTimeout(() => { msg.style.display = 'none'; document.getElementById('bkConfigPanel').style.display = 'none'; }, 2000);
+    bkRefresh();
+  } catch(_) {}
+}
+
+async function bkResetFull() {
+  if (!confirm('RESET TOTAL: apagar todos os trades e zerar o capital?\n\nEssa ação não pode ser desfeita.')) return;
+  if (!confirm('Tem certeza? Todos os trades do histórico serão deletados permanentemente.')) return;
+  try {
+    const r = await fetch(BACKEND_URL + '/api/account/reset', {
+      method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ mode: 'full' }),
+    });
+    const acc = await r.json();
+    _bkRenderStats(acc);
+    const msg = document.getElementById('bkConfigMsg');
+    msg.textContent = '✓ Reset completo'; msg.style.display = 'inline';
+    setTimeout(() => { msg.style.display = 'none'; document.getElementById('bkConfigPanel').style.display = 'none'; }, 2000);
+    bkRefresh();
   } catch(_) {}
 }
 

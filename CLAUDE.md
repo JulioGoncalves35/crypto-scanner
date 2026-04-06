@@ -120,7 +120,8 @@ Code sections are separated by `// ───────────────
 **REST API endpoints:**
 - `GET /api/health` — server status
 - `GET /api/account` — capital + stats
-- `POST /api/account/setup` — configure account
+- `POST /api/account/setup` — update account settings (alloc_pct, max_positions, min_score, leverage, initial_capital) **without touching current_capital**
+- `POST /api/account/reset` — reset account; body `{ mode: 'capital' }` zeroes current_capital back to initial_capital (keeps trade history); `{ mode: 'full' }` also deletes all trades and scan_log
 - `GET /api/trades`, `/api/trades/active` — trade list
 - `POST /api/trades/:id/close` — close active trade manually at current Bybit price
 - `POST /api/scan/manual` — trigger immediate scan
@@ -453,3 +454,5 @@ git push -u origin <branch>
 - **Cap de risco só bloqueia na abertura:** O `MAX_STOP_RISK_MULTIPLIER = 50` em `paper-trader.js` avalia o stop no momento da abertura do trade. Não interfere em trades já abertos. Se o usuário alterar a alavancagem via API após trades abertos, o cap não retroage.
 - **min_score padrão = 85 (migração automática):** `db.js` inclui uma migração que atualiza contas existentes com `min_score = 70` para 85 na inicialização do servidor. Contas configuradas manualmente para outro valor (ex: 80) **não são tocadas** (a migração só dispara exatamente em `70`).
 - **Teste de filtros de scan:** `tests/scanner-filters.test.js` cobre as fórmulas puras do cap de risco e da detecção de tendência macro via EMA200. Não testa integração com banco (requer servidor ativo).
+- **`setupAccount` não altera `current_capital`:** A função `setupAccount` em `db.js` atualiza apenas as configurações da conta (initial_capital, alloc_pct, max_positions, min_score, leverage) — nunca sobrescreve `current_capital`. Isso evita que salvar configurações apague o saldo acumulado pelos trades. Para zerar o capital, use `resetAccount(full=false)` (mantém histórico) ou `resetAccount(full=true)` (apaga trades e scan_log). O frontend expõe esses dois modos via botões "Zerar Capital" e "Reset Total" no painel de configurações, com confirmação dupla para o reset total.
+- **Fórmula de recuperação do capital:** Se `current_capital` for corrompido/resetado acidentalmente, o valor correto é `initial_capital + total_pnl_closed - capital_in_use`, onde `total_pnl` e `capital_in_use` são obtidos via `GET /api/account`.

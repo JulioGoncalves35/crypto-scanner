@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getAccount, setupAccount, getStats, getTrades } from '../db.js';
+import { getAccount, setupAccount, resetAccount, getStats, getTrades } from '../db.js';
 
 const router = Router();
 
@@ -43,6 +43,17 @@ router.post('/setup', (req, res) => {
   if (max_positions < 1) return res.status(400).json({ error: 'max_positions must be >= 1' });
 
   const account = setupAccount({ initial_capital, alloc_pct, max_positions, min_score, leverage });
+  res.json(account);
+});
+
+// POST /api/account/reset — reset capital and optionally all trades
+// Body: { mode: 'capital' | 'full' }
+router.post('/reset', (req, res) => {
+  const { mode } = req.body;
+  if (mode !== 'capital' && mode !== 'full') {
+    return res.status(400).json({ error: 'mode must be "capital" or "full"' });
+  }
+  const account = resetAccount(mode === 'full');
   res.json(account);
 });
 

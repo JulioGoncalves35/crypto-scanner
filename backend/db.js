@@ -114,12 +114,26 @@ export function updateAccount(fields) {
 }
 
 export function setupAccount({ initial_capital, alloc_pct, max_positions, min_score, leverage }) {
+  // Only updates settings — does NOT touch current_capital to avoid wiping accumulated P&L.
   getDb().prepare(`
     UPDATE paper_account
-    SET initial_capital = ?, current_capital = ?, alloc_pct = ?,
+    SET initial_capital = ?, alloc_pct = ?,
         max_positions = ?, min_score = ?, leverage = ?, updated_at = ?
     WHERE id = 1
-  `).run(initial_capital, initial_capital, alloc_pct, max_positions, min_score, leverage, new Date().toISOString());
+  `).run(initial_capital, alloc_pct, max_positions, min_score, leverage, new Date().toISOString());
+  return getAccount();
+}
+
+// Reset capital to initial_capital. If full=true, also deletes all trades.
+export function resetAccount(full = false) {
+  const acc = getAccount();
+  getDb().prepare(
+    `UPDATE paper_account SET current_capital = ?, updated_at = ? WHERE id = 1`
+  ).run(acc.initial_capital, new Date().toISOString());
+  if (full) {
+    getDb().prepare('DELETE FROM trades').run();
+    getDb().prepare('DELETE FROM scan_log').run();
+  }
   return getAccount();
 }
 
