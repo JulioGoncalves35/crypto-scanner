@@ -31,6 +31,42 @@ async function fetchCurrentPrice(coin) {
   return null;
 }
 
+// Fetches 1m klines covering the window since `sinceMs` and aggregates the
+// lowest low / highest high across them. This catches intra-bar wicks that
+// the per-5-min ticker poll misses (e.g. a stop hit between two polls).
+// Returns { lastPrice, lowSinceCheck, highSinceCheck } or null on failure.
+export async function fetchRecentPriceWindow(coin, sinceMs) {
+  try {
+    const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${coin}&interval=1&limit=20`;
+    const j = await fetchWithFallback(url, null);
+    if (j?.retCode !== 0 || !j.result?.list?.length) return null;
+
+    // Bybit returns newest first; reverse to oldest-first.
+    const candles = j.result.list.slice().reverse().map(k => ({
+      time:  parseInt(k[0]),
+      high:  parseFloat(k[2]),
+      low:   parseFloat(k[3]),
+      close: parseFloat(k[4]),
+    }));
+
+    // Keep candles whose 1-minute period overlaps [sinceMs, now].
+    // A candle starting at `time` covers [time, time + 60000).
+    const relevant = candles.filter(c => c.time + 60000 >= sinceMs);
+    if (!relevant.length) return null;
+
+    let lowSinceCheck  =  Infinity;
+    let highSinceCheck = -Infinity;
+    for (const c of relevant) {
+      if (c.low  < lowSinceCheck)  lowSinceCheck  = c.low;
+      if (c.high > highSinceCheck) highSinceCheck = c.high;
+    }
+    const lastPrice = relevant[relevant.length - 1].close;
+    return { lastPrice, lowSinceCheck, highSinceCheck };
+  } catch (_) {
+    return null;
+  }
+}
+
 // ─── Check expiry ─────────────────────────────────────────────────────────────
 
 function isExpired(trade) {
@@ -63,17 +99,43 @@ export async function checkActiveTrades() {
         continue;
       }
 
-      const price = await fetchCurrentPrice(trade.coin);
-      if (!price) {
-        console.warn(`[price-checker] could not fetch price for ${trade.coin}`);
+      // Use 1m kline wicks since the last poll to catch intra-bar stop/target
+      // hits the 5-min ticker poll would miss. Falls back to ticker lastPrice
+      // if klines are unavailable.
+      const sinceMs = trade.last_checked_at
+        ? new Date(trade.last_checked_at).getTime()
+        : new Date(trade.found_at).getTime();
+      const window = await fetchRecentPriceWindow(trade.coin, sinceMs);
+
+      if (!window) {
+        const price = await fetchCurrentPrice(trade.coin);
+        if (!price) {
+          console.warn(`[price-checker] could not fetch price for ${trade.coin}`);
+          continue;
+        }
+        updateTrade(trade.id, { last_checked_at: new Date().toISOString() });
+        const result = processPriceUpdate(trade, price);
+        if (result) console.log(`[price-checker] ${trade.coin} → ${result.status} @ $${price}`);
         continue;
       }
 
       updateTrade(trade.id, { last_checked_at: new Date().toISOString() });
 
-      const result = processPriceUpdate(trade, price);
-      if (result) {
-        console.log(`[price-checker] ${trade.coin} → ${result.status} @ $${price}`);
+      const isBuy = trade.direction === 'buy';
+      const adverseWick   = isBuy ? window.lowSinceCheck  : window.highSinceCheck;
+      const favorableWick = isBuy ? window.highSinceCheck : window.lowSinceCheck;
+
+      // Conservative ordering: when both sides were touched in the same window
+      // we can't know intra-bar order, so check stop first (worst-case for trader).
+      const stopResult = processPriceUpdate(trade, adverseWick);
+      if (stopResult && (stopResult.status === 'stop' || stopResult.status === 'stopped_at_entry')) {
+        console.log(`[price-checker] ${trade.coin} → ${stopResult.status} via wick @ $${adverseWick} (lastPrice=$${window.lastPrice})`);
+        continue;
+      }
+
+      const targetResult = processPriceUpdate(trade, favorableWick);
+      if (targetResult) {
+        console.log(`[price-checker] ${trade.coin} → ${targetResult.status} via wick @ $${favorableWick} (lastPrice=$${window.lastPrice})`);
       }
     } catch (err) {
       console.error(`[price-checker] error checking ${trade.coin}: ${err.message}`);
