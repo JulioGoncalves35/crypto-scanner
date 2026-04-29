@@ -1,0 +1,3330 @@
+{
+  "nodes": [
+    {
+      "id": "g0",
+      "type": "group",
+      "label": "Frontend Analysis Engine",
+      "x": 0,
+      "y": 0,
+      "width": 1540,
+      "height": 1520,
+      "color": "1"
+    },
+    {
+      "id": "n_pailnelhtml_state",
+      "type": "file",
+      "file": "graphify/obsidian/Application State Object.md",
+      "x": 20,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_concept_corsProxyChain",
+      "type": "file",
+      "file": "graphify/obsidian/CORS Proxy Fallback Chain.md",
+      "x": 220,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_concept_confluenceMultiCategory",
+      "type": "file",
+      "file": "graphify/obsidian/Conflu\u00c3\u00aancia Multi-Categoria Bonus.md",
+      "x": 420,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_ext_feargreedapi",
+      "type": "file",
+      "file": "graphify/obsidian/Fear & Greed Index API (alternative.me).md",
+      "x": 20,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_concept_NVbadge",
+      "type": "file",
+      "file": "graphify/obsidian/NV1NV2NV3 Confidence Level Badge.md",
+      "x": 220,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_calcTechIndicators",
+      "type": "file",
+      "file": "graphify/obsidian/_calcTechIndicators()_1.md",
+      "x": 420,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_computeScore",
+      "type": "file",
+      "file": "graphify/obsidian/_computeScore()_1.md",
+      "x": 20,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_analyzeCandles",
+      "type": "file",
+      "file": "graphify/obsidian/analyzeCandles()_1.md",
+      "x": 220,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_calcADX",
+      "type": "file",
+      "file": "graphify/obsidian/calcADX()_1.md",
+      "x": 420,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_calcATR",
+      "type": "file",
+      "file": "graphify/obsidian/calcATR()_1.md",
+      "x": 20,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_calcAnchoredVWAP",
+      "type": "file",
+      "file": "graphify/obsidian/calcAnchoredVWAP()_1.md",
+      "x": 220,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_calcBollinger",
+      "type": "file",
+      "file": "graphify/obsidian/calcBollinger() \u00e2\u20ac\u201d Bollinger Bands.md",
+      "x": 420,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_calcCVD",
+      "type": "file",
+      "file": "graphify/obsidian/calcCVD() \u00e2\u20ac\u201d Cumulative Volume Delta.md",
+      "x": 20,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_calcEMA",
+      "type": "file",
+      "file": "graphify/obsidian/calcEMA()_1.md",
+      "x": 220,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_calcIchimoku",
+      "type": "file",
+      "file": "graphify/obsidian/calcIchimoku()_1.md",
+      "x": 420,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_calcMACD",
+      "type": "file",
+      "file": "graphify/obsidian/calcMACD()_1.md",
+      "x": 20,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_calcMetas",
+      "type": "file",
+      "file": "graphify/obsidian/calcMetas()_1.md",
+      "x": 220,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_calcOBV",
+      "type": "file",
+      "file": "graphify/obsidian/calcOBVTrend()_1.md",
+      "x": 420,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_calcRSI",
+      "type": "file",
+      "file": "graphify/obsidian/calcRSI()_1.md",
+      "x": 20,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_calcSqueezeMomentum",
+      "type": "file",
+      "file": "graphify/obsidian/calcSqueezeMomentum()_1.md",
+      "x": 220,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_calcStochRSI",
+      "type": "file",
+      "file": "graphify/obsidian/calcStochRSI()_1.md",
+      "x": 420,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_calcVWAP",
+      "type": "file",
+      "file": "graphify/obsidian/calcVWAP()_1.md",
+      "x": 20,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_calcVolumeProfile",
+      "type": "file",
+      "file": "graphify/obsidian/calcVolumeProfile()_1.md",
+      "x": 220,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_detectBOSCHoCH",
+      "type": "file",
+      "file": "graphify/obsidian/detectBOSCHoCH()_1.md",
+      "x": 420,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_detectCandlePatterns",
+      "type": "file",
+      "file": "graphify/obsidian/detectCandlePatterns()_1.md",
+      "x": 20,
+      "y": 720,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_detectDivergences",
+      "type": "file",
+      "file": "graphify/obsidian/detectDivergences()_1.md",
+      "x": 220,
+      "y": 720,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_detectDoubleTopBottom",
+      "type": "file",
+      "file": "graphify/obsidian/detectDoubleTopBottom()_1.md",
+      "x": 420,
+      "y": 720,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_detectEMACross",
+      "type": "file",
+      "file": "graphify/obsidian/detectEMACross()_1.md",
+      "x": 20,
+      "y": 800,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_detectMarketStructure",
+      "type": "file",
+      "file": "graphify/obsidian/detectMarketStructure()_1.md",
+      "x": 220,
+      "y": 800,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_detectOrderBlocks",
+      "type": "file",
+      "file": "graphify/obsidian/detectOrderBlocks()_1.md",
+      "x": 420,
+      "y": 800,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_detectTrendlineBreak",
+      "type": "file",
+      "file": "graphify/obsidian/detectTrendlineBreak()_1.md",
+      "x": 20,
+      "y": 880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_detectTriangle",
+      "type": "file",
+      "file": "graphify/obsidian/detectTriangle()_1.md",
+      "x": 220,
+      "y": 880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_fetchFearGreed",
+      "type": "file",
+      "file": "graphify/obsidian/fetchFearGreed()_1.md",
+      "x": 420,
+      "y": 880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_fetchJSON",
+      "type": "file",
+      "file": "graphify/obsidian/fetchJSON()_1.md",
+      "x": 20,
+      "y": 960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_fetchWithFallback",
+      "type": "file",
+      "file": "graphify/obsidian/fetchWithFallback()_1.md",
+      "x": 220,
+      "y": 960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_getFibSet",
+      "type": "file",
+      "file": "graphify/obsidian/getFibSet()_1.md",
+      "x": 420,
+      "y": 960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_renderCards",
+      "type": "file",
+      "file": "graphify/obsidian/renderCards().md",
+      "x": 20,
+      "y": 1040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_renderGroupCard",
+      "type": "file",
+      "file": "graphify/obsidian/renderGroupCard().md",
+      "x": 220,
+      "y": 1040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_runRealAnalysis",
+      "type": "file",
+      "file": "graphify/obsidian/runRealAnalysis().md",
+      "x": 420,
+      "y": 1040,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_setLeverage",
+      "type": "file",
+      "file": "graphify/obsidian/setLeverage().md",
+      "x": 20,
+      "y": 1120,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g1",
+      "type": "group",
+      "label": "Core Analysis Functions",
+      "x": 1620,
+      "y": 0,
+      "width": 1320,
+      "height": 1320,
+      "color": "2"
+    },
+    {
+      "id": "n_painel_core_calctechindicators",
+      "type": "file",
+      "file": "graphify/obsidian/_calcTechIndicators().md",
+      "x": 1640,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_computescore",
+      "type": "file",
+      "file": "graphify/obsidian/_computeScore().md",
+      "x": 1840,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_analyzecandles",
+      "type": "file",
+      "file": "graphify/obsidian/analyzeCandles().md",
+      "x": 2040,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_avgvol",
+      "type": "file",
+      "file": "graphify/obsidian/avgVol().md",
+      "x": 1640,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_calcadx",
+      "type": "file",
+      "file": "graphify/obsidian/calcADX().md",
+      "x": 1840,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_calcatr",
+      "type": "file",
+      "file": "graphify/obsidian/calcATR().md",
+      "x": 2040,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_calcanchoredvwap",
+      "type": "file",
+      "file": "graphify/obsidian/calcAnchoredVWAP().md",
+      "x": 1640,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_calcbollinger",
+      "type": "file",
+      "file": "graphify/obsidian/calcBollinger().md",
+      "x": 1840,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_calccvd",
+      "type": "file",
+      "file": "graphify/obsidian/calcCVD().md",
+      "x": 2040,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_calcema",
+      "type": "file",
+      "file": "graphify/obsidian/calcEMA().md",
+      "x": 1640,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_calcichimoku",
+      "type": "file",
+      "file": "graphify/obsidian/calcIchimoku().md",
+      "x": 1840,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_calcliqprice",
+      "type": "file",
+      "file": "graphify/obsidian/calcLiqPrice().md",
+      "x": 2040,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_calcmacd",
+      "type": "file",
+      "file": "graphify/obsidian/calcMACD().md",
+      "x": 1640,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_calcmetas",
+      "type": "file",
+      "file": "graphify/obsidian/calcMetas().md",
+      "x": 1840,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_calcobvtrend",
+      "type": "file",
+      "file": "graphify/obsidian/calcOBVTrend().md",
+      "x": 2040,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_calcrsi",
+      "type": "file",
+      "file": "graphify/obsidian/calcRSI().md",
+      "x": 1640,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_calcsqueezemomentum",
+      "type": "file",
+      "file": "graphify/obsidian/calcSqueezeMomentum().md",
+      "x": 1840,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_calcstochrsi",
+      "type": "file",
+      "file": "graphify/obsidian/calcStochRSI().md",
+      "x": 2040,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_calcvwap",
+      "type": "file",
+      "file": "graphify/obsidian/calcVWAP().md",
+      "x": 1640,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_calcvolumeprofile",
+      "type": "file",
+      "file": "graphify/obsidian/calcVolumeProfile().md",
+      "x": 1840,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_capreturn",
+      "type": "file",
+      "file": "graphify/obsidian/capReturn().md",
+      "x": 2040,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_computejournalstats",
+      "type": "file",
+      "file": "graphify/obsidian/computeJournalStats().md",
+      "x": 1640,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_detectboschoch",
+      "type": "file",
+      "file": "graphify/obsidian/detectBOSCHoCH().md",
+      "x": 1840,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_detectcandlepatterns",
+      "type": "file",
+      "file": "graphify/obsidian/detectCandlePatterns().md",
+      "x": 2040,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_detectdivergences",
+      "type": "file",
+      "file": "graphify/obsidian/detectDivergences().md",
+      "x": 1640,
+      "y": 720,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_detectdoubletopbottom",
+      "type": "file",
+      "file": "graphify/obsidian/detectDoubleTopBottom().md",
+      "x": 1840,
+      "y": 720,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_detectemacross",
+      "type": "file",
+      "file": "graphify/obsidian/detectEMACross().md",
+      "x": 2040,
+      "y": 720,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_detectmarketstructure",
+      "type": "file",
+      "file": "graphify/obsidian/detectMarketStructure().md",
+      "x": 1640,
+      "y": 800,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_detectorderblocks",
+      "type": "file",
+      "file": "graphify/obsidian/detectOrderBlocks().md",
+      "x": 1840,
+      "y": 800,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_detecttrendlinebreak",
+      "type": "file",
+      "file": "graphify/obsidian/detectTrendlineBreak().md",
+      "x": 2040,
+      "y": 800,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_detecttriangle",
+      "type": "file",
+      "file": "graphify/obsidian/detectTriangle().md",
+      "x": 1640,
+      "y": 880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_findlevels",
+      "type": "file",
+      "file": "graphify/obsidian/findLevels().md",
+      "x": 1840,
+      "y": 880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_getfibset",
+      "type": "file",
+      "file": "graphify/obsidian/getFibSet().md",
+      "x": 2040,
+      "y": 880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_getmtfweight",
+      "type": "file",
+      "file": "graphify/obsidian/getMTFWeight().md",
+      "x": 1640,
+      "y": 960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_isduplicateentry",
+      "type": "file",
+      "file": "graphify/obsidian/isDuplicateEntry().md",
+      "x": 1840,
+      "y": 960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_js",
+      "type": "file",
+      "file": "graphify/obsidian/painel-core.js.md",
+      "x": 2040,
+      "y": 960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g2",
+      "type": "group",
+      "label": "Backend Trading System",
+      "x": 3020,
+      "y": 0,
+      "width": 1320,
+      "height": 1120,
+      "color": "3"
+    },
+    {
+      "id": "n_paper_trader_alreadyclosedfraction",
+      "type": "file",
+      "file": "graphify/obsidian/_alreadyClosedFraction().md",
+      "x": 3040,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_price_checker_alreadyclosedfraction",
+      "type": "file",
+      "file": "graphify/obsidian/_alreadyClosedFraction()_1.md",
+      "x": 3240,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_paper_trader_closepartial",
+      "type": "file",
+      "file": "graphify/obsidian/_closePartial().md",
+      "x": 3440,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_paper_trader_stopstatus",
+      "type": "file",
+      "file": "graphify/obsidian/_stopStatus().md",
+      "x": 3040,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_price_checker_checkactivetrades",
+      "type": "file",
+      "file": "graphify/obsidian/checkActiveTrades().md",
+      "x": 3240,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_paper_trader_closemanualat",
+      "type": "file",
+      "file": "graphify/obsidian/closeManualAt().md",
+      "x": 3440,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_db_countactivepositions",
+      "type": "file",
+      "file": "graphify/obsidian/countActivePositions().md",
+      "x": 3040,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_db_js",
+      "type": "file",
+      "file": "graphify/obsidian/db.js.md",
+      "x": 3240,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_price_checker_expiretrade",
+      "type": "file",
+      "file": "graphify/obsidian/expireTrade().md",
+      "x": 3440,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_price_checker_fetchcurrentprice",
+      "type": "file",
+      "file": "graphify/obsidian/fetchCurrentPrice().md",
+      "x": 3040,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_db_getaccount",
+      "type": "file",
+      "file": "graphify/obsidian/getAccount().md",
+      "x": 3240,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_db_getactivecoins",
+      "type": "file",
+      "file": "graphify/obsidian/getActiveCoins().md",
+      "x": 3440,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_db_getactivetrades",
+      "type": "file",
+      "file": "graphify/obsidian/getActiveTrades().md",
+      "x": 3040,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_db_getdb",
+      "type": "file",
+      "file": "graphify/obsidian/getDb().md",
+      "x": 3240,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_db_getstats",
+      "type": "file",
+      "file": "graphify/obsidian/getStats().md",
+      "x": 3440,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_db_gettrade",
+      "type": "file",
+      "file": "graphify/obsidian/getTrade().md",
+      "x": 3040,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_db_gettrades",
+      "type": "file",
+      "file": "graphify/obsidian/getTrades().md",
+      "x": 3240,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_db_initschema",
+      "type": "file",
+      "file": "graphify/obsidian/initSchema().md",
+      "x": 3440,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_db_insertscanlog",
+      "type": "file",
+      "file": "graphify/obsidian/insertScanLog().md",
+      "x": 3040,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_db_inserttrade",
+      "type": "file",
+      "file": "graphify/obsidian/insertTrade().md",
+      "x": 3240,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_price_checker_isexpired",
+      "type": "file",
+      "file": "graphify/obsidian/isExpired().md",
+      "x": 3440,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_paper_trader_openposition",
+      "type": "file",
+      "file": "graphify/obsidian/openPosition().md",
+      "x": 3040,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_paper_trader_js",
+      "type": "file",
+      "file": "graphify/obsidian/paper-trader.js.md",
+      "x": 3240,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_price_checker_js",
+      "type": "file",
+      "file": "graphify/obsidian/price-checker.js.md",
+      "x": 3440,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_paper_trader_processpriceupdate",
+      "type": "file",
+      "file": "graphify/obsidian/processPriceUpdate().md",
+      "x": 3040,
+      "y": 720,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_db_resetaccount",
+      "type": "file",
+      "file": "graphify/obsidian/resetAccount().md",
+      "x": 3240,
+      "y": 720,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_db_setupaccount",
+      "type": "file",
+      "file": "graphify/obsidian/setupAccount().md",
+      "x": 3440,
+      "y": 720,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_db_updateaccount",
+      "type": "file",
+      "file": "graphify/obsidian/updateAccount().md",
+      "x": 3040,
+      "y": 800,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_db_updatetrade",
+      "type": "file",
+      "file": "graphify/obsidian/updateTrade().md",
+      "x": 3240,
+      "y": 800,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g3",
+      "type": "group",
+      "label": "Account & Database Layer",
+      "x": 4420,
+      "y": 0,
+      "width": 1100,
+      "height": 1020,
+      "color": "4"
+    },
+    {
+      "id": "n_docs_agentcouncil",
+      "type": "file",
+      "file": "graphify/obsidian/Agent Council Next Steps.md",
+      "x": 4440,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_concept_backtest_removed",
+      "type": "file",
+      "file": "graphify/obsidian/Backtest System (removed, replaced by live history).md",
+      "x": 4640,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_claudemd_cryptoscanner",
+      "type": "file",
+      "file": "graphify/obsidian/Crypto Scanner Project Documentation.md",
+      "x": 4840,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_concept_maxStopRisk",
+      "type": "file",
+      "file": "graphify/obsidian/MAX_STOP_RISK_MULTIPLIER=50 Cap.md",
+      "x": 4440,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_mtfScoring",
+      "type": "file",
+      "file": "graphify/obsidian/MTF Scoring Logic (inline in runRealAnalysis).md",
+      "x": 4640,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_concept_macroFilter",
+      "type": "file",
+      "file": "graphify/obsidian/Macro BTC EMA200 Filter (fail-open).md",
+      "x": 4840,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_panelcorejs_analyzeCandles",
+      "type": "file",
+      "file": "graphify/obsidian/analyzeCandles() in painel-core.js.md",
+      "x": 4440,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_panelcorejs_applyMTFScoring",
+      "type": "file",
+      "file": "graphify/obsidian/applyMTFScoring() \u00e2\u20ac\u201d exported.md",
+      "x": 4640,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_dbjs",
+      "type": "file",
+      "file": "graphify/obsidian/backenddb.js \u00e2\u20ac\u201d SQLite Database Layer.md",
+      "x": 4840,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_accountroute",
+      "type": "file",
+      "file": "graphify/obsidian/backendroutesaccount.js.md",
+      "x": 4440,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_scanroute",
+      "type": "file",
+      "file": "graphify/obsidian/backendroutesscan.js.md",
+      "x": 4640,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_tradesroute",
+      "type": "file",
+      "file": "graphify/obsidian/backendroutestrades.js.md",
+      "x": 4840,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_scannerjs",
+      "type": "file",
+      "file": "graphify/obsidian/backendscanner.js \u00e2\u20ac\u201d Auto-Scan Engine.md",
+      "x": 4440,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_serverjs",
+      "type": "file",
+      "file": "graphify/obsidian/backendserver.js \u00e2\u20ac\u201d Express Server.md",
+      "x": 4640,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_panelcorejs_calcEMA",
+      "type": "file",
+      "file": "graphify/obsidian/calcEMA() in painel-core.js.md",
+      "x": 4840,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_scannerjs_fetchMacroBtcTrend",
+      "type": "file",
+      "file": "graphify/obsidian/fetchMacroBtcTrend() \u00e2\u20ac\u201d BTC EMA200 macro filter.md",
+      "x": 4440,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_panelcorejs_fetchWithFallback",
+      "type": "file",
+      "file": "graphify/obsidian/fetchWithFallback() in painel-core.js.md",
+      "x": 4640,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_ext_lightweightcharts",
+      "type": "file",
+      "file": "graphify/obsidian/lightweight-charts 4.1.1.md",
+      "x": 4840,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_concept_minScoreBump",
+      "type": "file",
+      "file": "graphify/obsidian/min_score Bump Recommendation (80 - 88+).md",
+      "x": 4440,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_papertraderjs_openPosition",
+      "type": "file",
+      "file": "graphify/obsidian/openPosition()_1.md",
+      "x": 4640,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_panelcorejs_module",
+      "type": "file",
+      "file": "graphify/obsidian/painel-core.js \u00e2\u20ac\u201d Pure Analysis Engine.md",
+      "x": 4840,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_spa",
+      "type": "file",
+      "file": "graphify/obsidian/painel.html \u00e2\u20ac\u201d Frontend SPA.md",
+      "x": 4440,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_dbjs_resetAccount",
+      "type": "file",
+      "file": "graphify/obsidian/resetAccount()_1.md",
+      "x": 4640,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_scannerjs_runScan",
+      "type": "file",
+      "file": "graphify/obsidian/runScan()_1.md",
+      "x": 4840,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_dbjs_setupAccount",
+      "type": "file",
+      "file": "graphify/obsidian/setupAccount()_1.md",
+      "x": 4440,
+      "y": 720,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g4",
+      "type": "group",
+      "label": "Position Lifecycle & Pricing",
+      "x": 5600,
+      "y": 0,
+      "width": 880,
+      "height": 620,
+      "color": "5"
+    },
+    {
+      "id": "n_concept_agentcouncil",
+      "type": "file",
+      "file": "graphify/obsidian/Agent Council Design (Leader + 3 sub-agents).md",
+      "x": 5620,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_ext_bybitapi",
+      "type": "file",
+      "file": "graphify/obsidian/Bybit Futures API v5.md",
+      "x": 5820,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_concept_devilsAdvocate",
+      "type": "file",
+      "file": "graphify/obsidian/Devil's Advocate Sub-Agent.md",
+      "x": 6020,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_concept_exitStrategy",
+      "type": "file",
+      "file": "graphify/obsidian/Exit Strategy 333334 (M1M2M3 partial close).md",
+      "x": 5620,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_concept_inProgressCandleBug",
+      "type": "file",
+      "file": "graphify/obsidian/In-Progress Candle False Positive Bug Fix.md",
+      "x": 5820,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_concept_newsHunter",
+      "type": "file",
+      "file": "graphify/obsidian/News Hunter Sub-Agent.md",
+      "x": 6020,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_concept_patternValidator",
+      "type": "file",
+      "file": "graphify/obsidian/Pattern Validator Sub-Agent.md",
+      "x": 5620,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_concept_stopIntegrityGap",
+      "type": "file",
+      "file": "graphify/obsidian/Stop Integrity Gap \u00e2\u20ac\u201d price-checker polling vs OHLC.md",
+      "x": 5820,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_concept_TF_INTERVAL_MS",
+      "type": "file",
+      "file": "graphify/obsidian/TF_INTERVAL_MS Constant (in-progress candle drop).md",
+      "x": 6020,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_pricecheckerjs",
+      "type": "file",
+      "file": "graphify/obsidian/backendprice-checker.js \u00e2\u20ac\u201d Price Polling Cron.md",
+      "x": 5620,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_pricecheckerjs_checkActiveTrades",
+      "type": "file",
+      "file": "graphify/obsidian/checkActiveTrades()_1.md",
+      "x": 5820,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_fetchCandles",
+      "type": "file",
+      "file": "graphify/obsidian/fetchCandles()_1.md",
+      "x": 6020,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_panelcorejs_fetchCandles",
+      "type": "file",
+      "file": "graphify/obsidian/fetchCandles() in painel-core.js.md",
+      "x": 5620,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_papertraderjs_processPriceUpdate",
+      "type": "file",
+      "file": "graphify/obsidian/processPriceUpdate()_1.md",
+      "x": 5820,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g5",
+      "type": "group",
+      "label": "Scan Engine & API Fetch",
+      "x": 6560,
+      "y": 0,
+      "width": 880,
+      "height": 520,
+      "color": "6"
+    },
+    {
+      "id": "n_painel_core_applymtfscoring",
+      "type": "file",
+      "file": "graphify/obsidian/applyMTFScoring().md",
+      "x": 6580,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_fetchcandles",
+      "type": "file",
+      "file": "graphify/obsidian/fetchCandles().md",
+      "x": 6780,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_scanner_fetchfeargreed",
+      "type": "file",
+      "file": "graphify/obsidian/fetchFearGreed().md",
+      "x": 6980,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_scanner_fetchfundingrate",
+      "type": "file",
+      "file": "graphify/obsidian/fetchFundingRate().md",
+      "x": 6580,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_fetchjson",
+      "type": "file",
+      "file": "graphify/obsidian/fetchJSON().md",
+      "x": 6780,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_scanner_fetchmacrobtctrend",
+      "type": "file",
+      "file": "graphify/obsidian/fetchMacroBtcTrend().md",
+      "x": 6980,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_scanner_fetchopeninterest",
+      "type": "file",
+      "file": "graphify/obsidian/fetchOpenInterest().md",
+      "x": 6580,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_painel_core_fetchwithfallback",
+      "type": "file",
+      "file": "graphify/obsidian/fetchWithFallback().md",
+      "x": 6780,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_scanner_runscan",
+      "type": "file",
+      "file": "graphify/obsidian/runScan().md",
+      "x": 6980,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_scanner_js",
+      "type": "file",
+      "file": "graphify/obsidian/scanner.js.md",
+      "x": 6580,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g6",
+      "type": "group",
+      "label": "Test Candle Fixtures",
+      "x": 0,
+      "y": 1600,
+      "width": 660,
+      "height": 420,
+      "color": "1"
+    },
+    {
+      "id": "n_tests_fixtures_candles_js",
+      "type": "file",
+      "file": "graphify/obsidian/candles.js.md",
+      "x": 20,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_integration_test_getresult",
+      "type": "file",
+      "file": "graphify/obsidian/getResult().md",
+      "x": 220,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_integration_test_js",
+      "type": "file",
+      "file": "graphify/obsidian/integration.test.js.md",
+      "x": 420,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_candles_makedowntrendcandles",
+      "type": "file",
+      "file": "graphify/obsidian/makeDowntrendCandles().md",
+      "x": 20,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_candles_makeflatcandles",
+      "type": "file",
+      "file": "graphify/obsidian/makeFlatCandles().md",
+      "x": 220,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_candles_makepatterncandles",
+      "type": "file",
+      "file": "graphify/obsidian/makePatternCandles().md",
+      "x": 420,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_candles_maketrendingcandles",
+      "type": "file",
+      "file": "graphify/obsidian/makeTrendingCandles().md",
+      "x": 20,
+      "y": 1840,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g7",
+      "type": "group",
+      "label": "API Test Helpers",
+      "x": 1620,
+      "y": 1600,
+      "width": 660,
+      "height": 400,
+      "color": "2"
+    },
+    {
+      "id": "n_tests_api_test_js",
+      "type": "file",
+      "file": "graphify/obsidian/api.test.js.md",
+      "x": 1640,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_api_test_makebybitresponse",
+      "type": "file",
+      "file": "graphify/obsidian/makeBybitResponse().md",
+      "x": 1840,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_api_test_makefetcherror",
+      "type": "file",
+      "file": "graphify/obsidian/makeFetchError().md",
+      "x": 2040,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_api_test_makefetchnetworkerror",
+      "type": "file",
+      "file": "graphify/obsidian/makeFetchNetworkError().md",
+      "x": 1640,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_api_test_makefetchok",
+      "type": "file",
+      "file": "graphify/obsidian/makeFetchOk().md",
+      "x": 1840,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_api_test_makeklinerow",
+      "type": "file",
+      "file": "graphify/obsidian/makeKlineRow().md",
+      "x": 2040,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g8",
+      "type": "group",
+      "label": "Pattern Test Fixtures",
+      "x": 3020,
+      "y": 1600,
+      "width": 660,
+      "height": 400,
+      "color": "3"
+    },
+    {
+      "id": "n_patterns_test_candle",
+      "type": "file",
+      "file": "graphify/obsidian/candle().md",
+      "x": 3040,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_patterns_test_makebear",
+      "type": "file",
+      "file": "graphify/obsidian/makeBear().md",
+      "x": 3240,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_patterns_test_makecandles",
+      "type": "file",
+      "file": "graphify/obsidian/makeCandles().md",
+      "x": 3440,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_patterns_test_makeorderblockcandles",
+      "type": "file",
+      "file": "graphify/obsidian/makeOrderBlockCandles().md",
+      "x": 3040,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_patterns_test_js",
+      "type": "file",
+      "file": "graphify/obsidian/patterns.test.js.md",
+      "x": 3240,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_patterns_test_withcontext",
+      "type": "file",
+      "file": "graphify/obsidian/withContext().md",
+      "x": 3440,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g9",
+      "type": "group",
+      "label": "Journal & Trade Log",
+      "x": 4420,
+      "y": 1600,
+      "width": 660,
+      "height": 400,
+      "color": "4"
+    },
+    {
+      "id": "n_pailnelhtml_loadJournal",
+      "type": "file",
+      "file": "graphify/obsidian/loadJournal().md",
+      "x": 4440,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_journalStorage",
+      "type": "file",
+      "file": "graphify/obsidian/localStorage Journal (cryptoscanner_journal_v2).md",
+      "x": 4640,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_renderEntryHTML",
+      "type": "file",
+      "file": "graphify/obsidian/renderEntryHTML().md",
+      "x": 4840,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_renderJournal",
+      "type": "file",
+      "file": "graphify/obsidian/renderJournal().md",
+      "x": 4440,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_saveToJournal",
+      "type": "file",
+      "file": "graphify/obsidian/saveToJournal().md",
+      "x": 4640,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_pailnelhtml_updateResult",
+      "type": "file",
+      "file": "graphify/obsidian/updateResult().md",
+      "x": 4840,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g10",
+      "type": "group",
+      "label": "Scanner Filter Tests",
+      "x": 5600,
+      "y": 1600,
+      "width": 660,
+      "height": 400,
+      "color": "5"
+    },
+    {
+      "id": "n_scanner_filters_test_detecttrend",
+      "type": "file",
+      "file": "graphify/obsidian/detectTrend().md",
+      "x": 5620,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_scanner_filters_test_isrisktoohigh",
+      "type": "file",
+      "file": "graphify/obsidian/isRiskTooHigh().md",
+      "x": 5820,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_scanner_filters_test_maketrendingdown",
+      "type": "file",
+      "file": "graphify/obsidian/makeTrendingDown().md",
+      "x": 6020,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_scanner_filters_test_maketrendingup",
+      "type": "file",
+      "file": "graphify/obsidian/makeTrendingUp().md",
+      "x": 5620,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_scanner_filters_test_js",
+      "type": "file",
+      "file": "graphify/obsidian/scanner-filters.test.js.md",
+      "x": 5820,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g11",
+      "type": "group",
+      "label": "Trades Route",
+      "x": 6560,
+      "y": 1600,
+      "width": 600,
+      "height": 400,
+      "color": "6"
+    },
+    {
+      "id": "n_painel_core_buildjournalentry",
+      "type": "file",
+      "file": "graphify/obsidian/buildJournalEntry().md",
+      "x": 6580,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_trades_fp",
+      "type": "file",
+      "file": "graphify/obsidian/fp().md",
+      "x": 6780,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_backend_routes_trades_js",
+      "type": "file",
+      "file": "graphify/obsidian/trades.js.md",
+      "x": 6980,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g12",
+      "type": "group",
+      "label": "Indicator Tests",
+      "x": 0,
+      "y": 2100,
+      "width": 600,
+      "height": 400,
+      "color": "1"
+    },
+    {
+      "id": "n_tests_indicators_test_js",
+      "type": "file",
+      "file": "graphify/obsidian/indicators.test.js.md",
+      "x": 20,
+      "y": 2180,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_indicators_test_makeswingcandles",
+      "type": "file",
+      "file": "graphify/obsidian/makeSwingCandles().md",
+      "x": 220,
+      "y": 2180,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g13",
+      "type": "group",
+      "label": "Journal Tests",
+      "x": 1620,
+      "y": 2100,
+      "width": 600,
+      "height": 400,
+      "color": "2"
+    },
+    {
+      "id": "n_tests_journal_test_js",
+      "type": "file",
+      "file": "graphify/obsidian/journal.test.js.md",
+      "x": 1640,
+      "y": 2180,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_journal_test_makemocksetup",
+      "type": "file",
+      "file": "graphify/obsidian/makeMockSetup().md",
+      "x": 1840,
+      "y": 2180,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g14",
+      "type": "group",
+      "label": "MTF Tests",
+      "x": 3020,
+      "y": 2100,
+      "width": 600,
+      "height": 400,
+      "color": "3"
+    },
+    {
+      "id": "n_mtf_test_makesetup",
+      "type": "file",
+      "file": "graphify/obsidian/makeSetup().md",
+      "x": 3040,
+      "y": 2180,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_mtf_test_js",
+      "type": "file",
+      "file": "graphify/obsidian/mtf.test.js.md",
+      "x": 3240,
+      "y": 2180,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g15",
+      "type": "group",
+      "label": "Scoring Tests",
+      "x": 4420,
+      "y": 2100,
+      "width": 600,
+      "height": 400,
+      "color": "4"
+    },
+    {
+      "id": "n_scoring_test_makeind",
+      "type": "file",
+      "file": "graphify/obsidian/makeInd().md",
+      "x": 4440,
+      "y": 2180,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_scoring_test_js",
+      "type": "file",
+      "file": "graphify/obsidian/scoring.test.js.md",
+      "x": 4640,
+      "y": 2180,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g16",
+      "type": "group",
+      "label": "Express Server",
+      "x": 5600,
+      "y": 2100,
+      "width": 600,
+      "height": 400,
+      "color": "5"
+    },
+    {
+      "id": "n_backend_server_js",
+      "type": "file",
+      "file": "graphify/obsidian/server.js.md",
+      "x": 5620,
+      "y": 2180,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g17",
+      "type": "group",
+      "label": "Account Route",
+      "x": 6560,
+      "y": 2100,
+      "width": 600,
+      "height": 400,
+      "color": "6"
+    },
+    {
+      "id": "n_backend_routes_account_js",
+      "type": "file",
+      "file": "graphify/obsidian/account.js.md",
+      "x": 6580,
+      "y": 2180,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g18",
+      "type": "group",
+      "label": "Scan Route",
+      "x": 0,
+      "y": 2580,
+      "width": 600,
+      "height": 400,
+      "color": "1"
+    },
+    {
+      "id": "n_backend_routes_scan_js",
+      "type": "file",
+      "file": "graphify/obsidian/scan.js.md",
+      "x": 20,
+      "y": 2660,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g19",
+      "type": "group",
+      "label": "Risk Tests",
+      "x": 1620,
+      "y": 2580,
+      "width": 600,
+      "height": 400,
+      "color": "2"
+    },
+    {
+      "id": "n_tests_risk_test_js",
+      "type": "file",
+      "file": "graphify/obsidian/risk.test.js.md",
+      "x": 1640,
+      "y": 2660,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g20",
+      "type": "group",
+      "label": "deleteEntry()",
+      "x": 3020,
+      "y": 2580,
+      "width": 600,
+      "height": 400,
+      "color": "3"
+    },
+    {
+      "id": "n_pailnelhtml_deleteEntry",
+      "type": "file",
+      "file": "graphify/obsidian/deleteEntry().md",
+      "x": 3040,
+      "y": 2660,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g21",
+      "type": "group",
+      "label": "initCoins()",
+      "x": 4420,
+      "y": 2580,
+      "width": 600,
+      "height": 400,
+      "color": "4"
+    },
+    {
+      "id": "n_pailnelhtml_initCoins",
+      "type": "file",
+      "file": "graphify/obsidian/initCoins().md",
+      "x": 4440,
+      "y": 2660,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g22",
+      "type": "group",
+      "label": "isWeekendWarning()",
+      "x": 5600,
+      "y": 2580,
+      "width": 600,
+      "height": 400,
+      "color": "5"
+    },
+    {
+      "id": "n_pailnelhtml_isWeekendWarning",
+      "type": "file",
+      "file": "graphify/obsidian/isWeekendWarning().md",
+      "x": 5620,
+      "y": 2660,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g23",
+      "type": "group",
+      "label": "paper-trader module",
+      "x": 6560,
+      "y": 2580,
+      "width": 600,
+      "height": 400,
+      "color": "6"
+    },
+    {
+      "id": "n_backend_papertraderjs",
+      "type": "file",
+      "file": "graphify/obsidian/backendpaper-trader.js \u00e2\u20ac\u201d Capital Allocation.md",
+      "x": 6580,
+      "y": 2660,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g24",
+      "type": "group",
+      "label": "closeManualAt()",
+      "x": 0,
+      "y": 3060,
+      "width": 600,
+      "height": 400,
+      "color": "1"
+    },
+    {
+      "id": "n_backend_papertraderjs_closeManualAt",
+      "type": "file",
+      "file": "graphify/obsidian/closeManualAt()_1.md",
+      "x": 20,
+      "y": 3140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g25",
+      "type": "group",
+      "label": "getAccount()",
+      "x": 1620,
+      "y": 3060,
+      "width": 600,
+      "height": 400,
+      "color": "2"
+    },
+    {
+      "id": "n_backend_dbjs_getAccount",
+      "type": "file",
+      "file": "graphify/obsidian/getAccount()_1.md",
+      "x": 1640,
+      "y": 3140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g26",
+      "type": "group",
+      "label": "getTrades()",
+      "x": 3020,
+      "y": 3060,
+      "width": 600,
+      "height": 400,
+      "color": "3"
+    },
+    {
+      "id": "n_backend_dbjs_getTrades",
+      "type": "file",
+      "file": "graphify/obsidian/getTrades()_1.md",
+      "x": 3040,
+      "y": 3140,
+      "width": 180,
+      "height": 60
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_painel_core_js_painel_core_getmtfweight",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_getmtfweight",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calcema",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calcema",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calcrsi",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calcrsi",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calcmacd",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calcmacd",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calcbollinger",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calcbollinger",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calcatr",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calcatr",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calcadx",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calcadx",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_avgvol",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_avgvol",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_findlevels",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_findlevels",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calcvwap",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calcvwap",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calcanchoredvwap",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calcanchoredvwap",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calcvolumeprofile",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calcvolumeprofile",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calcichimoku",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calcichimoku",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calcobvtrend",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calcobvtrend",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calccvd",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calccvd",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calcsqueezemomentum",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calcsqueezemomentum",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calcstochrsi",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calcstochrsi",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_detectcandlepatterns",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_detectcandlepatterns",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_detectdivergences",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_detectdivergences",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_detectemacross",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_detectemacross",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_detectmarketstructure",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_detectmarketstructure",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_detectboschoch",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_detectboschoch",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_detectorderblocks",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_detectorderblocks",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_detecttrendlinebreak",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_detecttrendlinebreak",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_detecttriangle",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_detecttriangle",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_detectdoubletopbottom",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_detectdoubletopbottom",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calcliqprice",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calcliqprice",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_capreturn",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_capreturn",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_getfibset",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_getfibset",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calcmetas",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calcmetas",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_buildjournalentry",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_buildjournalentry",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_isduplicateentry",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_isduplicateentry",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_computejournalstats",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_computejournalstats",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_fetchjson",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_fetchjson",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_fetchwithfallback",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_fetchwithfallback",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_fetchcandles",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_fetchcandles",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_computescore",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_computescore",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_analyzecandles",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_analyzecandles",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_js_painel_core_applymtfscoring",
+      "fromNode": "n_painel_core_js",
+      "toNode": "n_painel_core_applymtfscoring",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcema_painel_core_calcmacd",
+      "fromNode": "n_painel_core_calcema",
+      "toNode": "n_painel_core_calcmacd",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcema_painel_core_calcobvtrend",
+      "fromNode": "n_painel_core_calcema",
+      "toNode": "n_painel_core_calcobvtrend",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcema_painel_core_calcsqueezemomentum",
+      "fromNode": "n_painel_core_calcema",
+      "toNode": "n_painel_core_calcsqueezemomentum",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcema_painel_core_detectemacross",
+      "fromNode": "n_painel_core_calcema",
+      "toNode": "n_painel_core_detectemacross",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcema_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_calcema",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcema_scanner_fetchmacrobtctrend",
+      "fromNode": "n_painel_core_calcema",
+      "toNode": "n_scanner_fetchmacrobtctrend",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_painel_core_calcema_scanner_filters_test_detecttrend",
+      "fromNode": "n_painel_core_calcema",
+      "toNode": "n_scanner_filters_test_detecttrend",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_painel_core_calcrsi_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_calcrsi",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcmacd_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_calcmacd",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcbollinger_painel_core_calcsqueezemomentum",
+      "fromNode": "n_painel_core_calcbollinger",
+      "toNode": "n_painel_core_calcsqueezemomentum",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcbollinger_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_calcbollinger",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcatr_painel_core_calcsqueezemomentum",
+      "fromNode": "n_painel_core_calcatr",
+      "toNode": "n_painel_core_calcsqueezemomentum",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcatr_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_calcatr",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcadx_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_calcadx",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_avgvol_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_avgvol",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_findlevels_painel_core_detectmarketstructure",
+      "fromNode": "n_painel_core_findlevels",
+      "toNode": "n_painel_core_detectmarketstructure",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_findlevels_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_findlevels",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcvwap_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_calcvwap",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcanchoredvwap_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_calcanchoredvwap",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcvolumeprofile_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_calcvolumeprofile",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcichimoku_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_calcichimoku",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcobvtrend_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_calcobvtrend",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calccvd_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_calccvd",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcsqueezemomentum_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_calcsqueezemomentum",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcstochrsi_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_calcstochrsi",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_detectcandlepatterns_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_detectcandlepatterns",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_detectdivergences_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_detectdivergences",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_detectemacross_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_detectemacross",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_detectmarketstructure_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_detectmarketstructure",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_detectboschoch_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_detectboschoch",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_detectorderblocks_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_detectorderblocks",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_detecttrendlinebreak_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_detecttrendlinebreak",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_detecttriangle_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_detecttriangle",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_detectdoubletopbottom_painel_core_calctechindicators",
+      "fromNode": "n_painel_core_detectdoubletopbottom",
+      "toNode": "n_painel_core_calctechindicators",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcliqprice_painel_core_analyzecandles",
+      "fromNode": "n_painel_core_calcliqprice",
+      "toNode": "n_painel_core_analyzecandles",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_capreturn_painel_core_analyzecandles",
+      "fromNode": "n_painel_core_capreturn",
+      "toNode": "n_painel_core_analyzecandles",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_getfibset_painel_core_calcmetas",
+      "fromNode": "n_painel_core_getfibset",
+      "toNode": "n_painel_core_calcmetas",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_calcmetas_painel_core_analyzecandles",
+      "fromNode": "n_painel_core_calcmetas",
+      "toNode": "n_painel_core_analyzecandles",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_buildjournalentry_trades_fp",
+      "fromNode": "n_painel_core_buildjournalentry",
+      "toNode": "n_trades_fp",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_painel_core_fetchjson_painel_core_fetchwithfallback",
+      "fromNode": "n_painel_core_fetchjson",
+      "toNode": "n_painel_core_fetchwithfallback",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_fetchwithfallback_painel_core_fetchcandles",
+      "fromNode": "n_painel_core_fetchwithfallback",
+      "toNode": "n_painel_core_fetchcandles",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_fetchwithfallback_price_checker_fetchcurrentprice",
+      "fromNode": "n_painel_core_fetchwithfallback",
+      "toNode": "n_price_checker_fetchcurrentprice",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_painel_core_fetchwithfallback_scanner_fetchfeargreed",
+      "fromNode": "n_painel_core_fetchwithfallback",
+      "toNode": "n_scanner_fetchfeargreed",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_painel_core_fetchwithfallback_scanner_fetchfundingrate",
+      "fromNode": "n_painel_core_fetchwithfallback",
+      "toNode": "n_scanner_fetchfundingrate",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_painel_core_fetchwithfallback_scanner_fetchopeninterest",
+      "fromNode": "n_painel_core_fetchwithfallback",
+      "toNode": "n_scanner_fetchopeninterest",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_painel_core_fetchcandles_scanner_fetchmacrobtctrend",
+      "fromNode": "n_painel_core_fetchcandles",
+      "toNode": "n_scanner_fetchmacrobtctrend",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_painel_core_fetchcandles_scanner_runscan",
+      "fromNode": "n_painel_core_fetchcandles",
+      "toNode": "n_scanner_runscan",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_painel_core_calctechindicators_painel_core_analyzecandles",
+      "fromNode": "n_painel_core_calctechindicators",
+      "toNode": "n_painel_core_analyzecandles",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_computescore_painel_core_analyzecandles",
+      "fromNode": "n_painel_core_computescore",
+      "toNode": "n_painel_core_analyzecandles",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_painel_core_analyzecandles_scanner_runscan",
+      "fromNode": "n_painel_core_analyzecandles",
+      "toNode": "n_scanner_runscan",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_painel_core_analyzecandles_integration_test_getresult",
+      "fromNode": "n_painel_core_analyzecandles",
+      "toNode": "n_integration_test_getresult",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_painel_core_applymtfscoring_scanner_runscan",
+      "fromNode": "n_painel_core_applymtfscoring",
+      "toNode": "n_scanner_runscan",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_backend_db_js_db_getdb",
+      "fromNode": "n_backend_db_js",
+      "toNode": "n_db_getdb",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_db_js_db_initschema",
+      "fromNode": "n_backend_db_js",
+      "toNode": "n_db_initschema",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_db_js_db_getaccount",
+      "fromNode": "n_backend_db_js",
+      "toNode": "n_db_getaccount",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_db_js_db_updateaccount",
+      "fromNode": "n_backend_db_js",
+      "toNode": "n_db_updateaccount",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_db_js_db_setupaccount",
+      "fromNode": "n_backend_db_js",
+      "toNode": "n_db_setupaccount",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_db_js_db_resetaccount",
+      "fromNode": "n_backend_db_js",
+      "toNode": "n_db_resetaccount",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_db_js_db_gettrade",
+      "fromNode": "n_backend_db_js",
+      "toNode": "n_db_gettrade",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_db_js_db_getactivetrades",
+      "fromNode": "n_backend_db_js",
+      "toNode": "n_db_getactivetrades",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_db_js_db_getactivecoins",
+      "fromNode": "n_backend_db_js",
+      "toNode": "n_db_getactivecoins",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_db_js_db_countactivepositions",
+      "fromNode": "n_backend_db_js",
+      "toNode": "n_db_countactivepositions",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_db_js_db_gettrades",
+      "fromNode": "n_backend_db_js",
+      "toNode": "n_db_gettrades",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_db_js_db_inserttrade",
+      "fromNode": "n_backend_db_js",
+      "toNode": "n_db_inserttrade",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_db_js_db_updatetrade",
+      "fromNode": "n_backend_db_js",
+      "toNode": "n_db_updatetrade",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_db_js_db_insertscanlog",
+      "fromNode": "n_backend_db_js",
+      "toNode": "n_db_insertscanlog",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_db_js_db_getstats",
+      "fromNode": "n_backend_db_js",
+      "toNode": "n_db_getstats",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getdb_db_initschema",
+      "fromNode": "n_db_getdb",
+      "toNode": "n_db_initschema",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getdb_db_getaccount",
+      "fromNode": "n_db_getdb",
+      "toNode": "n_db_getaccount",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getdb_db_updateaccount",
+      "fromNode": "n_db_getdb",
+      "toNode": "n_db_updateaccount",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getdb_db_setupaccount",
+      "fromNode": "n_db_getdb",
+      "toNode": "n_db_setupaccount",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getdb_db_resetaccount",
+      "fromNode": "n_db_getdb",
+      "toNode": "n_db_resetaccount",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getdb_db_gettrade",
+      "fromNode": "n_db_getdb",
+      "toNode": "n_db_gettrade",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getdb_db_getactivetrades",
+      "fromNode": "n_db_getdb",
+      "toNode": "n_db_getactivetrades",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getdb_db_getactivecoins",
+      "fromNode": "n_db_getdb",
+      "toNode": "n_db_getactivecoins",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getdb_db_countactivepositions",
+      "fromNode": "n_db_getdb",
+      "toNode": "n_db_countactivepositions",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getdb_db_gettrades",
+      "fromNode": "n_db_getdb",
+      "toNode": "n_db_gettrades",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getdb_db_inserttrade",
+      "fromNode": "n_db_getdb",
+      "toNode": "n_db_inserttrade",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getdb_db_updatetrade",
+      "fromNode": "n_db_getdb",
+      "toNode": "n_db_updatetrade",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getdb_db_insertscanlog",
+      "fromNode": "n_db_getdb",
+      "toNode": "n_db_insertscanlog",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getdb_db_getstats",
+      "fromNode": "n_db_getdb",
+      "toNode": "n_db_getstats",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getaccount_db_updateaccount",
+      "fromNode": "n_db_getaccount",
+      "toNode": "n_db_updateaccount",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getaccount_db_setupaccount",
+      "fromNode": "n_db_getaccount",
+      "toNode": "n_db_setupaccount",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getaccount_db_resetaccount",
+      "fromNode": "n_db_getaccount",
+      "toNode": "n_db_resetaccount",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_db_getaccount_paper_trader_openposition",
+      "fromNode": "n_db_getaccount",
+      "toNode": "n_paper_trader_openposition",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_db_getaccount_paper_trader_closepartial",
+      "fromNode": "n_db_getaccount",
+      "toNode": "n_paper_trader_closepartial",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_db_getaccount_price_checker_expiretrade",
+      "fromNode": "n_db_getaccount",
+      "toNode": "n_price_checker_expiretrade",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_db_getaccount_scanner_runscan",
+      "fromNode": "n_db_getaccount",
+      "toNode": "n_scanner_runscan",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_db_updateaccount_paper_trader_openposition",
+      "fromNode": "n_db_updateaccount",
+      "toNode": "n_paper_trader_openposition",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_db_updateaccount_paper_trader_closepartial",
+      "fromNode": "n_db_updateaccount",
+      "toNode": "n_paper_trader_closepartial",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_db_updateaccount_price_checker_expiretrade",
+      "fromNode": "n_db_updateaccount",
+      "toNode": "n_price_checker_expiretrade",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_db_getactivetrades_price_checker_checkactivetrades",
+      "fromNode": "n_db_getactivetrades",
+      "toNode": "n_price_checker_checkactivetrades",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_db_getactivecoins_scanner_runscan",
+      "fromNode": "n_db_getactivecoins",
+      "toNode": "n_scanner_runscan",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_db_countactivepositions_paper_trader_openposition",
+      "fromNode": "n_db_countactivepositions",
+      "toNode": "n_paper_trader_openposition",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_db_inserttrade_paper_trader_openposition",
+      "fromNode": "n_db_inserttrade",
+      "toNode": "n_paper_trader_openposition",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_db_updatetrade_paper_trader_closepartial",
+      "fromNode": "n_db_updatetrade",
+      "toNode": "n_paper_trader_closepartial",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_db_updatetrade_price_checker_checkactivetrades",
+      "fromNode": "n_db_updatetrade",
+      "toNode": "n_price_checker_checkactivetrades",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_db_updatetrade_price_checker_expiretrade",
+      "fromNode": "n_db_updatetrade",
+      "toNode": "n_price_checker_expiretrade",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_db_insertscanlog_scanner_runscan",
+      "fromNode": "n_db_insertscanlog",
+      "toNode": "n_scanner_runscan",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_backend_paper_trader_js_paper_trader_openposition",
+      "fromNode": "n_backend_paper_trader_js",
+      "toNode": "n_paper_trader_openposition",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_paper_trader_js_paper_trader_processpriceupdate",
+      "fromNode": "n_backend_paper_trader_js",
+      "toNode": "n_paper_trader_processpriceupdate",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_paper_trader_js_paper_trader_stopstatus",
+      "fromNode": "n_backend_paper_trader_js",
+      "toNode": "n_paper_trader_stopstatus",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_paper_trader_js_paper_trader_alreadyclosedfraction",
+      "fromNode": "n_backend_paper_trader_js",
+      "toNode": "n_paper_trader_alreadyclosedfraction",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_paper_trader_js_paper_trader_closepartial",
+      "fromNode": "n_backend_paper_trader_js",
+      "toNode": "n_paper_trader_closepartial",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_paper_trader_js_paper_trader_closemanualat",
+      "fromNode": "n_backend_paper_trader_js",
+      "toNode": "n_paper_trader_closemanualat",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_paper_trader_openposition_scanner_runscan",
+      "fromNode": "n_paper_trader_openposition",
+      "toNode": "n_scanner_runscan",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_paper_trader_processpriceupdate_paper_trader_alreadyclosedfraction",
+      "fromNode": "n_paper_trader_processpriceupdate",
+      "toNode": "n_paper_trader_alreadyclosedfraction",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_paper_trader_processpriceupdate_paper_trader_closepartial",
+      "fromNode": "n_paper_trader_processpriceupdate",
+      "toNode": "n_paper_trader_closepartial",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_paper_trader_processpriceupdate_paper_trader_stopstatus",
+      "fromNode": "n_paper_trader_processpriceupdate",
+      "toNode": "n_paper_trader_stopstatus",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_paper_trader_processpriceupdate_price_checker_checkactivetrades",
+      "fromNode": "n_paper_trader_processpriceupdate",
+      "toNode": "n_price_checker_checkactivetrades",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_paper_trader_alreadyclosedfraction_paper_trader_closemanualat",
+      "fromNode": "n_paper_trader_alreadyclosedfraction",
+      "toNode": "n_paper_trader_closemanualat",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_paper_trader_closepartial_paper_trader_closemanualat",
+      "fromNode": "n_paper_trader_closepartial",
+      "toNode": "n_paper_trader_closemanualat",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_price_checker_js_price_checker_fetchcurrentprice",
+      "fromNode": "n_backend_price_checker_js",
+      "toNode": "n_price_checker_fetchcurrentprice",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_price_checker_js_price_checker_isexpired",
+      "fromNode": "n_backend_price_checker_js",
+      "toNode": "n_price_checker_isexpired",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_price_checker_js_price_checker_checkactivetrades",
+      "fromNode": "n_backend_price_checker_js",
+      "toNode": "n_price_checker_checkactivetrades",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_price_checker_js_price_checker_expiretrade",
+      "fromNode": "n_backend_price_checker_js",
+      "toNode": "n_price_checker_expiretrade",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_price_checker_js_price_checker_alreadyclosedfraction",
+      "fromNode": "n_backend_price_checker_js",
+      "toNode": "n_price_checker_alreadyclosedfraction",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_price_checker_fetchcurrentprice_price_checker_checkactivetrades",
+      "fromNode": "n_price_checker_fetchcurrentprice",
+      "toNode": "n_price_checker_checkactivetrades",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_price_checker_isexpired_price_checker_checkactivetrades",
+      "fromNode": "n_price_checker_isexpired",
+      "toNode": "n_price_checker_checkactivetrades",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_price_checker_checkactivetrades_price_checker_expiretrade",
+      "fromNode": "n_price_checker_checkactivetrades",
+      "toNode": "n_price_checker_expiretrade",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_price_checker_expiretrade_price_checker_alreadyclosedfraction",
+      "fromNode": "n_price_checker_expiretrade",
+      "toNode": "n_price_checker_alreadyclosedfraction",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_scanner_js_scanner_fetchmacrobtctrend",
+      "fromNode": "n_backend_scanner_js",
+      "toNode": "n_scanner_fetchmacrobtctrend",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_scanner_js_scanner_fetchfeargreed",
+      "fromNode": "n_backend_scanner_js",
+      "toNode": "n_scanner_fetchfeargreed",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_scanner_js_scanner_fetchfundingrate",
+      "fromNode": "n_backend_scanner_js",
+      "toNode": "n_scanner_fetchfundingrate",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_scanner_js_scanner_fetchopeninterest",
+      "fromNode": "n_backend_scanner_js",
+      "toNode": "n_scanner_fetchopeninterest",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_scanner_js_scanner_runscan",
+      "fromNode": "n_backend_scanner_js",
+      "toNode": "n_scanner_runscan",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_scanner_fetchmacrobtctrend_scanner_runscan",
+      "fromNode": "n_scanner_fetchmacrobtctrend",
+      "toNode": "n_scanner_runscan",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_scanner_fetchfeargreed_scanner_runscan",
+      "fromNode": "n_scanner_fetchfeargreed",
+      "toNode": "n_scanner_runscan",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_scanner_fetchfundingrate_scanner_runscan",
+      "fromNode": "n_scanner_fetchfundingrate",
+      "toNode": "n_scanner_runscan",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_scanner_fetchopeninterest_scanner_runscan",
+      "fromNode": "n_scanner_fetchopeninterest",
+      "toNode": "n_scanner_runscan",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_backend_routes_trades_js_trades_fp",
+      "fromNode": "n_backend_routes_trades_js",
+      "toNode": "n_trades_fp",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_api_test_js_api_test_makefetchok",
+      "fromNode": "n_tests_api_test_js",
+      "toNode": "n_api_test_makefetchok",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_api_test_js_api_test_makefetcherror",
+      "fromNode": "n_tests_api_test_js",
+      "toNode": "n_api_test_makefetcherror",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_api_test_js_api_test_makefetchnetworkerror",
+      "fromNode": "n_tests_api_test_js",
+      "toNode": "n_api_test_makefetchnetworkerror",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_api_test_js_api_test_makebybitresponse",
+      "fromNode": "n_tests_api_test_js",
+      "toNode": "n_api_test_makebybitresponse",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_api_test_js_api_test_makeklinerow",
+      "fromNode": "n_tests_api_test_js",
+      "toNode": "n_api_test_makeklinerow",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_indicators_test_js_indicators_test_makeswingcandles",
+      "fromNode": "n_tests_indicators_test_js",
+      "toNode": "n_indicators_test_makeswingcandles",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_integration_test_js_integration_test_getresult",
+      "fromNode": "n_tests_integration_test_js",
+      "toNode": "n_integration_test_getresult",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_integration_test_getresult_candles_maketrendingcandles",
+      "fromNode": "n_integration_test_getresult",
+      "toNode": "n_candles_maketrendingcandles",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_tests_journal_test_js_journal_test_makemocksetup",
+      "fromNode": "n_tests_journal_test_js",
+      "toNode": "n_journal_test_makemocksetup",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_mtf_test_js_mtf_test_makesetup",
+      "fromNode": "n_tests_mtf_test_js",
+      "toNode": "n_mtf_test_makesetup",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_patterns_test_js_patterns_test_candle",
+      "fromNode": "n_tests_patterns_test_js",
+      "toNode": "n_patterns_test_candle",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_patterns_test_js_patterns_test_withcontext",
+      "fromNode": "n_tests_patterns_test_js",
+      "toNode": "n_patterns_test_withcontext",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_patterns_test_js_patterns_test_makecandles",
+      "fromNode": "n_tests_patterns_test_js",
+      "toNode": "n_patterns_test_makecandles",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_patterns_test_js_patterns_test_makebear",
+      "fromNode": "n_tests_patterns_test_js",
+      "toNode": "n_patterns_test_makebear",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_patterns_test_js_patterns_test_makeorderblockcandles",
+      "fromNode": "n_tests_patterns_test_js",
+      "toNode": "n_patterns_test_makeorderblockcandles",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_patterns_test_candle_patterns_test_withcontext",
+      "fromNode": "n_patterns_test_candle",
+      "toNode": "n_patterns_test_withcontext",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_patterns_test_candle_patterns_test_makebear",
+      "fromNode": "n_patterns_test_candle",
+      "toNode": "n_patterns_test_makebear",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_scanner_filters_test_js_scanner_filters_test_isrisktoohigh",
+      "fromNode": "n_tests_scanner_filters_test_js",
+      "toNode": "n_scanner_filters_test_isrisktoohigh",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_scanner_filters_test_js_scanner_filters_test_detecttrend",
+      "fromNode": "n_tests_scanner_filters_test_js",
+      "toNode": "n_scanner_filters_test_detecttrend",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_scanner_filters_test_js_scanner_filters_test_maketrendingup",
+      "fromNode": "n_tests_scanner_filters_test_js",
+      "toNode": "n_scanner_filters_test_maketrendingup",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_scanner_filters_test_js_scanner_filters_test_maketrendingdown",
+      "fromNode": "n_tests_scanner_filters_test_js",
+      "toNode": "n_scanner_filters_test_maketrendingdown",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_scoring_test_js_scoring_test_makeind",
+      "fromNode": "n_tests_scoring_test_js",
+      "toNode": "n_scoring_test_makeind",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_fixtures_candles_js_candles_maketrendingcandles",
+      "fromNode": "n_tests_fixtures_candles_js",
+      "toNode": "n_candles_maketrendingcandles",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_fixtures_candles_js_candles_makeflatcandles",
+      "fromNode": "n_tests_fixtures_candles_js",
+      "toNode": "n_candles_makeflatcandles",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_fixtures_candles_js_candles_makedowntrendcandles",
+      "fromNode": "n_tests_fixtures_candles_js",
+      "toNode": "n_candles_makedowntrendcandles",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_fixtures_candles_js_candles_makepatterncandles",
+      "fromNode": "n_tests_fixtures_candles_js",
+      "toNode": "n_candles_makepatterncandles",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_claudemd_cryptoscanner_pailnelhtml_spa",
+      "fromNode": "n_claudemd_cryptoscanner",
+      "toNode": "n_pailnelhtml_spa",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_claudemd_cryptoscanner_panelcorejs_module",
+      "fromNode": "n_claudemd_cryptoscanner",
+      "toNode": "n_panelcorejs_module",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_claudemd_cryptoscanner_backend_serverjs",
+      "fromNode": "n_claudemd_cryptoscanner",
+      "toNode": "n_backend_serverjs",
+      "label": "references [EXTRACTED]"
+    }
+  ]
+}

@@ -24,7 +24,23 @@
       "Bash(node:*)",
       "Bash(ls backend/*.db)",
       "Bash(ls data/*.db)",
-      "Bash(python3 -c ':*)"
+      "Bash(python3 -c ':*)",
+      "WebSearch",
+      "WebFetch(domain:crypto.news)",
+      "WebFetch(domain:www.bitget.com)",
+      "WebFetch(domain:www.ainvest.com)",
+      "Bash(gh api *)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(pip show *)",
+      "Bash(mkdir -p \"C:/Users/julio/.claude/skills/graphify\")",
+      "Bash(mv \"C:/Users/julio/.claude/skills/graphify_skill_preview.md\" \"C:/Users/julio/.claude/skills/graphify/SKILL.md\")",
+      "Bash(pip install *)",
+      "Bash(python3 -c \"import graphify; print\\('graphify OK'\\)\")",
+      "Bash(python3 -c \"import graphifyy; print\\('graphifyy OK'\\)\")",
+      "Bash(python -c \"import graphify; print\\('graphify OK \\(python\\)'\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(python *)"
     ]
   }
 }

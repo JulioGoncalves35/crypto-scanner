@@ -1097,6 +1097,7 @@ const CORS_PROXIES = [
   u => `https://thingproxy.freeboard.io/fetch/${u}`,                  // 4. thingproxy
 ];
 const TF_MAP = { '5m':'5','15m':'15','30m':'30','1h':'60','4h':'240','1D':'D' };
+const TF_INTERVAL_MS = { '5m':300000, '15m':900000, '30m':1800000, '1h':3600000, '4h':14400000, '1D':86400000 };
 
 // Controlador global do scan em execução — permite cancelar requests ao iniciar novo scan
 let _scanController = null;
@@ -1144,11 +1145,19 @@ async function fetchCandles(symbol, tf, signal = null) {
   const url = `https://api.bybit.com/v5/market/kline?category=linear&symbol=${sym}USDT&interval=${TF_MAP[tf]}&limit=400`;
   const j = await fetchWithFallback(url, signal);
   if (!j || j.retCode !== 0 || !j.result?.list?.length) return null;
-  return j.result.list.reverse().map(c => ({
+  const candles = j.result.list.reverse().map(c => ({
     time: parseInt(c[0]), open: parseFloat(c[1]),
     high: parseFloat(c[2]), low: parseFloat(c[3]),
     close: parseFloat(c[4]), volume: parseFloat(c[5]),
   }));
+  // Bybit returns the in-progress candle as the most recent. Pattern detectors
+  // and indicators run on the last element, so a partial candle produces false
+  // positives (e.g. Marubozu triggering on a 24-second-old candle with body≈range).
+  const intervalMs = TF_INTERVAL_MS[tf];
+  if (intervalMs && candles.length && candles[candles.length-1].time + intervalMs > Date.now()) {
+    candles.pop();
+  }
+  return candles;
 }
 
 async function fetchFearGreed(signal = null) {
