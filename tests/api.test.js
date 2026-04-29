@@ -258,6 +258,117 @@ describe('fetchCandles', () => {
   });
 });
 
+// ─── fetchCandles: in-progress candle drop ───────────────────────────────────
+// Bybit's kline endpoint returns the in-progress (still-open) candle as the
+// most recent element. Pattern detectors that rely on body/range ratios
+// (Marubozu, Doji, etc.) trigger spuriously on partial candles, so fetchCandles
+// drops the last element when `candle.time + TF_INTERVAL_MS[tf] > Date.now()`.
+describe('fetchCandles — in-progress candle drop', () => {
+  // Builds a Bybit kline row [time, open, high, low, close, volume] at a given timestamp (ms)
+  function makeKlineRowAt(timeMs) {
+    return [String(timeMs), '100', '101', '99', '100.5', '500'];
+  }
+
+  const FIXED_NOW = 1730000000000; // 2024-10-27, well after epoch — keeps math intuitive
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  it('drops the most recent 15m candle when it is still in progress', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(FIXED_NOW);
+    // 15m interval = 900_000 ms. Newest candle opened 10s ago → partial → must be dropped.
+    const partialT = FIXED_NOW - 10_000;
+    const closedT  = FIXED_NOW - 15 * 60 * 1000; // opened 15m ago = just completed at boundary
+    const olderT   = closedT - 15 * 60 * 1000;
+    // Bybit returns newest-first; fetchCandles reverses to oldest-first
+    const rows = [makeKlineRowAt(partialT), makeKlineRowAt(closedT), makeKlineRowAt(olderT)];
+    vi.stubGlobal('fetch', makeFetchOk(makeBybitResponse(rows)));
+    const candles = await fetchCandles('BTC', '15m');
+    expect(candles).toHaveLength(2);
+    // Last surviving candle is the one that closed exactly at FIXED_NOW (boundary stays)
+    expect(candles[candles.length - 1].time).toBe(closedT);
+    // The partial candle is gone
+    expect(candles.some(c => c.time === partialT)).toBe(false);
+  });
+
+  it('keeps every candle when the newest one has already closed', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(FIXED_NOW);
+    // Newest opened 16m ago: 16m > 15m interval → fully closed → must be kept
+    const newestClosedT = FIXED_NOW - 16 * 60 * 1000;
+    const olderT        = newestClosedT - 15 * 60 * 1000;
+    const rows = [makeKlineRowAt(newestClosedT), makeKlineRowAt(olderT)];
+    vi.stubGlobal('fetch', makeFetchOk(makeBybitResponse(rows)));
+    const candles = await fetchCandles('BTC', '15m');
+    expect(candles).toHaveLength(2);
+    expect(candles[candles.length - 1].time).toBe(newestClosedT);
+  });
+
+  it('keeps the candle when its close-time equals Date.now() exactly (strict > boundary)', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(FIXED_NOW);
+    // candle.time + intervalMs === Date.now()  ⇒  the `>` check must NOT drop it
+    const justClosedT = FIXED_NOW - 15 * 60 * 1000;
+    const olderT      = justClosedT - 15 * 60 * 1000;
+    const rows = [makeKlineRowAt(justClosedT), makeKlineRowAt(olderT)];
+    vi.stubGlobal('fetch', makeFetchOk(makeBybitResponse(rows)));
+    const candles = await fetchCandles('BTC', '15m');
+    expect(candles).toHaveLength(2);
+    expect(candles[candles.length - 1].time).toBe(justClosedT);
+  });
+
+  it('drops in-progress 5m candle (interval = 300_000 ms)', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(FIXED_NOW);
+    const partialT = FIXED_NOW - 30_000; // 30s into a 5m candle
+    const closedT  = partialT - 5 * 60 * 1000;
+    const rows = [makeKlineRowAt(partialT), makeKlineRowAt(closedT)];
+    vi.stubGlobal('fetch', makeFetchOk(makeBybitResponse(rows)));
+    const candles = await fetchCandles('BTC', '5m');
+    expect(candles).toHaveLength(1);
+    expect(candles[0].time).toBe(closedT);
+  });
+
+  it('drops in-progress 1D candle (interval = 86_400_000 ms)', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(FIXED_NOW);
+    const partialT = FIXED_NOW - 60 * 60 * 1000; // 1h into a 1D candle
+    const closedT  = partialT - 86_400_000;
+    const rows = [makeKlineRowAt(partialT), makeKlineRowAt(closedT)];
+    vi.stubGlobal('fetch', makeFetchOk(makeBybitResponse(rows)));
+    const candles = await fetchCandles('BTC', '1D');
+    expect(candles).toHaveLength(1);
+    expect(candles[0].time).toBe(closedT);
+  });
+
+  it('drops a 4h candle that is 3h59m into its window (almost-closed is still in-progress)', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(FIXED_NOW);
+    // 4h = 14_400_000 ms. Newest opened 3h59m ago → 60s remaining → still open
+    const partialT = FIXED_NOW - (4 * 60 * 60 * 1000 - 60 * 1000);
+    const closedT  = partialT - 4 * 60 * 60 * 1000;
+    const rows = [makeKlineRowAt(partialT), makeKlineRowAt(closedT)];
+    vi.stubGlobal('fetch', makeFetchOk(makeBybitResponse(rows)));
+    const candles = await fetchCandles('BTC', '4h');
+    expect(candles).toHaveLength(1);
+    expect(candles[0].time).toBe(closedT);
+  });
+
+  it('returns an empty array when the only candle returned is in-progress', async () => {
+    // Documents current behavior: the early-return check uses raw list length
+    // (so we pass the !list.length guard), but the pop afterwards leaves us empty.
+    vi.useFakeTimers();
+    vi.setSystemTime(FIXED_NOW);
+    const rows = [makeKlineRowAt(FIXED_NOW - 10_000)];
+    vi.stubGlobal('fetch', makeFetchOk(makeBybitResponse(rows)));
+    const candles = await fetchCandles('BTC', '15m');
+    expect(candles).toEqual([]);
+  });
+});
+
 // ─── TIMEFRAMES_BY_MODE ───────────────────────────────────────────────────────
 describe('TIMEFRAMES_BY_MODE', () => {
   it('all modes return non-empty arrays', () => {

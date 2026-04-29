@@ -67,13 +67,18 @@ Tests: 335/335 passing.
 
 ---
 
-### 🟡 4. Add a Vitest test for the in-progress candle drop
+### ✅ 4. Vitest test for the in-progress candle drop — DONE
 
-The fix is currently covered indirectly via integration tests but has no dedicated unit test. Suggested test (in `tests/api.test.js` or new `tests/fetch-candles.test.js`):
+Added 7 dedicated tests in `tests/api.test.js` under `describe('fetchCandles — in-progress candle drop')`. Uses `vi.useFakeTimers()` + `vi.setSystemTime()` to make `Date.now()` deterministic. Coverage:
 
-- Mock `fetchWithFallback` to return a kline list whose newest candle's `time` is `Date.now() - 10s` for a 15m TF (i.e. in-progress).
-- Assert the returned array length = input length - 1.
-- Counter-test: if newest candle's `time + intervalMs <= Date.now()`, assert no candle dropped.
+- 15m partial candle is dropped (mid-window)
+- All candles kept when newest is already closed (>1 interval old)
+- Boundary: candle whose close-time equals `Date.now()` exactly is kept (strict `>` semantics)
+- 5m and 1D variants — confirms `TF_INTERVAL_MS` lookup works across all supported TFs
+- 4h almost-closed (3h59m in) is still dropped
+- Edge case: lone in-progress candle returns `[]` (documents current behavior)
+
+Suite: 342/342 passing.
 
 ---
 

@@ -32,7 +32,7 @@ crypto-scanner/
 │       └── scan.js      ← POST /api/scan/manual
 ├── data/
 │   └── scanner.db       ← SQLite database (gitignored)
-└── tests/               ← Vitest test suite (268 tests)
+└── tests/               ← Vitest test suite (342 tests)
 ```
 
 **The frontend (`painel.html`) works fully standalone** even when the backend is offline. The backend adds automated scanning, paper trading, and persistent history.
@@ -387,7 +387,7 @@ python3 -m http.server 8080
 3. No compilation or build step needed.
 
 ### Testing
-Automated unit tests via Vitest (251 tests across 8 files):
+Automated unit tests via Vitest (342 tests across 9 files). The `fetchCandles` in-progress candle drop has dedicated coverage in `tests/api.test.js` (`describe('fetchCandles — in-progress candle drop')`) using `vi.useFakeTimers()` + `vi.setSystemTime()` to control `Date.now()`:
 ```bash
 npx vitest run
 ```
