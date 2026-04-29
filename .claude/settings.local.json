@@ -40,7 +40,9 @@
       "Bash(python3 -c \"import graphifyy; print\\('graphifyy OK'\\)\")",
       "Bash(python -c \"import graphify; print\\('graphify OK \\(python\\)'\\)\")",
       "Bash(python -c ' *)",
-      "Bash(python *)"
+      "Bash(python *)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 -c \"import sys,json; [print\\(x['name']\\) for x in json.load\\(sys.stdin\\)]\")"
     ]
   }
 }

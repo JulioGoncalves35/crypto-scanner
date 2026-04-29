@@ -1,7 +1,7 @@
 ---
 name: news-hunter
 description: Surface recent news, on-chain events, and macro context for a crypto setup. Returns a structured report with bias signal and a strict Verification Section. Use when evaluating an active trade or a candidate entry where macro/news context could invalidate the technical setup. Every specific number/date MUST cite ≥2 sources or be marked unverified.
-model: sonnet
+model: haiku
 tools: WebSearch, WebFetch
 ---
 

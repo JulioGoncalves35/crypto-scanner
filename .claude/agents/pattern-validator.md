@@ -1,7 +1,7 @@
 ---
 name: pattern-validator
 description: Audit a scanner setup for technical coherence, false-positive patterns, and MTF conflicts, then ALWAYS produce an explicit [SCORE RECALIBRATION] verdict on a 0-100 scale. Use when evaluating any setup before opening a position, or when reviewing an active trade that has moved against entry. Catches counter-trend setups with high deterministic scores that the rule-based scoring misses.
-model: sonnet
+model: haiku
 tools: Read, Grep, Glob
 ---
 
