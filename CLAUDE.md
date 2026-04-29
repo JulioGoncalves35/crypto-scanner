@@ -32,6 +32,12 @@ crypto-scanner/
 │       └── scan.js      ← POST /api/scan/manual
 ├── data/
 │   └── scanner.db       ← SQLite database (gitignored)
+├── docs/
+│   └── agent-council-next-steps.md   ← Agent council exploration log + pending findings
+├── .claude/
+│   └── agents/
+│       ├── news-hunter.md            ← Council sub-agent: macro/news context with strict source verification
+│       └── pattern-validator.md      ← Council sub-agent: technical coherence audit + score recalibration
 └── tests/               ← Vitest test suite (342 tests)
 ```
 
@@ -457,3 +463,19 @@ git push -u origin <branch>
 - **`setupAccount` não altera `current_capital`:** A função `setupAccount` em `db.js` atualiza apenas as configurações da conta (initial_capital, alloc_pct, max_positions, min_score, leverage) — nunca sobrescreve `current_capital`. Isso evita que salvar configurações apague o saldo acumulado pelos trades. Para zerar o capital, use `resetAccount(full=false)` (mantém histórico) ou `resetAccount(full=true)` (apaga trades e scan_log). O frontend expõe esses dois modos via botões "Zerar Capital" e "Reset Total" no painel de configurações, com confirmação dupla para o reset total.
 - **Fórmula de recuperação do capital:** Se `current_capital` for corrompido/resetado acidentalmente, o valor correto é `initial_capital + total_pnl_closed - capital_in_use`, onde `total_pnl` e `capital_in_use` são obtidos via `GET /api/account`.
 - **Price-checker — janela de wicks 1m:** O `price-checker.js` busca os últimos 20 candles de 1m a cada poll e usa o `low/high` agregado (não só o `lastPrice`) para detectar stops e targets. Isso resolve um bug onde wicks intra-bar entre dois polls (5min apart) eram perdidos pelo ticker `lastPrice` (ex: AAVE 4h fez wick em 95.10, 18 cents abaixo do stop, e não disparou). Ordem conservadora: stop primeiro (adverse wick) e depois target (favorable wick) — quando ambos os lados foram tocados na mesma janela, o stop ganha por padrão. Cascading de targets (m1→m2→m3 em uma única janela) ainda fica para os próximos polls (limitação do `processPriceUpdate`).
+- **Drop do candle in-progress em `fetchCandles`:** A Bybit retorna o candle ainda em formação como o último elemento do array. `fetchCandles` (em `painel-core.js` e mirrored em `painel.html`) compara `candles[n-1].time + TF_INTERVAL_MS[tf] > Date.now()` e faz `candles.pop()` quando true. Detectores baseados em razão body/range (Marubozu ≥95%, Doji <10%, Engolfo, Três Soldados etc.) disparavam falsos positivos em candles parciais com poucos ticks. Boundary é estrita (`>`, não `>=`) — candle fechado exatamente no instante atual é mantido. Edge case: se a única candle retornada for in-progress, o array volta `[]` (documentado em `tests/api.test.js`, `describe('fetchCandles — in-progress candle drop')` com 7 cenários). `TF_INTERVAL_MS` ainda **não está exportado** de `painel-core.js`; testes usam literais (`15 * 60 * 1000`).
+
+---
+
+## Agent Council (exploratório, não-produção)
+
+Council de sub-agentes Claude Code para validar trades/setups além do scoring determinístico. Documentação completa: `docs/agent-council-next-steps.md`.
+
+**Sub-agentes definidos em `.claude/agents/`:**
+
+- **`news-hunter.md`** — busca notícias/macro/setor (últimos 7–14 dias), retorna bias bullish/bearish/neutro com **Verification Section** obrigatória: todo número/data/entidade específico precisa ter ≥2 fontes independentes (`[VERIFIED]`), 1 fonte (`[MEDIUM CONFIDENCE]`) ou ser dispensado (`[UNVERIFIED]`). Ferramentas: `WebSearch`, `WebFetch`. Existe para evitar a falha de hallucination observada num run anterior (cifra "$15.6M token unlock" fabricada). Cap: ~600 palavras.
+- **`pattern-validator.md`** — auditoria de coerência técnica (direção vs trend, integridade de padrões, MTF, R:R, cap de risco). Sempre termina com bloco **`[SCORE RECALIBRATION]`** (score determinístico vs score coerente + delta + justificativa de uma linha) — mesmo quando concorda com o scanner. Ferramentas: `Read`, `Grep`, `Glob` (somente leitura). Veredicto final: VALID / SUSPECT / REJECT. Cap: ~500 palavras.
+
+**Como invocar:** `Task` tool com `subagent_type: news-hunter` ou `subagent_type: pattern-validator`. Ambos recebem o setup como input do agent caller (Leader); nenhum deles emite ordens de trade — isso fica com o Leader.
+
+**Não confundir com:** o backend production scanner (`backend/scanner.js`) — o council é um overlay opcional, não está integrado ao pipeline automático. Devil's Advocate (3º agente do design original) ainda não tem prompt refinado; o achado dele de stop-integrity virou o item 1 das pendências.

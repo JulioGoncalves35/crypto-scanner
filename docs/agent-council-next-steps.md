@@ -82,15 +82,18 @@ Suite: 342/342 passing.
 
 ---
 
-### 🔵 5. Refine the agent prompts for production (when ready)
+### ✅ 5. Refined production prompts for News Hunter + Pattern Validator — DONE
 
-Two refinements were proven empirically across the two runs:
+Created two Claude Code subagent definitions under `.claude/agents/`:
 
-**A. News Hunter — keep the Verification Section.**
-The AVAX run hallucinated "$15.6M token unlock on Apr 25" (fabricated). The AAVE run, with an explicit "Verification Section: list ≥2 sources for any specific number/date with confidence labels" instruction, properly verified KelpDAO ($292M, 3 sources), AAVE TVL drop ($6B+, 2 sources), and flagged "$161M bailout" as medium confidence (single source). The fix works — bake it into the production prompt.
+- **`.claude/agents/news-hunter.md`** — bakes in the Verification Rule as non-negotiable. Every specific number/date/entity must be `[VERIFIED]` (≥2 independent sources, different domains, no circular citations), `[MEDIUM CONFIDENCE]` (single source + reason no second exists), or `[UNVERIFIED]` (omitted or moved to "Dismissed Claims"). Required output sections: TL;DR (3 lines), Verified Events, Macro/Sector Context, Dismissed Claims, Confidence on overall report. Explicit "Hallucinating a precise figure is the worst failure mode" guardrail referencing the AVAX `$15.6M` fabrication.
+- **`.claude/agents/pattern-validator.md`** — requires `[SCORE RECALIBRATION]` block in every output (deterministic score / coherent score / delta / justification), even when the auditor agrees with the scanner. 6-step audit checklist: direction coherence, pattern integrity (re-derives body/range ratios + checks `time + TF_INTERVAL_MS[tf]` against now to catch in-progress false positives), indicator agreement, MTF context, stop/target sanity (TF_MIN_STOP, R:R, MAX_STOP_RISK_MULTIPLIER cap), combo-risk patterns. Final verdict: VALID / SUSPECT / REJECT.
 
-**B. Pattern Validator — require score-vs-coherence reconciliation.**
-In both runs, the Validator independently said "score X is wrong, should be Y" without being asked. Make this an explicit required output: `[SCORE RECALIBRATION] — given the contradictions, what should the score be?` This catches "100/100 on counter-trend setup" cases the deterministic scoring misses.
+Both prompts cap output length (~600w / ~500w), restrict tools (News Hunter: WebSearch+WebFetch; Pattern Validator: read-only Read/Grep/Glob), and explicitly forbid trade calls (those belong to the Leader).
+
+**How to invoke:** in a future Claude Code session, `Task` tool with `subagent_type: news-hunter` or `subagent_type: pattern-validator`.
+
+Devil's Advocate prompt is intentionally NOT refined yet — its single high-value finding (stop integrity gap) is now tracked separately in item 1.
 
 ---
 
