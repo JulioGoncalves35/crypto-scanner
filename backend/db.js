@@ -68,6 +68,18 @@ function initSchema() {
       skipped_active INTEGER NOT NULL DEFAULT 0,
       errors TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS trade_reflections (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      trade_id TEXT NOT NULL,
+      reflection_text TEXT NOT NULL,
+      lesson_tag TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (trade_id) REFERENCES trades(id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_reflections_created ON trade_reflections(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_reflections_trade   ON trade_reflections(trade_id);
   `);
 
   // Migration: add analysis_json column if not present (existing DBs)
@@ -223,4 +235,23 @@ export function getStats() {
     total_pnl: parseFloat(totalPnl.toFixed(2)),
     avg_pnl: closed.length > 0 ? parseFloat((totalPnl / closed.length).toFixed(2)) : null,
   };
+}
+
+// ─── Reflections ──────────────────────────────────────────────────────────────
+
+export function insertReflection({ trade_id, reflection_text, lesson_tag }) {
+  const result = getDb().prepare(`
+    INSERT INTO trade_reflections (trade_id, reflection_text, lesson_tag)
+    VALUES (?, ?, ?)
+  `).run(trade_id, reflection_text, lesson_tag ?? null);
+  return result.lastInsertRowid;
+}
+
+export function getRecentReflections(limit = 20) {
+  return getDb().prepare(
+    `SELECT id, trade_id, reflection_text, lesson_tag, created_at
+     FROM trade_reflections
+     ORDER BY created_at DESC
+     LIMIT ?`
+  ).all(limit);
 }
