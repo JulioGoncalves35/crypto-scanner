@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getTrades, getActiveTrades, getTrade, getStats, updateTrade } from '../db.js';
-import { closeManualAt } from '../paper-trader.js';
+import { closeManualAt, openPosition } from '../paper-trader.js';
 import { isStopTighter } from '../stop-validator.js';
 
 const router = Router();
@@ -112,6 +112,32 @@ router.post('/:id/close', async (req, res) => {
   if (!result) return res.status(400).json({ error: 'Nada a fechar' });
 
   res.json({ ok: true, price, pnl: result.pnl });
+});
+
+// POST /api/trades/open — Leader-driven trade opening from an approved setup
+router.post('/open', async (req, res) => {
+  const setup = req.body;
+  if (!setup || typeof setup !== 'object') {
+    return res.status(400).json({ error: 'missing setup body' });
+  }
+  const required = ['coin', 'dir', 'timeframe', 'score', 'entry', 'stop', 'm1', 'm2', 'm3'];
+  for (const f of required) {
+    if (setup[f] === undefined || setup[f] === null) {
+      return res.status(400).json({ error: `missing setup.${f}` });
+    }
+  }
+  try {
+    const trade = await openPosition(setup);
+    if (!trade) {
+      return res.status(409).json({
+        error: 'trade not opened — check max_positions, capital, or risk cap',
+      });
+    }
+    console.log(`[leader-api] trade opened via Leader: ${trade.id}`);
+    res.json(trade);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST /api/trades/:id/tighten-stop — move stop closer to entry (never away)
