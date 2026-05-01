@@ -12,8 +12,11 @@
  *   GET  /api/trades/active
  *   GET  /api/trades/:id
  *   GET  /api/trades/meta/stats
+ *   POST /api/trades/:id/close
  *   POST /api/scan/manual
  *   GET  /api/scan/status
+ *   POST /api/reflections
+ *   GET  /api/reflections
  */
 
 import express from 'express';
@@ -24,6 +27,7 @@ import { getDb } from './db.js';
 import tradesRouter from './routes/trades.js';
 import accountRouter from './routes/account.js';
 import scanRouter from './routes/scan.js';
+import reflectionsRouter from './routes/reflections.js';
 import { runScan } from './scanner.js';
 import { checkActiveTrades } from './price-checker.js';
 
@@ -47,9 +51,10 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-app.use('/api/trades',  tradesRouter);
-app.use('/api/account', accountRouter);
-app.use('/api/scan',    scanRouter);
+app.use('/api/trades',       tradesRouter);
+app.use('/api/account',      accountRouter);
+app.use('/api/scan',         scanRouter);
+app.use('/api/reflections',  reflectionsRouter);
 
 // ─── Scheduled jobs ───────────────────────────────────────────────────────────
 
