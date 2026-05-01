@@ -26,19 +26,24 @@ crypto-scanner/
 │   ├── scanner.js       ← Auto-scan engine (imports painel-core.js)
 │   ├── paper-trader.js  ← Capital allocation + position state machine
 │   ├── price-checker.js ← Cron: checks stop/targets every 5 min
+│   ├── stop-validator.js ← Pure helper: isStopTighter (direction-aware)
 │   └── routes/
-│       ├── trades.js    ← GET /api/trades, /api/trades/active
-│       ├── account.js   ← GET/POST /api/account
-│       └── scan.js      ← POST /api/scan/manual
+│       ├── trades.js       ← GET /api/trades, /api/trades/active, POST /open, /:id/close, /:id/tighten-stop
+│       ├── account.js      ← GET/POST /api/account
+│       ├── scan.js         ← POST /api/scan/preview, /api/scan/manual
+│       └── reflections.js  ← POST/GET /api/reflections (Leader memory)
 ├── data/
 │   └── scanner.db       ← SQLite database (gitignored)
 ├── docs/
-│   └── agent-council-next-steps.md   ← Agent council exploration log + pending findings
+│   ├── agent-council-next-steps.md   ← Agent council exploration log + pending findings
+│   └── superpowers/specs/
+│       └── 2026-04-29-leader-agent-design.md  ← Leader design spec
 ├── .claude/
 │   └── agents/
 │       ├── news-hunter.md            ← Council sub-agent: macro/news context with strict source verification
-│       └── pattern-validator.md      ← Council sub-agent: technical coherence audit + score recalibration
-└── tests/               ← Vitest test suite (342 tests)
+│       ├── pattern-validator.md      ← Council sub-agent: technical coherence audit + score recalibration
+│       └── leader.md                 ← Council orchestrator: gates entries, reviews actives, writes reflections
+└── tests/               ← Vitest test suite (351 tests, includes stop-validator)
 ```
 
 **The frontend (`painel.html`) works fully standalone** even when the backend is offline. The backend adds automated scanning, paper trading, and persistent history.
@@ -106,7 +111,7 @@ Code sections are separated by `// ───────────────
 
 **Location:** `backend/` folder. Runs on `http://localhost:3001`.
 
-**Auto-scan:** Every 15 minutes via `node-cron`. Scans all 39 default coins in "both" mode (all TFs). Skips coins with an active trade. Applies MTF confluence identically to the frontend.
+**Auto-scan:** Every 15 minutes via `node-cron`. Scans all 39 default coins in "both" mode (all TFs). Skips coins with an active trade. Applies MTF confluence identically to the frontend. **Since Leader integration (2026-04-29) the cron does NOT open trades** — `runScan()` accumulates candidates, persists them to `scan_log.candidates_json`, and returns `{ candidates, skipped_active, duration_ms, errors }`. Trade opening is now exclusive to `POST /api/trades/open`, which the Leader subagent calls after gating each candidate through `pattern-validator` and `news-hunter`.
 
 **Paper trading:** Opens positions when `score >= min_score` AND `active_positions < max_positions` AND `current_capital >= alloc_pct%`. Default (Leader era): 2% per trade, max 5 positions, `min_score = 85`. Backend cron no longer auto-opens — see `/api/scan/preview` and `/api/trades/open`.
 
@@ -121,7 +126,7 @@ Code sections are separated by `// ───────────────
 
 **Trade statuses:** `active` → `m1` → `m2` → `m3` | `stop` | `stopped_at_entry` | `expired` | `manual`
 
-**SQLite tables:** `trades`, `paper_account`, `scan_log`. Uses Node.js built-in `node:sqlite` (no compilation needed).
+**SQLite tables:** `trades`, `paper_account`, `scan_log` (with `candidates_json` column logging full setup payloads from each scan tick), `trade_reflections` (Leader post-trade memory: `trade_id` FK, `reflection_text`, `lesson_tag`, `created_at`). Uses Node.js built-in `node:sqlite` (no compilation needed).
 
 **REST API endpoints:**
 - `GET /api/health` — server status
@@ -129,9 +134,14 @@ Code sections are separated by `// ───────────────
 - `POST /api/account/setup` — update account settings (alloc_pct, max_positions, min_score, leverage, initial_capital) **without touching current_capital**
 - `POST /api/account/reset` — reset account; body `{ mode: 'capital' }` zeroes current_capital back to initial_capital (keeps trade history); `{ mode: 'full' }` also deletes all trades and scan_log
 - `GET /api/trades`, `/api/trades/active` — trade list
+- `POST /api/trades/open` — Leader-driven entry from an approved setup. Validates required fields (coin, dir, timeframe, score, entry, stop, m1, m2, m3) and delegates to `openPosition`. Returns 409 when blocked by `max_positions` / capital / `MAX_STOP_RISK_MULTIPLIER` cap.
 - `POST /api/trades/:id/close` — close active trade manually at current Bybit price
-- `POST /api/scan/manual` — trigger immediate scan
+- `POST /api/trades/:id/tighten-stop` — move `current_stop` closer to entry (direction-aware via `isStopTighter`). Rejects loose adjustments (400), inactive trades (409), and unknown IDs (404). Never widens.
+- `POST /api/scan/preview` — canonical Leader entry: triggers fresh scan, returns `{ candidates, skipped_active, duration_ms, errors }` without opening any trade.
+- `POST /api/scan/manual` — alias of `/preview` kept for the existing painel.html UI. Both share the same 409 concurrency guard.
 - `GET /api/scan/status` — scan running?
+- `POST /api/reflections` — Leader writes a post-trade reflection (`{ trade_id, reflection_text, lesson_tag }`). 400 on missing required fields.
+- `GET /api/reflections?limit=N` — Leader reads recent reflections (default 20, max 200).
 
 **painel.html integration:** Checks backend on load with 2s timeout. Shows "Backend" tab with online/offline indicator, account stats, active trades table, history table, manual scan button, and account config form. Falls back gracefully when offline.
 
@@ -464,18 +474,30 @@ git push -u origin <branch>
 - **Fórmula de recuperação do capital:** Se `current_capital` for corrompido/resetado acidentalmente, o valor correto é `initial_capital + total_pnl_closed - capital_in_use`, onde `total_pnl` e `capital_in_use` são obtidos via `GET /api/account`.
 - **Price-checker — janela de wicks 1m:** O `price-checker.js` busca os últimos 20 candles de 1m a cada poll e usa o `low/high` agregado (não só o `lastPrice`) para detectar stops e targets. Isso resolve um bug onde wicks intra-bar entre dois polls (5min apart) eram perdidos pelo ticker `lastPrice` (ex: AAVE 4h fez wick em 95.10, 18 cents abaixo do stop, e não disparou). Ordem conservadora: stop primeiro (adverse wick) e depois target (favorable wick) — quando ambos os lados foram tocados na mesma janela, o stop ganha por padrão. Cascading de targets (m1→m2→m3 em uma única janela) ainda fica para os próximos polls (limitação do `processPriceUpdate`).
 - **Drop do candle in-progress em `fetchCandles`:** A Bybit retorna o candle ainda em formação como o último elemento do array. `fetchCandles` (em `painel-core.js` e mirrored em `painel.html`) compara `candles[n-1].time + TF_INTERVAL_MS[tf] > Date.now()` e faz `candles.pop()` quando true. Detectores baseados em razão body/range (Marubozu ≥95%, Doji <10%, Engolfo, Três Soldados etc.) disparavam falsos positivos em candles parciais com poucos ticks. Boundary é estrita (`>`, não `>=`) — candle fechado exatamente no instante atual é mantido. Edge case: se a única candle retornada for in-progress, o array volta `[]` (documentado em `tests/api.test.js`, `describe('fetchCandles — in-progress candle drop')` com 7 cenários). `TF_INTERVAL_MS` ainda **não está exportado** de `painel-core.js`; testes usam literais (`15 * 60 * 1000`).
+- **`runScan` não abre mais trades (Leader era):** Desde 2026-04-29, `backend/scanner.js` retira o import de `openPosition` e o cron `*/15 * * * *` apenas acumula candidatos no array, persiste via `scan_log.candidates_json` e retorna `{ candidates, skipped_active, duration_ms, errors }`. **Não reintroduzir** `openPosition` no scanner — abertura é responsabilidade exclusiva de `POST /api/trades/open` (rota nova em `backend/routes/trades.js`), que valida campos obrigatórios e delega para `paper-trader.openPosition`. Capital, max_positions e cap de risco continuam sendo aplicados em `openPosition`, então o `/api/trades/open` retorna 409 quando o `paper-trader` rejeita.
+- **Tighten-stop é direction-aware via helper puro:** `POST /api/trades/:id/tighten-stop` usa `isStopTighter(direction, current_stop, new_stop)` de `backend/stop-validator.js`. Para BUY o novo stop precisa ser **maior** (mais perto de entry, que está acima); para SELL precisa ser **menor**. Igualdade retorna `false` (não conta como tightening). Trade inativo (status em `['stop','stopped_at_entry','expired','manual','m3']`) → 409. ID inexistente → 404. **Nunca afrouxa um stop, por design.**
+- **Reflexões da Leader são append-only:** `POST /api/reflections` insere novo registro em `trade_reflections`. Não há endpoint de update/delete. O cursor de "qual reflexão é a mais recente" é client-side: o Leader pega `MAX(created_at)` do array de `GET /api/reflections?limit=20` e define como cursor para a próxima execução. FK em `trade_id` referencia `trades(id)` — reflexões com `trade_id` inexistente são rejeitadas pela DB com SQLite constraint error (500 na rota).
+- **Servidor Node em Windows + npm:** `npm run server` no Windows não propaga sinais para o processo node filho. Para reiniciar o servidor durante desenvolvimento, **TaskStop** do background task **não basta** — é preciso matar o processo node que está com a porta 3001 usando `Get-NetTCPConnection -LocalPort 3001 -State Listen` + `Stop-Process -Id $_.OwningProcess -Force` via PowerShell. Caso contrário a próxima `npm run server` falha com `EADDRINUSE`.
 
 ---
 
 ## Agent Council (exploratório, não-produção)
 
-Council de sub-agentes Claude Code para validar trades/setups além do scoring determinístico. Documentação completa: `docs/agent-council-next-steps.md`.
+Council de sub-agentes Claude Code para validar trades/setups além do scoring determinístico. Documentação completa: `docs/agent-council-next-steps.md`. Spec do orquestrador: `docs/superpowers/specs/2026-04-29-leader-agent-design.md`.
 
-**Sub-agentes definidos em `.claude/agents/`:**
+**Agentes definidos em `.claude/agents/`:**
 
 - **`news-hunter.md`** — busca notícias/macro/setor (últimos 7–14 dias), retorna bias bullish/bearish/neutro com **Verification Section** obrigatória: todo número/data/entidade específico precisa ter ≥2 fontes independentes (`[VERIFIED]`), 1 fonte (`[MEDIUM CONFIDENCE]`) ou ser dispensado (`[UNVERIFIED]`). Ferramentas: `WebSearch`, `WebFetch`. Existe para evitar a falha de hallucination observada num run anterior (cifra "$15.6M token unlock" fabricada). Cap: ~600 palavras.
 - **`pattern-validator.md`** — auditoria de coerência técnica (direção vs trend, integridade de padrões, MTF, R:R, cap de risco). Sempre termina com bloco **`[SCORE RECALIBRATION]`** (score determinístico vs score coerente + delta + justificativa de uma linha) — mesmo quando concorda com o scanner. Ferramentas: `Read`, `Grep`, `Glob` (somente leitura). Veredicto final: VALID / SUSPECT / REJECT. Cap: ~500 palavras.
+- **`leader.md`** *(adicionado 2026-04-29)* — orquestrador do council, modelo **Sonnet** (cf. `model: sonnet` no frontmatter). Roda o ciclo `/leader-review` em três fases: (1) reflexão sobre trades fechados desde a última invocação, gravando em `trade_reflections` via `POST /api/reflections`; (2) revisão dos trades ativos (HOLD / EXIT / TIGHTEN) — somente HOLD/EXIT/TIGHTEN são propostos como **curl que o usuário roda manualmente**; (3) avaliação de candidatos novos vindos de `POST /api/scan/preview`, com gate sequencial `pattern-validator` → `news-hunter`, e abertura via `POST /api/trades/open` quando aprovado. Ferramentas: `Task`, `Read`, `Bash`, `Grep`, `Glob`. Hard guardrails: NÃO executa `/close` nem `/tighten-stop` diretamente, NÃO aprova candidatos `5m`/`30m`, NÃO ultrapassa `max_positions=5`, NÃO inventa candidatos fora do array de `/scan/preview`.
 
-**Como invocar:** `Task` tool com `subagent_type: news-hunter` ou `subagent_type: pattern-validator`. Ambos recebem o setup como input do agent caller (Leader); nenhum deles emite ordens de trade — isso fica com o Leader.
+**Como invocar:** `Task` tool com `subagent_type: leader` (o caso de uso normal — o Leader então despacha os outros dois). Os sub-agentes também podem ser chamados isoladamente via `subagent_type: news-hunter` ou `subagent_type: pattern-validator`. Nenhum dos sub-agentes emite ordens de trade — somente o Leader (e somente para abertura).
 
-**Não confundir com:** o backend production scanner (`backend/scanner.js`) — o council é um overlay opcional, não está integrado ao pipeline automático. Devil's Advocate (3º agente do design original) ainda não tem prompt refinado; o achado dele de stop-integrity virou o item 1 das pendências.
+**Pipeline final (Leader era):**
+- Cron de 15min (`backend/scanner.js`) escaneia → registra candidatos em `scan_log.candidates_json` → **NÃO abre trades**.
+- Usuário invoca o Leader manualmente → Leader chama `POST /api/scan/preview` → roda gates → POST `/api/trades/open` para os aprovados.
+- Frontend `painel.html` continua funcionando (botão "Escanear" usa `/api/scan/manual`, alias de `/preview`).
+
+**Helper relacionado:** `backend/stop-validator.js` exporta `isStopTighter(direction, current_stop, new_stop)` — pura, direction-aware (BUY: tighter = higher; SELL: tighter = lower; equality = false; non-finite = false). Cobertura: `tests/stop-validator.test.js` (9 testes). Usada por `POST /api/trades/:id/tighten-stop` para rejeitar afrouxamentos.
+
+**Não confundir com:** o backend production scanner (`backend/scanner.js`) — desde 2026-04-29 ele é só um coletor de candidatos. O Leader é o gatekeeper. Devil's Advocate (3º agente do design original) ainda não tem prompt refinado; o achado dele de stop-integrity virou o item 1 das pendências.
