@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import { getTrades, getActiveTrades, getTrade, getStats } from '../db.js';
+import { getTrades, getActiveTrades, getTrade, getStats, updateTrade } from '../db.js';
 import { closeManualAt } from '../paper-trader.js';
+import { isStopTighter } from '../stop-validator.js';
 
 const router = Router();
 
@@ -111,6 +112,32 @@ router.post('/:id/close', async (req, res) => {
   if (!result) return res.status(400).json({ error: 'Nada a fechar' });
 
   res.json({ ok: true, price, pnl: result.pnl });
+});
+
+// POST /api/trades/:id/tighten-stop — move stop closer to entry (never away)
+router.post('/:id/tighten-stop', (req, res) => {
+  const { id } = req.params;
+  const { new_stop } = req.body ?? {};
+
+  if (!Number.isFinite(new_stop)) {
+    return res.status(400).json({ error: 'new_stop must be a finite number' });
+  }
+
+  const trade = getTrade(id);
+  if (!trade) return res.status(404).json({ error: 'trade not found' });
+
+  const inactiveStatuses = ['stop', 'stopped_at_entry', 'expired', 'manual', 'm3'];
+  if (inactiveStatuses.includes(trade.status)) {
+    return res.status(409).json({ error: 'trade not active' });
+  }
+
+  if (!isStopTighter(trade.direction, trade.current_stop, new_stop)) {
+    return res.status(400).json({ error: 'stop can only be tightened, not widened' });
+  }
+
+  updateTrade(id, { current_stop: new_stop });
+  console.log(`[tighten-stop] trade=${id} ${trade.current_stop} → ${new_stop}`);
+  res.json({ id, new_stop });
 });
 
 export default router;
