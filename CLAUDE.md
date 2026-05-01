@@ -108,9 +108,9 @@ Code sections are separated by `// ───────────────
 
 **Auto-scan:** Every 15 minutes via `node-cron`. Scans all 39 default coins in "both" mode (all TFs). Skips coins with an active trade. Applies MTF confluence identically to the frontend.
 
-**Paper trading:** Opens positions when `score >= min_score` AND `active_positions < max_positions` AND `current_capital >= alloc_pct%`. Default: 2% per trade, max 10 positions, `min_score = 85`.
+**Paper trading:** Opens positions when `score >= min_score` AND `active_positions < max_positions` AND `current_capital >= alloc_pct%`. Default (Leader era): 2% per trade, max 5 positions, `min_score = 85`. Backend cron no longer auto-opens — see `/api/scan/preview` and `/api/trades/open`.
 
-**Three backend filters applied before opening any position:**
+**Three backend filters applied before opening any position:** *(Backend cron stopped auto-opening after Leader integration — these filters now run when the Leader explicitly POSTs to `/api/trades/open`.)*
 1. **Filtro de score mínimo:** `score >= min_score` (default 85 — análise de dados mostrou WR=0% para score 70-79 e WR=9% para 80-84).
 2. **Filtro de tendência macro (BTC EMA200 4h):** `fetchMacroBtcTrend()` compara o preço atual do BTC com sua EMA200 no 4h. Se BTC < EMA200 → macro `'bear'` → bloqueia LONGs. Se BTC > EMA200 → macro `'bull'` → bloqueia SHORTs. Retorna `null` em caso de falha (fail-open: permite todos os setups quando dados insuficientes).
 3. **Cap de risco por trade (`MAX_STOP_RISK_MULTIPLIER = 50`):** Rejeita o trade se `stop_pct × leverage > 50`. Garante que nenhum stop único possa consumir mais de 50% do capital alocado naquela posição. Exemplo: stop de 9.9% com 10x alavancagem = 99% > 50 → bloqueado.
