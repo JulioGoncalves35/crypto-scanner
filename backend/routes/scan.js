@@ -5,12 +5,10 @@ const router = Router();
 
 let scanRunning = false;
 
-// POST /api/scan/manual — trigger an immediate scan
-router.post('/manual', async (_req, res) => {
+async function _runOnce(res) {
   if (scanRunning) {
     return res.status(409).json({ error: 'Scan already running' });
   }
-
   scanRunning = true;
   try {
     const result = await runScan();
@@ -20,7 +18,13 @@ router.post('/manual', async (_req, res) => {
   } finally {
     scanRunning = false;
   }
-});
+}
+
+// POST /api/scan/preview — Leader-driven fresh scan, returns candidates without opening
+router.post('/preview', async (_req, res) => _runOnce(res));
+
+// POST /api/scan/manual — same behavior, kept for backward compatibility with existing UI
+router.post('/manual', async (_req, res) => _runOnce(res));
 
 // GET /api/scan/status
 router.get('/status', (_req, res) => {
