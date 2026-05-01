@@ -42,7 +42,11 @@
       "Bash(python -c ' *)",
       "Bash(python *)",
       "Bash(python3 -c ' *)",
-      "Bash(python3 -c \"import sys,json; [print\\(x['name']\\) for x in json.load\\(sys.stdin\\)]\")"
+      "Bash(python3 -c \"import sys,json; [print\\(x['name']\\) for x in json.load\\(sys.stdin\\)]\")",
+      "Bash(npm run *)",
+      "PowerShell($conn = Get-NetTCPConnection -LocalPort 3001 -State Listen -ErrorAction SilentlyContinue; if \\($conn\\) { $conn | Select-Object -First 1 | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force; Write-Output \"killed pid=$\\($_.OwningProcess\\)\" } } else { Write-Output \"no listener\" })",
+      "Skill(schedule)",
+      "Skill(schedule:*)"
     ]
   }
 }
