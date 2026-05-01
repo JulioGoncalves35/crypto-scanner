@@ -66,7 +66,8 @@ function initSchema() {
       duration_ms INTEGER,
       opportunities INTEGER NOT NULL DEFAULT 0,
       skipped_active INTEGER NOT NULL DEFAULT 0,
-      errors TEXT
+      errors TEXT,
+      candidates_json TEXT
     );
 
     CREATE TABLE IF NOT EXISTS trade_reflections (
@@ -84,6 +85,9 @@ function initSchema() {
 
   // Migration: add analysis_json column if not present (existing DBs)
   try { db.exec('ALTER TABLE trades ADD COLUMN analysis_json TEXT'); } catch (_) {}
+
+  // Migration: add candidates_json column to scan_log if not present
+  try { db.exec('ALTER TABLE scan_log ADD COLUMN candidates_json TEXT'); } catch (_) {}
 
   // Migration: bump max_positions default from 5 to 10 for existing accounts
   try {
@@ -208,11 +212,11 @@ export function updateTrade(id, fields) {
 
 // ─── Scan Log ─────────────────────────────────────────────────────────────────
 
-export function insertScanLog({ ran_at, duration_ms, opportunities, skipped_active, errors }) {
+export function insertScanLog({ ran_at, duration_ms, opportunities, skipped_active, errors, candidates_json }) {
   getDb().prepare(`
-    INSERT INTO scan_log (ran_at, duration_ms, opportunities, skipped_active, errors)
-    VALUES (?, ?, ?, ?, ?)
-  `).run(ran_at, duration_ms, opportunities, skipped_active, errors ?? null);
+    INSERT INTO scan_log (ran_at, duration_ms, opportunities, skipped_active, errors, candidates_json)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(ran_at, duration_ms, opportunities, skipped_active, errors ?? null, candidates_json ?? null);
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
