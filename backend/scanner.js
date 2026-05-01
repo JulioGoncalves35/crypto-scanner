@@ -16,12 +16,8 @@ import {
 import {
   getAccount,
   getActiveCoins,
-  countActivePositions,
-  insertTrade,
   insertScanLog,
 } from './db.js';
-
-import { openPosition } from './paper-trader.js';
 
 // TF → trade type classification
 const TF_TYPE = {
@@ -119,7 +115,7 @@ export async function runScan() {
   const fg = await fetchFearGreed();
   const macroTrend = await fetchMacroBtcTrend();
 
-  let opportunities = 0;
+  const candidates = [];
   let skippedActive = 0;
   const errors = [];
 
@@ -190,17 +186,9 @@ export async function runScan() {
         continue;
       }
 
-      try {
-        const trade = await openPosition(setup);
-        if (trade) {
-          opportunities++;
-          // After opening, mark coin as active so we don't open another TF of same coin
-          activeCoins.add(`${symbol}USDT`);
-          break; // only 1 trade per coin per scan
-        }
-      } catch (err) {
-        errors.push(`open position ${symbol}: ${err.message}`);
-      }
+      // Push as candidate; only one per coin per scan (best by MTF order).
+      candidates.push(setup);
+      break;
     }
   }
 
@@ -209,11 +197,12 @@ export async function runScan() {
   insertScanLog({
     ran_at: new Date().toISOString(),
     duration_ms,
-    opportunities,
+    opportunities: candidates.length,
     skipped_active: skippedActive,
     errors: errors.length > 0 ? JSON.stringify(errors) : null,
+    candidates_json: candidates.length > 0 ? JSON.stringify(candidates) : null,
   });
 
-  console.log(`[scanner] scan complete — ${opportunities} opportunities, ${skippedActive} skipped, ${duration_ms}ms`);
-  return { opportunities, skipped_active: skippedActive, duration_ms, errors };
+  console.log(`[scanner] scan complete — ${candidates.length} candidates, ${skippedActive} skipped, ${duration_ms}ms`);
+  return { candidates, skipped_active: skippedActive, duration_ms, errors };
 }
