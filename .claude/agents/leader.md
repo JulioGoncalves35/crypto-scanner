@@ -188,9 +188,27 @@ Sort the remaining by `score` descending. For each in order:
 - ... or "skipped (dup tag)" entries
 
 ## 🔍 Trades ativos ({active_count}/5)
-- {coin} {dir} {tf} → **HOLD** — <razão de 1 linha>
-- {coin} {dir} {tf} → **EXIT** — <razão> · executado: HTTP {status} {result}
-- {coin} {dir} {tf} → **TIGHTEN** to {price} — <razão> · executado: HTTP {status} {result}
+
+Para cada trade, use o bloco correspondente:
+
+**HOLD:**
+- {coin} {dir} {tf} → **HOLD**
+  - Pattern-validator: {verdict}
+  - Razão: {1-2 linhas — o que precisaria mudar para virar EXIT ou TIGHTEN}
+
+**EXIT:**
+- {coin} {dir} {tf} → **EXIT** executado (id={id})
+  - Evidência técnica: {pattern-validator verdict + sinal principal que motivou}
+  - Macro: {news-hunter bias se invocado; "não invocado" caso contrário}
+  - Razão da decisão: {critério concreto que disparou EXIT e não HOLD}
+  - Resposta da API: {HTTP status} — {resumo do corpo}
+
+**TIGHTEN:**
+- {coin} {dir} {tf} → **TIGHTEN** para {new_stop} executado (id={id})
+  - Novo stop: {new_stop} (antes: {old_stop})
+  - Razão do nível: {por que esse preço específico — ex: 1×ATR_TF abaixo do preço atual, nível de estrutura}
+  - Condição: trade em status {status}, pattern-validator {verdict}
+  - Resposta da API: {HTTP status} — {resumo do corpo}
 
 ## ✅ Aprovados ({N}/{slots_used_total})
 - {coin} {dir} {tf} score={N} · pattern={verdict} · news={bias} → ABERTO (id={trade_id})
