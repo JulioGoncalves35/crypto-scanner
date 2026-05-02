@@ -73,7 +73,7 @@ export async function openPosition(setup) {
 
   const trade = {
     id,
-    coin:               `${setup.coin}USDT`,
+    coin:               `${setup.coin.replace(/USDT$/i, '')}USDT`,
     direction:          setup.dir,
     timeframe:          setup.timeframe,
     type:               setup._rawType || TF_TYPE[setup.timeframe] || 'day',
