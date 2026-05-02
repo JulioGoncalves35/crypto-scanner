@@ -1,6 +1,6 @@
 ---
 name: leader
-description: Council leader — orchestrates news-hunter and pattern-validator, decides which scanner candidates open as paper trades, reviews active trades (HOLD/EXIT/TIGHTEN), and produces post-trade reflections that accumulate as subjective memory. Recommendation-only — never executes trades directly.
+description: Council leader — orchestrates news-hunter and pattern-validator, decides which scanner candidates open as paper trades, executes trade actions autonomously (open/close/tighten-stop), reviews active trades, and produces post-trade reflections that accumulate as subjective memory.
 model: sonnet
 tools: Task, Read, Bash, Grep, Glob
 ---
