@@ -38,7 +38,9 @@
       "Skill(update-config:*)",
       "Bash(where claude *)",
       "Bash(date /t)",
-      "Bash(time /t)"
+      "Bash(time /t)",
+      "Bash(where.exe claude *)",
+      "Bash(claude --version)"
     ]
   }
 }

@@ -1,18 +1,34 @@
-$workDir = "c:\Users\julio\Documents\github\crypto-scanner"
+$workDir  = "C:\Users\julio\Documents\github\crypto-scanner"
 $claudeExe = "C:\Users\julio\.local\bin\claude.exe"
-$logFile = "$workDir\logs\leader-$(Get-Date -Format 'yyyyMMdd-HHmm').log"
+$logDir   = "$workDir\backend\logs"
+$logFile  = "$logDir\leader-$(Get-Date -Format 'yyyyMMdd-HHmm').log"
+
+if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir | Out-Null }
+
+function Log($msg) {
+    $line = "$(Get-Date -Format 'HH:mm:ss') $msg"
+    Add-Content -Path $logFile -Value $line
+    Write-Host $line
+}
+
+Log "=== Leader Review iniciado ==="
+
+# Abort if backend is offline — leader cannot operate without it
+try {
+    $null = Invoke-RestMethod -Uri "http://localhost:3001/api/health" -TimeoutSec 5
+    Log "Backend OK"
+} catch {
+    Log "ERRO: Backend offline. Suba com 'npm run server' e tente novamente."
+    exit 1
+}
 
 Set-Location $workDir
 
-$prompt = @"
-Rode o ciclo completo do agente Leader seguindo .claude/agents/leader.md:
-Fase 1 - Reflexoes: leia os trades fechados recentemente via GET http://localhost:3001/api/trades, identifique os sem reflexao em GET http://localhost:3001/api/reflections, e escreva reflexoes via POST http://localhost:3001/api/reflections.
-Fase 2 - Trades ativos: leia GET http://localhost:3001/api/trades/active e para cada um decida HOLD/EXIT/TIGHTEN. Nao execute acoes de exit/tighten diretamente — apenas liste os curls que o usuario deve rodar.
-Fase 3 - Novos candidatos: chame POST http://localhost:3001/api/scan/preview para obter candidatos, rode o gate sequencial pattern-validator e news-hunter para cada candidato com score >= 85, e abra apenas os aprovados via POST http://localhost:3001/api/trades/open. Nunca chame /api/trades/open sem ambos os sub-agentes terem completado.
-Backend: http://localhost:3001. Nunca passar coin com sufixo USDT no campo coin do body de /api/trades/open.
-"@
+# --dangerously-skip-permissions: bypasses all tool permission prompts (safe for local-only agent)
+# --agent leader: loads .claude/agents/leader.md as the session agent
+# $null piped to stdin: prevents claude from waiting for TTY input in Task Scheduler context
+Log "Invocando agente Leader..."
+$null | & $claudeExe --dangerously-skip-permissions --print --agent leader "rode o Leader pra revisar" 2>&1 |
+    Tee-Object -Encoding utf8 -FilePath $logFile -Append
 
-# Pipe $null to stdin to avoid claude hanging waiting for stdin input in non-TTY contexts (e.g. Task Scheduler)
-$null | & $claudeExe --dangerously-skip-permissions --print $prompt 2>&1 | Tee-Object -Encoding utf8 -FilePath $logFile
-
-Write-Host "Log salvo em: $logFile"
+Log "=== Leader Review concluído. Log: $logFile ==="
