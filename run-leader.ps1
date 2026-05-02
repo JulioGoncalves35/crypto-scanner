@@ -12,6 +12,6 @@ Fase 3 - Novos candidatos: chame POST http://localhost:3001/api/scan/preview par
 Backend: http://localhost:3001. Nunca passar coin com sufixo USDT no campo coin do body de /api/trades/open.
 "@
 
-& $claudeExe --dangerously-skip-permissions --print $prompt 2>&1 | Tee-Object -FilePath $logFile
+& $claudeExe --dangerously-skip-permissions --print $prompt 2>&1 | Tee-Object -Encoding utf8 -FilePath $logFile
 
 Write-Host "Log salvo em: $logFile"
