@@ -35,7 +35,10 @@
       "Skill(schedule)",
       "Skill(schedule:*)",
       "Skill(update-config)",
-      "Skill(update-config:*)"
+      "Skill(update-config:*)",
+      "Bash(where claude *)",
+      "Bash(date /t)",
+      "Bash(time /t)"
     ]
   }
 }
