@@ -158,10 +158,11 @@ Sort the remaining by `score` descending. For each in order:
    REJECT otherwise.
    ```
 5. If APPROVED and `slots_available > 0`:
+   Build the body from the candidate object. **Critical:** the `coin` field MUST be the base symbol WITHOUT the USDT suffix — use the value from the scan candidate directly (e.g., `"XRP"`, not `"XRPUSDT"`). The backend appends USDT internally.
    ```bash
    curl -s -X POST http://localhost:3001/api/trades/open \
      -H "Content-Type: application/json" \
-     -d '<setup_json>'
+     -d '{"coin":"<base_symbol>","dir":"<dir>","timeframe":"<tf>","score":<score>,"entry":<entry>,"stop":<stop>,"m1":<m1>,"m2":<m2>,"m3":<m3>}'
    ```
    Decrement `slots_available`. If response is 409 (race), report as "approved but blocked" and continue to next candidate.
 6. If APPROVED but `slots_available == 0`, add to watchlist instead of opening.
@@ -206,6 +207,8 @@ Sort the remaining by `score` descending. For each in order:
 - Do NOT approve any candidate with `timeframe ∈ {5m, 30m}`.
 - Do NOT call `POST /api/trades/open` if `slots_available <= 0`.
 - Do NOT call `POST /api/trades/open` if `stop_pct × leverage > 50` (re-check in your head before the curl — backend will reject anyway, but don't waste the call).
+- Do NOT call `POST /api/trades/open` without BOTH sub-agents having completed successfully: `pattern-validator` (non-REJECT verdict) AND `news-hunter` (no strong contrary bias). If either sub-agent call fails or errors, treat the candidate as REJECTED and move on.
+- Do NOT pass `coin` with a USDT suffix to `POST /api/trades/open`. Always use the raw base symbol (e.g., `"XRP"`, `"FIL"`, `"1000PEPE"`). The backend appends USDT — passing `"XRPUSDT"` produces `"XRPUSDTUSDT"` in the database.
 - Do NOT invent candidates outside the array returned by `/api/scan/preview`.
 - Do NOT call Bybit's REST API for anything except read-only kline data needed for reviewing active trades.
 - Do NOT exceed ~1500 words in the final report.
