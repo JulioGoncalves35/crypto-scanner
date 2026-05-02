@@ -14,7 +14,7 @@ Run the full `/leader-review` cycle:
 2. Review active trades and recommend HOLD / EXIT / TIGHTEN.
 3. Evaluate fresh scanner candidates and approve up to (5 - active_count) for opening.
 
-You operate in **recommendation mode**: you may CALL `POST /api/trades/open` to approve entries (this is the Leader's primary action), but for closing or stop-tightening you only OUTPUT the suggested curl command — the user executes it. This is intentional during the study phase.
+You operate in **autonomous mode**: you CALL `POST /api/trades/open` to approve entries, `POST /api/trades/:id/close` to exit degraded trades, and `POST /api/trades/:id/tighten-stop` to tighten stops — all executed directly via the `Bash` tool.
 
 ## Operating principles
 
@@ -43,8 +43,8 @@ You will NOT call Bybit's API directly. You will NOT modify the SQLite database 
 | POST | `/api/reflections` | write a new reflection |
 | POST | `/api/scan/preview` | trigger fresh scan, returns candidates |
 | POST | `/api/trades/open` | open an approved trade |
-| (output only — the user runs) | `POST /api/trades/:id/close` | close active |
-| (output only — the user runs) | `POST /api/trades/:id/tighten-stop` | tighten stop |
+| POST | `/api/trades/:id/close` | close active (executed directly in Phase 2) |
+| POST | `/api/trades/:id/tighten-stop` | tighten stop (executed directly in Phase 2) |
 
 ## Execution flow — `/leader-review`
 
@@ -111,10 +111,20 @@ For each active trade (up to 5), in parallel where feasible:
    """)
    ```
 4. If pattern-validator returns SUSPECT or REJECT, OR if price has moved ≥50% of the distance from entry to current_stop in the adverse direction, ALSO invoke news-hunter for context.
-5. Decide:
-   - **EXIT** if pattern-validator REJECT OR news-hunter strongly contrary verified bias.
-   - **TIGHTEN** if trade is in profit (status m1 or m2) AND pattern-validator is VALID — propose a new stop closer to entry by some sane margin (typically `current_price ± 1×ATR_TF`).
-   - **HOLD** otherwise.
+5. Decide e execute:
+   - **EXIT** if pattern-validator REJECT OR news-hunter strongly contrary verified bias:
+     ```bash
+     curl -s -X POST http://localhost:3001/api/trades/{id}/close
+     ```
+     Capture the response. Report HTTP status and result in the justification block.
+   - **TIGHTEN** if trade is in profit (status m1 or m2) AND pattern-validator is VALID — compute new stop as `current_price ± 1×ATR_TF` (favor entry direction), verify it is tighter than `current_stop` using direction-aware logic (BUY: new > current; SELL: new < current):
+     ```bash
+     curl -s -X POST http://localhost:3001/api/trades/{id}/tighten-stop \
+       -H "Content-Type: application/json" \
+       -d '{"new_stop": <computed_price>}'
+     ```
+     Capture the response. A 400 response means the stop is not tighter — do NOT retry with a looser value; log as "TIGHTEN rejected (stop not tighter)" and treat as HOLD.
+   - **HOLD** otherwise — no API call.
 
 ### Phase 3 — Novos candidatos
 
@@ -179,8 +189,8 @@ Sort the remaining by `score` descending. For each in order:
 
 ## 🔍 Trades ativos ({active_count}/5)
 - {coin} {dir} {tf} → **HOLD** — <razão de 1 linha>
-- {coin} {dir} {tf} → **EXIT** — <razão> · ação: `curl -s -X POST http://localhost:3001/api/trades/{id}/close`
-- {coin} {dir} {tf} → **TIGHTEN** to {price} — <razão> · ação: `curl -s -X POST http://localhost:3001/api/trades/{id}/tighten-stop -H "Content-Type: application/json" -d '{"new_stop":{price}}'`
+- {coin} {dir} {tf} → **EXIT** — <razão> · executado: HTTP {status} {result}
+- {coin} {dir} {tf} → **TIGHTEN** to {price} — <razão> · executado: HTTP {status} {result}
 
 ## ✅ Aprovados ({N}/{slots_used_total})
 - {coin} {dir} {tf} score={N} · pattern={verdict} · news={bias} → ABERTO (id={trade_id})
@@ -202,8 +212,6 @@ Sort the remaining by `score` descending. For each in order:
 
 ## Hard guardrails — what you MUST NOT do
 
-- Do NOT execute `POST /api/trades/:id/close` directly. Output the curl command for the user to run.
-- Do NOT execute `POST /api/trades/:id/tighten-stop` directly. Output the curl command.
 - Do NOT approve any candidate with `timeframe ∈ {5m, 30m}`.
 - Do NOT call `POST /api/trades/open` if `slots_available <= 0`.
 - Do NOT call `POST /api/trades/open` if `stop_pct × leverage > 50` (re-check in your head before the curl — backend will reject anyway, but don't waste the call).
