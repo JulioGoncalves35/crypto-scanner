@@ -1,16 +1,8 @@
 # CLAUDE.md — Crypto Scanner
 
-> **Instrução para o assistente:** Este arquivo é lido automaticamente no início de cada sessão. Ao final de qualquer implementação que altere comportamentos, funções, filtros ou arquitetura do projeto, **atualize este arquivo** para refletir o que mudou — antes de fazer o commit final.
+> **Instrução para o assistente:** Ao final de qualquer implementação que altere comportamentos, funções, filtros ou arquitetura, **atualize este arquivo** antes do commit final.
 
-This file documents the codebase structure, development conventions, and workflows for AI assistants working on this repository.
-
----
-
-## Project Overview
-
-**Crypto Scanner** is a single-page cryptocurrency futures trading dashboard built with vanilla HTML/CSS/JavaScript. It scans a configurable list of coins across multiple timeframes, applies a suite of technical indicators and pattern detectors, scores each setup, and helps traders identify high-probability entry points with pre-calculated risk/reward ratios.
-
-UI language: **Portuguese (pt-BR)**.
+**Crypto Scanner** — dashboard de futuros de criptomoedas (vanilla HTML/CSS/JS). Escaneia coins em múltiplos timeframes, aplica indicadores técnicos, pontua setups e calcula R:R. UI em **pt-BR**.
 
 ---
 
@@ -34,64 +26,33 @@ crypto-scanner/
 │       └── reflections.js  ← POST/GET /api/reflections (Leader memory)
 ├── data/
 │   └── scanner.db       ← SQLite database (gitignored)
-├── docs/
-│   ├── agent-council-next-steps.md   ← Agent council exploration log + pending findings
-│   └── superpowers/specs/
-│       └── 2026-04-29-leader-agent-design.md  ← Leader design spec
 ├── .claude/
 │   └── agents/
-│       ├── news-hunter.md            ← Council sub-agent: macro/news context with strict source verification
-│       ├── pattern-validator.md      ← Council sub-agent: technical coherence audit + score recalibration
-│       └── leader.md                 ← Council orchestrator: gates entries, reviews actives, writes reflections
-└── tests/               ← Vitest test suite (351 tests, includes stop-validator)
+│       ├── news-hunter.md
+│       ├── pattern-validator.md
+│       └── leader.md
+└── tests/               ← Vitest test suite (351 tests)
 ```
 
-**The frontend (`painel.html`) works fully standalone** even when the backend is offline. The backend adds automated scanning, paper trading, and persistent history.
-
-**Backend requires Node.js 22.5+** (uses built-in `node:sqlite`). Start with: `npm run server`
-
----
-
-## External Dependencies (CDN only)
-
-| Library | Version | Purpose |
-|---|---|---|
-| `lightweight-charts` | 4.1.1 | Candlestick chart rendering |
-| Google Fonts | — | Space Mono, Syne typefaces |
-| CoinCap / jsDelivr | — | Cryptocurrency icon images |
-
-All dependencies are loaded via `<script src="...">` or `<link href="...">` CDN tags inside `painel.html`. No npm, no bundler, no local `node_modules`.
+**Frontend (`painel.html`) funciona standalone** sem backend. **Backend requer Node.js 22.5+**: `npm run server`
 
 ---
 
 ## Architecture
 
-### Application State
-
-A single `state` object holds all runtime data:
-
 ```javascript
 const state = {
-  mode: 'day',       // Trading mode: 'scalp' | 'day' | 'swing' | 'both'
-  rr: 'fib',        // Risk/Reward mode: 'fib' | 'max' | '2' | '3'
-  score: '70',      // Minimum score filter: '50' | '60' | '70'
-  dir: 'both',      // Direction: 'both' | 'buy' | 'sell'
-  coins: Set,       // Currently selected coin symbols
-  cards: [],        // Current scan results
-  leverage: 10,     // Futures leverage: 5 | 10 | 20 | 50
+  mode: 'day',    // 'scalp' | 'day' | 'swing' | 'both'
+  rr: 'fib',     // 'fib' | 'max' | '2' | '3'
+  score: '70',   // minimum score filter
+  dir: 'both',   // 'both' | 'buy' | 'sell'
+  coins: Set,
+  cards: [],
+  leverage: 10,
 };
-```
 
-### Core Configuration Constants
-
-```javascript
-const BYBIT_TAKER    = 0.00055;   // 0.055% per side
-const ROUND_TRIP_FEE = 0.0011;    // 0.11% total fee
-
-const FIB_NORMAL = { m1: 1.618, m2: 2.618, m3: 4.236 };
-const FIB_MAX    = { m1: 2.618, m2: 4.236, m3: 6.854 };
-const FIB_FIXED2 = { m1: 2.0,   m2: 3.0,   m3: 4.0 };
-const FIB_FIXED3 = { m1: 3.0,   m2: 4.5,   m3: 6.0 };
+const BYBIT_TAKER    = 0.00055;
+const ROUND_TRIP_FEE = 0.0011;
 
 const TIMEFRAMES_BY_MODE = {
   scalp: ['5m', '15m', '30m'],
@@ -101,405 +62,144 @@ const TIMEFRAMES_BY_MODE = {
 };
 ```
 
+**Data flow:**
+```
+runRealAnalysis() → fetchFearGreed() → per coin: fetchFunding + fetchOI
+  → per timeframe: fetchCandles → _calcTechIndicators → detect* → _computeScore → analyzeCandles()
+  → MTF scoring → deduplication (best per coin) → sort by M3 return → renderCards()
+```
+
 ---
 
-## Functional Modules (all inside `painel.html`)
+## Scoring Engine (`_computeScore`)
 
-Code sections are separated by `// ─────────────────────` divider comments.
+- **ADX hard filter (TF-aware):** `TF_ADX_MIN = { '5m': 23, '15m': 22, '30m': 20, '1h': 18, '4h': 18, '1D': 18 }`
+- **ADX scoring:** >30 → ±10 · >25 → ±6 · 20–25 → -3 · <20 → -8
+- **MTF:** confluence bonus +6–12 (2+ TFs same dir) · conflict penalty -20 (lower TF opposes highest TF)
+- **BOS/CHoCH:** Break of Structure ±12 · Change of Character ±22
+- **Squeeze Momentum:** released ±15 · post-squeeze momentum ±6
+- **Order Block:** ±14 quando price dentro da zona (99%–101%)
+- **Trendline Break:** LTB break (bullish) +10 · LTA break (bearish) -10
+- **Ichimoku:** capped ±20 (price above/below cloud ±10, TK cross ±8, Chikou ±4) — requer ≥78 candles
+- **Anchored VWAP:** >0.2% above → +8 · >0.2% below → -8
+- **Volume Profile:** above POC +6 · below POC -6 · below VAL +5 · above VAH -5
+- **CVD:** ±7 por trend crescente/decrescente
+- **Combo penalty:** RSI oversold + F&G <25 em SHORT → `score += 20` (short squeeze risk). Simétrico para LONG.
+- **Confluência multi-categoria:** 2 categorias alinhadas ±5 · 3 → ±10 · 4 → ±15. Só aplica quando `score !== 0`.
 
-### 9. Backend Server
+**Stop mínimo por TF:** `TF_MIN_STOP = { 5m: 0.8%, 15m: 1.2%, 30m: 1.5%, 1h: 2%, 4h: 3%, 1D: 5% }`
 
-**Location:** `backend/` folder. Runs on `http://localhost:3001`.
+**Nível de confiança (exibição apenas):** score 60–72 → NV1 · 73–84 → NV2 · 85+ → NV3
 
-**Auto-scan:** Every 15 minutes via `node-cron`. Scans all 39 default coins in "both" mode (all TFs). Skips coins with an active trade. Applies MTF confluence identically to the frontend. **Since Leader integration (2026-04-29) the cron does NOT open trades** — `runScan()` accumulates candidates, persists them to `scan_log.candidates_json`, and returns `{ candidates, skipped_active, duration_ms, errors }`. Trade opening is now exclusive to `POST /api/trades/open`, which the Leader subagent calls after gating each candidate through `pattern-validator` and `news-hunter`.
+---
 
-**Paper trading:** Opens positions when `score >= min_score` AND `active_positions < max_positions` AND `current_capital >= alloc_pct%`. Default (Leader era): 2% per trade, max 5 positions, `min_score = 85`. Backend cron no longer auto-opens — see `/api/scan/preview` and `/api/trades/open`.
+## Backend Server
 
-**Three backend filters applied before opening any position:** *(Backend cron stopped auto-opening after Leader integration — these filters now run when the Leader explicitly POSTs to `/api/trades/open`.)*
-1. **Filtro de score mínimo:** `score >= min_score` (default 85 — análise de dados mostrou WR=0% para score 70-79 e WR=9% para 80-84).
-2. **Filtro de tendência macro (BTC EMA200 4h):** `fetchMacroBtcTrend()` compara o preço atual do BTC com sua EMA200 no 4h. Se BTC < EMA200 → macro `'bear'` → bloqueia LONGs. Se BTC > EMA200 → macro `'bull'` → bloqueia SHORTs. Retorna `null` em caso de falha (fail-open: permite todos os setups quando dados insuficientes).
-3. **Cap de risco por trade (`MAX_STOP_RISK_MULTIPLIER = 50`):** Rejeita o trade se `stop_pct × leverage > 50`. Garante que nenhum stop único possa consumir mais de 50% do capital alocado naquela posição. Exemplo: stop de 9.9% com 10x alavancagem = 99% > 50 → bloqueado.
+Roda em `http://localhost:3001`. Cron de **15min** escaneia todos os 41 coins — desde 2026-04-29 **NÃO abre trades automaticamente**, apenas acumula candidatos em `scan_log.candidates_json`. Trade opening é exclusivo de `POST /api/trades/open` (Leader).
 
-**Exit strategy (33/33/34):** Closes 33% at M1 (moves stop to entry), 33% at M2, 34% at M3. Also handles `expired` (horizon exhausted) and `stopped_at_entry` (stop hit after M1 at breakeven).
+**Três filtros antes de abrir qualquer posição:**
+1. `score >= min_score` (default 85 — WR=0% para 70-79, WR=9% para 80-84)
+2. BTC EMA200 4h: BTC < EMA200 → bear → bloqueia LONGs; BTC > EMA200 → bull → bloqueia SHORTs. Falha retorna `null` (fail-open)
+3. `MAX_STOP_RISK_MULTIPLIER = 50`: rejeita se `stop_pct × leverage > 50`
 
-**Price checker:** Every 5 minutes, for each active trade fetches the last 20 1-minute klines via `GET /v5/market/kline?interval=1` and aggregates the lowest low / highest high across candles overlapping the window since `last_checked_at`. Runs the state machine in two passes: first the adverse wick (low for BUY / high for SELL) to detect stop hits, then the favorable wick to detect target hits. Conservative ordering — when both sides were touched in the same window, stop fires (worst-case for trader, since intra-bar order is unknown). Falls back to ticker `lastPrice` if klines are unavailable.
+**Exit strategy (33/33/34):** fecha 33% no M1 (move stop para entry), 33% no M2, 34% no M3.
 
 **Trade statuses:** `active` → `m1` → `m2` → `m3` | `stop` | `stopped_at_entry` | `expired` | `manual`
 
-**SQLite tables:** `trades`, `paper_account`, `scan_log` (with `candidates_json` column logging full setup payloads from each scan tick), `trade_reflections` (Leader post-trade memory: `trade_id` FK, `reflection_text`, `lesson_tag`, `created_at`). Uses Node.js built-in `node:sqlite` (no compilation needed).
+**Price checker:** a cada 5min busca os últimos 20 candles de 1m; agrega low/high da janela desde `last_checked_at`. Passa: adverse wick (stop) primeiro, depois favorable wick (target). Quando ambos tocados na mesma janela, stop ganha.
 
-**REST API endpoints:**
-- `GET /api/health` — server status
-- `GET /api/account` — capital + stats
-- `POST /api/account/setup` — update account settings (alloc_pct, max_positions, min_score, leverage, initial_capital) **without touching current_capital**
-- `POST /api/account/reset` — reset account; body `{ mode: 'capital' }` zeroes current_capital back to initial_capital (keeps trade history); `{ mode: 'full' }` also deletes all trades and scan_log
-- `GET /api/trades`, `/api/trades/active` — trade list
-- `POST /api/trades/open` — Leader-driven entry from an approved setup. Validates required fields (coin, dir, timeframe, score, entry, stop, m1, m2, m3) and delegates to `openPosition`. Returns 409 when blocked by `max_positions` / capital / `MAX_STOP_RISK_MULTIPLIER` cap.
-- `POST /api/trades/:id/close` — close active trade manually at current Bybit price
-- `POST /api/trades/:id/tighten-stop` — move `current_stop` closer to entry (direction-aware via `isStopTighter`). Rejects loose adjustments (400), inactive trades (409), and unknown IDs (404). Never widens.
-- `POST /api/scan/preview` — canonical Leader entry: triggers fresh scan, returns `{ candidates, skipped_active, duration_ms, errors }` without opening any trade.
-- `POST /api/scan/manual` — alias of `/preview` kept for the existing painel.html UI. Both share the same 409 concurrency guard.
-- `GET /api/scan/status` — scan running?
-- `POST /api/reflections` — Leader writes a post-trade reflection (`{ trade_id, reflection_text, lesson_tag }`). 400 on missing required fields.
-- `GET /api/reflections?limit=N` — Leader reads recent reflections (default 20, max 200).
+**SQLite tables:** `trades`, `paper_account`, `scan_log` (com `candidates_json`), `trade_reflections` (`trade_id` FK, `reflection_text`, `lesson_tag`, `created_at`)
 
-**painel.html integration:** Checks backend on load with 2s timeout. Shows "Backend" tab with online/offline indicator, account stats, active trades table, history table, manual scan button, and account config form. Falls back gracefully when offline.
-
-**Active trades table features:**
-- "📊" button per row: fetches live candles and renders a collapsible lightweight-charts candlestick chart with horizontal price lines (Entrada/Stop/M1/M2/M3). Multiple charts can be open simultaneously. Chart row uses class `bk-chart-row`.
-- "✕ Fechar" button per row: confirms, POSTs to `/api/trades/:id/close`, shows P&L, refreshes table.
-- Row click still expands signals (class `bk-sig-row`). Signal row inserts after chart-row if one is open.
-- "↺ Atualizar" button shows loading state and "Atualizado às HH:MM" timestamp on completion.
-- Chart instances stored in `_bkChartInstances` map; destroyed on row collapse to avoid memory leaks.
-
-**Journal — backend entries pitfall:**
-- Backend trades saved to journal have string IDs like `"bk-1712345678900-BTCUSDT-15m"`, while manual saves use numeric timestamp IDs (`Date.now()`).
-- All inline event handlers in `renderEntryHTML` (updateResult, deleteEntry, checkSetupNow, updateNotes) must quote the id: `'${e.id}'` — without quotes, string IDs produce invalid JS.
-- All `find(x => x.id === id)` / `filter(x => x.id !== id)` comparisons use `String(x.id) === String(id)` to handle both types correctly.
-
-### 10. Backtest System — REMOVED (replaced by backend live history)
-
-The backtest tab and all JS functions were removed (~650 lines). The backend's accumulated trade history serves as real-data replacement. The following functions no longer exist in `painel.html`:
-
-- **Location:** `painel.html` only (not in `painel-core.js`) — REMOVED
-- `fetchCandlesBacktest(symbol, tf, limit, signal)` — fetches up to 1000 candles for backtest
-- `simulateOutcome(setup, futureCandles)` — walks future candles checking stop/m3/m2/m1 (highest target first); returns `{ result, mfePct, maePct, closePrice? }`. If horizon exhausted without resolution, returns `result='timeout'` with `closePrice` = last candle close
-- `calcBacktestPnL(setup, result, leverage, closePrice)` — P&L % calculation; handles `'timeout'` using `closePrice` vs entry for real P&L. **Stop-loss exits incluem 0.05% de slippage fixo** (`+SLIPPAGE=0.0005`) sobre a distância do stop para simular execução realista a mercado
-- `runBacktest(signal, minScore, selectedTFs, selectedCoins, selectedLeverage, horizon)` — sliding window orchestrator (WINDOW=200, STEP=10, LIMIT=1000)
-- `calcPatternHitRates(trades)` — per-indicator win rate from closed trades (min 3 occurrences, excludes open/timeout trades)
-- `buildInsightsHtml(...)` — renders 3 insight sections: pattern hit rate table, LONG/SHORT breakdown, P&L distribution bars
-- `renderBacktestResults(trades, periods, rejStats, leverage)` — full results renderer
-- **Trade results:** `m1` / `m2` / `m3` (target hit) · `stop` (stop-loss hit) · `timeout` (horizon exhausted, exit at close price) · `open` (never resolved — should not appear with normal/short horizons)
-- **Trade object extra fields:** `stopDist` (% entry→stop) · `m1Dist/m2Dist/m3Dist` (% entry→target) · `maePressure` (% of stop distance the price reached, 0–100+; ≥70 = near-miss)
-- **Pressure card:** "Pressão nos Stops" shows % of trades with maePressure ≥ 70 and distribution across 4 bands (0–25 / 25–50 / 50–75 / 75+)
-- **Table columns:** Data/Hora · Par · Dir · **Stop · M1** (% distances) · Resultado · P&L · MFE/MAE (with pressure % in parentheses)
-- **`calcPatternHitRates`:** includes timeouts — timeout with pnl > 0 = win, pnl < 0 = loss
-- **Controls:** score mínimo, alavancagem (5x/10x/20x/50x), horizonte (curto/normal/longo), moedas (BTC/ETH/SOL/BNB/XRP/ADA/AVAX, multi-select), timeframes
-- **Default coins:** BTC + ETH (pre-checked); other 5 coins opt-in
-- **Horizon — future window per TF:**
-  - Curto:  5m=60 (5h) · 15m=48 (12h) · 1h=36 (36h) · 4h=21 (3.5d)
-  - Normal: 5m=120 (10h) · 15m=96 (24h) · 1h=60 (2.5d) · 4h=42 (7d)  ← padrão
-  - Longo:  5m=288 (24h) · 15m=192 (48h) · 1h=120 (5d) · 4h=84 (14d)
-
-### 1. Coin Management
-- `initCoins()` — populates the coin selection grid on page load
-- `createCoinIcon(symbol)` — builds a coin tile with logo and checkbox
-- `addCustomCoin()` — adds a user-specified coin symbol
-- `selectAllCoins()` / `deselectAllCoins()` — bulk selection helpers
-
-### 2. API Integration
-- `fetchCandles(symbol, interval, limit)` — fetches OHLCV data from Bybit Futures API v5
-- `fetchFearGreed()` — fetches Fear & Greed index from alternative.me
-- `fetchJSON(url)` — base fetch with per-request 10s timeout and external signal support
-- `fetchWithFallback(url, signal)` — iterates through `CORS_PROXIES` on failure; only propagates `AbortError` if `signal.aborted` is true (i.e. user-initiated cancellation), not on internal timeouts
-
-**CORS proxy chain** (in order): direct → corsproxy.io → allorigins → thingproxy
-
-**Per-coin auxiliary fetches** (fetched once per coin before the timeframe loop):
-- Funding rate: `GET https://api.bybit.com/v5/market/funding/history?category=linear&symbol=...&limit=1`
-- Open interest: `GET https://api.bybit.com/v5/market/open-interest?category=linear&symbol=...&intervalTime=1h&limit=24`
-
-Both are optional — if they fail, `null` is passed to `analyzeCandles` and the scan continues.
-
-### 3. Technical Indicators
-| Function | Indicator |
+**REST API:**
+| Endpoint | Descrição |
 |---|---|
-| `calcEMA(data, period)` | Exponential Moving Average |
-| `calcRSI(data, period)` | Relative Strength Index |
-| `calcMACD(data)` | MACD line, signal, histogram |
-| `calcADX(candles, period)` | Average Directional Index |
-| `calcBollingerBands(data)` | Bollinger Bands (upper/mid/lower) |
-| `calcVWAP(candles)` | Volume-Weighted Average Price |
-| `calcOBV(candles)` | On-Balance Volume |
-| `calcATR(candles, period)` | Average True Range |
-| `calcStochRSI(data)` | Stochastic RSI |
-| `calcVolumeProfile(candles, bins=50)` | Volume Profile — POC, VAH, VAL |
-| `calcAnchoredVWAP(candles, lookback=100)` | VWAP anchored to highest-volume swing point |
-| `calcIchimoku(candles)` | Ichimoku Cloud (Tenkan/Kijun/Senkou A+B/Chikou) |
-| `calcSqueezeMomentum(candles)` | LazyBear Squeeze Momentum (BB inside Keltner) |
-| `_calcTechIndicators(candles)` | Orchestrates all indicator calculations |
-
-### 4. Pattern Detection
-| Function | Pattern |
-|---|---|
-| `detectCandlePatterns(candles)` | Hammer, Engulfing, Doji, Morning/Evening Star, Marubozu, Three Inside Up/Down, Três Soldados/Corvos, etc. |
-| `detectDivergences(candles, rsi)` | Bullish/Bearish RSI divergences |
-| `detectEMACross(ema9, ema21)` | Golden Cross / Death Cross |
-| `detectMarketStructure(candles)` | Higher highs/lows vs lower highs/lows |
-| `detectTriangle(candles)` | Ascending/Descending/Symmetrical triangles |
-| `detectDoubleTopBottom(candles)` | Double Top / Double Bottom patterns |
-| `detectOrderBlocks(candles, lookback=100)` | Order Block — last opposing candle before a BOS event |
-
-**New candle patterns (added to `detectCandlePatterns`):**
-| Pattern | Score | Condition |
-|---|---|---|
-| Marubozu Altista ↑ | +12 | Bull candle body/range ≥ 95% (no wicks) |
-| Marubozu Baixista ↓ | -12 | Bear candle body/range ≥ 95% |
-| Three Inside Up ↑ | +14 | Large bear → harami (body 35–50% of pp) → bull closing above pp midpoint |
-| Three Inside Down ↓ | -14 | Mirror of Three Inside Up |
-| Três Soldados Brancos ↑ | +18 | 3 consecutive bull candles, each opening inside prior body, body/range ≥ 60%, closing higher |
-| Três Corvos Negros ↓ | -18 | Mirror of Três Soldados Brancos |
-
-### 5. Scoring Engine
-- `_computeScore(indicators, patterns, direction)` — returns 0–100 score
-- ADX hard filter (TF-aware): `TF_ADX_MIN = { '5m': 23, '15m': 22, '30m': 20, '1h': 18, '4h': 18, '1D': 18 }` — scalp TFs need stronger trend confirmation
-- **ADX scoring (4 tiers):** >30 → ±10 (muito forte), >25 → ±6 (forte), 20–25 → -3 (fraca), <20 → -8 (lateral). ADX 20–25 now carries a mild penalty instead of being neutral.
-- MTF confluence bonus: +6–12 points if same direction on 2+ timeframes
-- MTF conflict penalty: -20 points if lower TF opposes highest TF
-- **Combo penalty — short squeeze risk:** when score < 0 AND RSI < 40 AND F&G < 25 → `score += 20` (reduces SHORT magnitude). Symmetric for LONGs (RSI > 60 AND F&G > 75 → `score -= 20`). Displayed as `"RISCO: ... — Short squeeze iminente"` in reasons.
-- **CVD:** `calcCVD(candles, period=30)` — Cumulative Volume Delta; `±7` pts for rising/falling trend
-- **BOS/CHoCH:** `detectBOSCHoCH(candles, lookback=60)` — Break of Structure (+12/-12) and Change of Character (+22/-22)
-- **Volume Profile:** `calcVolumeProfile(candles, bins=50)` — distributes volume by price level (50 bins). Returns `{ poc, vah, val, rangeHigh, rangeLow }`. Scoring: price above POC `+6` / below POC `-6`; price below VAL adds `+5` (potential mean-reversion); price above VAH adds `-5`. Guard uses `!= null` (handles both `null` and `undefined`). Displayed as a visual bar in the modal (Value Area band + POC line + current price marker). Backtest: VP reasons appear automatically in `calcPatternHitRates` hit-rate table via the `reasons` array — no extra code needed.
-- **Ichimoku Cloud:** `calcIchimoku(candles)` — requires ≥78 candles. Returns null otherwise. Scoring (capped at ±20 total): price above/below cloud ±10, TK cross ±8, Chikou confirmation ±4. Displays neutral (0) when price is inside the cloud.
-- **Anchored VWAP:** `calcAnchoredVWAP(candles, lookback=100)` — anchored to highest-volume swing point within lookback. Requires swing points to exist (returns null for monotonic/flat data). Scoring: price >0.2% above → +8, >0.2% below → -8, within 0.2% → 0.
-- **Squeeze Momentum:** `calcSqueezeMomentum(candles)` — LazyBear style. BB (20,2.0) inside Keltner (EMA20 ± 1.5×ATR20) = squeeze active. Scoring: `releasedBull/releasedBear` ±15, post-squeeze rising/falling momentum ±6, active squeeze = 0 (display only).
-- **Order Block:** `detectOrderBlocks(candles, lookback=100)` — last opposing candle before a BOS event. Scoring: ±14 only when price is inside the OB zone (99%–101% of ob range). Returns null when no BOS found. Does not overlap with BOS/CHoCH scoring (OB = reteste da zona, BOS = evento do break).
-- **Trendline Break:** `detectTrendlineBreak(candles, lookback=60)` — detects breaks of LTA (Linha de Tendência Altista, ascending support line) and LTB (Linha de Tendência Baixista, descending resistance line). Identifies the 2 most recent swing highs (for LTB) or swing lows (for LTA), projects the line to the current candle, and fires if `prevClose` was on the line side and `lastClose` crossed by ≥0.15%. Scoring: LTB break (bullish) +10, LTA break (bearish) -10. Also contributes to `trendAligned` in the multi-category confluence check. Returns `null` if no valid trendline break found.
-- **Confluência multi-categoria:** Applied at the end of `_computeScore` (before combo penalties). Checks 4 categories: momentum (RSI), trend (EMA200/mktStruct/Ichimoku/**TrendlineBreak**), volume (OBV/CVD), pattern (candle patterns/divergences/Squeeze). Awards: 2 aligned → ±5, 3 aligned → ±10, 4 aligned → ±15. Guard: only fires when `score !== 0`.
-
-### 6. Analysis Pipeline
-- `analyzeCandles(symbol, tf, candles, fg, fundingRate, openInterest, news)` — full analysis for one coin/timeframe
-- `runRealAnalysis(signal)` — orchestrates the full scan across all selected coins/timeframes
-  - Uses `AbortController` for cancellable scans (user-initiated only — timeouts do not cancel the scan)
-  - Fetches funding rate and open interest once per coin before the timeframe loop
-  - Deduplicates: shows only the best setup per coin after MTF processing
-  - Results sorted by capital return on M3 target
-
-### 7. UI Rendering
-- `renderCards(cards)` — displays scan result cards in the grid
-- `renderGroupCard(group)` — renders a single result card with MTF badges
-- Modal with candlestick chart (lightweight-charts) + indicator breakdown
-
-### 8. Journal System
-- Backed by `localStorage` key: `cryptoscanner_journal_v2`
-- `saveToJournal(setup)` — persists a setup
-- `loadJournal()` — retrieves all saved setups
-- `renderJournal()` / `renderJournalStats()` — renders trade log and performance stats
-- `updateResult(id, result)` — marks trade outcome: `'active' | 'stop' | 'm1' | 'm2' | 'm3'`
+| `GET /api/health` | server status |
+| `GET /api/account` | capital + stats |
+| `POST /api/account/setup` | update settings (não altera `current_capital`) |
+| `POST /api/account/reset` | `{ mode: 'capital' }` zera capital · `{ mode: 'full' }` apaga trades + scan_log |
+| `GET /api/trades` · `/api/trades/active` | trade list |
+| `POST /api/trades/open` | Leader-driven entry; 409 quando bloqueado por max_positions/capital/risk cap |
+| `POST /api/trades/:id/close` | fecha manualmente ao preço atual |
+| `POST /api/trades/:id/tighten-stop` | move stop para mais perto (direction-aware); 400 se frouxar, 409 se inativo |
+| `POST /api/scan/preview` | scan sem abrir trades — entry canônico do Leader |
+| `POST /api/scan/manual` | alias de `/preview` (usado pelo painel.html) |
+| `GET /api/scan/status` | scan em execução? |
+| `POST /api/reflections` | Leader grava reflexão pós-trade |
+| `GET /api/reflections?limit=N` | Leader lê reflexões recentes (default 20, max 200) |
 
 ---
 
-## Naming Conventions
+## Agent Council
 
-| Element | Convention | Example |
-|---|---|---|
-| JS variables/functions | camelCase | `fetchCandles`, `analyzeCandles` |
-| CSS classes | kebab-case | `.group-card`, `.coin-icon-ring` |
-| JS constants | UPPER_SNAKE_CASE | `BYBIT_TAKER`, `TIMEFRAMES_BY_MODE` |
-| HTML element IDs | lowercase-hyphen | `#scanBtn`, `#coinGrid`, `#progressWrap` |
+**Pipeline:** Cron escaneia → candidatos em `scan_log` → **sem abertura**. Usuário invoca Leader → `POST /api/scan/preview` → gate → `POST /api/trades/open`.
 
----
-
-## Data Flow
-
-```
-User clicks "Scan"
-  → runRealAnalysis()
-      → fetchFearGreed()                          [alternative.me]
-      → for each coin:
-          → fetchWithFallback(fundingHistory)      [Bybit API v5, optional]
-          → fetchWithFallback(openInterest)        [Bybit API v5, optional]
-          → for each timeframe:
-              → fetchCandles(symbol, interval)     [Bybit API v5]
-              → _calcTechIndicators(candles)
-              → detectCandlePatterns / detectDivergences / etc.
-              → _computeScore(indicators, patterns, direction)
-              → analyzeCandles() → setup object
-      → MTF confluence/conflict adjustments
-      → deduplication (best setup per coin)
-      → sort by M3 capital return
-      → renderCards(results)
-```
-
----
-
-## API Details
-
-**Bybit Futures (Kline) endpoint:**
-```
-GET https://api.bybit.com/v5/market/kline
-  ?category=linear
-  &symbol=BTCUSDT
-  &interval=15
-  &limit=200
-```
-
-**Fear & Greed:**
-```
-GET https://api.alternative.me/fng/?limit=1
-```
-
-**Funding Rate (per coin):**
-```
-GET https://api.bybit.com/v5/market/funding/history
-  ?category=linear&symbol=BTCUSDT&limit=1
-```
-
-**Open Interest (per coin):**
-```
-GET https://api.bybit.com/v5/market/open-interest
-  ?category=linear&symbol=BTCUSDT&intervalTime=1h&limit=24
-```
-
-The application handles CORS automatically via the proxy fallback chain. No API keys are required.
-
-> **Note:** Do not add third-party news APIs (e.g. CryptoPanic) without a valid API key. These endpoints fail for all proxies and cause N×4 sequential timeouts per scan, making the scanner extremely slow.
-
----
-
-## Default Coins (41 total)
-
-BTC, ETH, SOL, BNB, XRP, ADA, AVAX, DOGE, DOT, LINK, POL, LTC, ATOM, UNI,
-INJ, ARB, WLD, SEI, TIA, SUI, APT, OP, IMX, JUP, ONDO, STRK, BLUR, MANTA,
-ORDI, BOME, WIF, ENA, ETHFI, PENDLE, 1000PEPE, HBAR, NEAR, RENDER, TRX, FIL, HYPE
-
-> **Notes:**
-> - PEPE trades as `1000PEPEUSDT` on Bybit's linear perpetuals market.
-> - POL is the renamed MATIC (Polygon).
-> - HYPE is the Hyperliquid native token (HYPEUSDT), added Mar/2026.
-
----
-
-## Persistence
-
-All trade journal data is stored client-side in `localStorage`:
-
-```javascript
-// Key
-'cryptoscanner_journal_v2'
-
-// Entry shape
-{
-  id: string,          // timestamp-based unique ID
-  coin: string,        // e.g. "BTCUSDT"
-  direction: string,   // "buy" | "sell"
-  timeframe: string,   // e.g. "15m"
-  leverage: number,
-  entry: number,
-  stop: number,
-  targets: [m1, m2, m3],
-  score: number,
-  result: string,      // "active" | "stop" | "m1" | "m2" | "m3"
-  savedAt: string      // ISO timestamp
-}
-```
-
----
-
-## Development Workflow
-
-### Running the app
-Open `painel.html` directly in a browser — no server required.
-
-For development with live reload, a simple static server works:
-```bash
-python3 -m http.server 8080
-# then open http://localhost:8080/painel.html
-```
-
-### Making changes
-1. Edit `painel.html` directly (the only source file).
-2. Refresh the browser to see changes.
-3. No compilation or build step needed.
-
-### Testing
-Automated unit tests via Vitest (342 tests across 9 files). The `fetchCandles` in-progress candle drop has dedicated coverage in `tests/api.test.js` (`describe('fetchCandles — in-progress candle drop')`) using `vi.useFakeTimers()` + `vi.setSystemTime()` to control `Date.now()`:
-```bash
-npx vitest run
-```
-
-Manual testing steps:
-- Open `painel.html` in a browser
-- Select a few coins and click "Escanear" (Scan)
-- Verify cards render with correct score/direction badges
-- Open the modal for a card and verify chart and indicators display
-- Save a setup to journal and verify it appears in the Journal tab
-
-### Git workflow
-```bash
-git add painel-core.js painel.html
-git commit -m "descriptive message"
-git push -u origin <branch>
-```
-
-> **Note:** `painel-core.js` and `painel.html` share the same core logic (analysis engine, scoring, indicators). Changes to one **must be mirrored** in the other.
+- **`leader.md`** (model: sonnet) — orquestrador. 3 fases: (1) reflexões pós-trade, (2) review de ativos (HOLD/EXIT/TIGHTEN como curl manual), (3) avaliação de candidatos via gate `pattern-validator → news-hunter`. Hard guardrails: NÃO aprova 5m/30m, NÃO ultrapassa max_positions=5, NÃO abre sem ambos sub-agentes completos, NÃO passa `coin` com sufixo USDT.
+- **`pattern-validator.md`** (model: haiku) — auditoria técnica; sempre termina com `[SCORE RECALIBRATION]`. Veredicto: VALID / SUSPECT / REJECT.
+- **`news-hunter.md`** (model: haiku) — macro/notícias; Verification Section obrigatória (`[VERIFIED]` / `[MEDIUM CONFIDENCE]` / `[UNVERIFIED]`).
 
 ---
 
 ## Important Constraints
 
-1. **Single-file constraint** — Keep all code in `painel.html`. Do not split into separate `.js` or `.css` files unless explicitly requested.
-2. **No build tooling** — Do not introduce webpack, vite, npm, or any build system unless explicitly requested.
-3. **Vanilla JS only** — Do not add frameworks (React, Vue, etc.) unless explicitly requested.
-4. **Portuguese UI** — All user-facing text should remain in Portuguese (pt-BR).
-5. **localStorage key** — The journal key `cryptoscanner_journal_v2` must not be renamed; changing it would break existing saved data for users.
-6. **Bybit symbol format** — PEPE must stay as `1000PEPEUSDT` (not `PEPEUSDT`).
-7. **Fee constants** — `BYBIT_TAKER` and `ROUND_TRIP_FEE` reflect real Bybit fee rates; do not change without verification.
+1. **Single-file** — todo código em `painel.html`. Não dividir em arquivos separados.
+2. **No build tooling** — sem webpack, vite, npm build system.
+3. **Vanilla JS only** — sem React, Vue, etc.
+4. **Portuguese UI** — todo texto de usuário em pt-BR.
+5. **localStorage key** — `cryptoscanner_journal_v2` não pode ser renomeada.
+6. **Bybit symbol format** — PEPE = `1000PEPEUSDT`, não `PEPEUSDT`.
+7. **Fee constants** — não alterar sem verificação na Bybit.
+8. **painel-core.js ↔ painel.html** — toda mudança no motor de análise deve ser espelhada nos dois arquivos.
 
 ---
 
 ## Common Pitfalls
 
-- **CORS errors:** The app uses a proxy chain — if all proxies fail, the app shows mock data with a demo banner. This is expected behavior.
-- **Symbol mismatches:** Bybit uses `1000PEPEUSDT`, `1000BONKUSDT`, etc. for low-price tokens. Verify against Bybit API when adding new coins.
-- **ADX filter (TF-aware):** The ADX hard filter varies by timeframe: 5m=23, 15m=22, 30m=20, 1h/4h/1D=18. Scalp TFs require a stronger trend to avoid setups in ranging markets. If a coin never appears in scalp results, it likely has ADX below these thresholds.
-- **MTF deduplication:** After scanning, only the highest-scored setup per coin is shown. Lower-scored timeframes for the same coin are intentionally hidden.
-- **Journal version key:** The `_v2` suffix was introduced after a schema change. If the data shape changes again, bump to `_v3` and add a migration function.
-- **AbortError vs timeout:** `fetchJSON` uses a local `AbortController` for per-request timeouts (10s). This produces an `AbortError` identical to a user-cancellation abort. **Always check `signal?.aborted` before re-throwing** in catch blocks — otherwise a single timed-out request will cancel the entire scan. The pattern is: `if (e.name === 'AbortError' && signal?.aborted) throw e;`
-- **Stop mínimo por timeframe:** `analyzeCandles` rejeita setups onde o stop final (após ajuste de liquidação) for menor que `TF_MIN_STOP[tf]` (5m:0.8%, 15m:1.2%, 30m:1.5%, 1h:2%, 4h:3%, 1D:5%). Isso previne stop hunts em alavancagens altas (ex: 50x em 15M produz stop de 0.75% — inviável).
-- **Combo short squeeze / bull trap:** O scoring penaliza combinações de RSI oversold + F&G Medo Extremo em setups SHORT (e vice-versa para LONGs). Essa combinação sozinha não aparece nos sinais individuais com força suficiente mas é um forte indicador de reversão de curto prazo.
-- **painel-core.js vs painel.html:** Os dois arquivos contêm o mesmo motor de análise. Qualquer mudança no motor (scoring, indicadores, filtros) deve ser aplicada nos dois arquivos. **Diferenças intencionais de API** (não são bugs):
-  - `analyzeCandles`: em `painel-core.js` o param 7 é `options={score,leverage,rr}` e param 8 é `news=[]`; em `painel.html` o param 7 é `news=[]` e param 8 é `scoreThreshold=null`. O frontend usa `state.*` (global), o core é stateless (options object).
-  - `getFibSet`/`calcMetas`: em `painel-core.js` aceitam `rrMode` como parâmetro; em `painel.html` leem `state.rr` diretamente.
-  - MTF scoring: em `painel-core.js` é a função exportada `applyMTFScoring()`; em `painel.html` é lógica inline em `runRealAnalysis()` — **lógica idêntica**, apenas localização diferente.
-  - Soft pass threshold: ambos usam `parseInt(score) - 15` (frontend: `state.score`, backend: `min_score`).
-- **Filtro de liquidez — extrapolação:** `analyzeCandles` usa os candles disponíveis para extrapolar volume diário (`(totalVol / sampleLen) * candlesPerDay`), sem exigir dias completos. Corrige bug onde backtest de 5m com WINDOW=200 (< 288 candles/dia) pulava o filtro inteiro (`daysToCheck=0`).
-- **Fetches sequenciais em `runRealAnalysis`:** O scanner ao vivo usa `await` sequencial (não `Promise.all`) intencionalmente para não esgotar os proxies CORS por rate limit. Não converter para concorrência.
-- **Aba Backtest removida:** O sistema de backtest foi completamente removido do `painel.html`. O histórico real acumulado pelo backend (SQLite) substitui esse papel.
-- **OBV age como filtro implícito de SHORTs fracos:** OBV em ascensão adiciona +6 ao score independente de direção. Em setups SHORT (score < 0), esse +6 reduz a magnitude do score — SHORTs com OBV contraditório perdem força e podem não passar o threshold de score mínimo. **Nunca tornar o OBV direction-aware/neutro** — testes mostraram que neutralizar o OBV para SHORTs quebra esse mecanismo de filtragem, permitindo 30+ trades extras de baixa qualidade (39% WR) e piorando o P&L de +5% para -2%.
-- **Ichimoku mínimo 78 candles:** `calcIchimoku` retorna null silenciosamente para menos de 78 candles (52 período + 26 shift). Em timeframes de 4h/1D o limite de 200 candles é suficiente. Em 5m/15m com `limit=200` também. Não reduzir o lookback.
-- **calcAnchoredVWAP retorna null sem swings:** A função depende de swing highs/lows com ±2 vizinhos. Dados monotônicos ou planos (trending fixtures em testes) não têm swing points — a função retorna null. Testes devem usar candles com picos/vales explícitos.
-- **Order Block vs BOS/CHoCH — sem sobreposição:** `detectOrderBlocks` pontua o reteste da zona de origem do BOS. `detectBOSCHoCH` pontua o próprio evento de break. São fases distintas e não há double-counting.
-- **Confluência — não aplica em score=0:** O bônus de confluência usa `if (score !== 0)` para evitar computar direção em score perfeitamente neutro. Isso é intencional.
-- **Three Inside Up/Down vs Morning/Evening Star:** Ambos usam `ppBear + harami + c confirmação`. Morning Star requer `pBody < ppBody * 0.35`; Three Inside Up requer `pBody < ppBody * 0.5`. Para candles com pBody entre 35%–50% de ppBody, apenas Three Inside Up é ativado. Abaixo de 35%, **ambos** podem ser ativados simultaneamente — porém Morning Star (score +18) é "strong" (≥15) e suprime Three Inside Up (+14) via filtro de força.
-- **detectTrendlineBreak — limitação do lookback curto:** A função usa os 2 swing points mais recentes dentro de `lookback=60` candles. Dados com apenas 1 swing high/low no lookback retornam null. Em timeframes lentos (1D) com 60 candles pode haver poucos swings — isso é esperado. Não reduzir o lookback.
-- **Alavancagem campo numérico livre:** O seletor de alavancagem no frontend é um `<input type="number">` com presets rápidos (5x/10x/20x/25x/50x). A função `setLeverage(v)` faz `Math.max(1, Math.min(125, parseInt(v)||10))` — o backend também aceita qualquer valor inteiro via `/api/account/setup`. Não há mais enum de valores fixos.
-- **Nível de confiança (NV1/NV2/NV3) — só exibição:** O badge NV1/NV2/NV3 nos cards é puramente visual (score 60–72 → NV1 · 73–84 → NV2 · 85+ → NV3). Não afeta scoring nem filtros — é só uma dica de tamanho de posição para o trader.
-- **isWeekendWarning(tf):** Retorna true somente para TFs escalp (5m/15m/30m/1h) quando o horário local é sexta > 18h BRT, sábado ou domingo. TFs swing (4h/1D) não disparam o badge de fim de semana.
-- **Filtro macro BTC é fail-open:** `fetchMacroBtcTrend()` em `scanner.js` retorna `null` se a busca de candles falhar ou houver menos de 200 candles (ex: API indisponível). Quando `null`, o filtro é ignorado e todos os setups passam — isso é intencional para não paralisar o scanner em caso de instabilidade de rede.
-- **Cap de risco só bloqueia na abertura:** O `MAX_STOP_RISK_MULTIPLIER = 50` em `paper-trader.js` avalia o stop no momento da abertura do trade. Não interfere em trades já abertos. Se o usuário alterar a alavancagem via API após trades abertos, o cap não retroage.
-- **min_score padrão = 85 (migração automática):** `db.js` inclui uma migração que atualiza contas existentes com `min_score = 70` para 85 na inicialização do servidor. Contas configuradas manualmente para outro valor (ex: 80) **não são tocadas** (a migração só dispara exatamente em `70`).
-- **Teste de filtros de scan:** `tests/scanner-filters.test.js` cobre as fórmulas puras do cap de risco e da detecção de tendência macro via EMA200. Não testa integração com banco (requer servidor ativo).
-- **`setupAccount` não altera `current_capital`:** A função `setupAccount` em `db.js` atualiza apenas as configurações da conta (initial_capital, alloc_pct, max_positions, min_score, leverage) — nunca sobrescreve `current_capital`. Isso evita que salvar configurações apague o saldo acumulado pelos trades. Para zerar o capital, use `resetAccount(full=false)` (mantém histórico) ou `resetAccount(full=true)` (apaga trades e scan_log). O frontend expõe esses dois modos via botões "Zerar Capital" e "Reset Total" no painel de configurações, com confirmação dupla para o reset total.
-- **Fórmula de recuperação do capital:** Se `current_capital` for corrompido/resetado acidentalmente, o valor correto é `initial_capital + total_pnl_closed - capital_in_use`, onde `total_pnl` e `capital_in_use` são obtidos via `GET /api/account`.
-- **Price-checker — janela de wicks 1m:** O `price-checker.js` busca os últimos 20 candles de 1m a cada poll e usa o `low/high` agregado (não só o `lastPrice`) para detectar stops e targets. Isso resolve um bug onde wicks intra-bar entre dois polls (5min apart) eram perdidos pelo ticker `lastPrice` (ex: AAVE 4h fez wick em 95.10, 18 cents abaixo do stop, e não disparou). Ordem conservadora: stop primeiro (adverse wick) e depois target (favorable wick) — quando ambos os lados foram tocados na mesma janela, o stop ganha por padrão. Cascading de targets (m1→m2→m3 em uma única janela) ainda fica para os próximos polls (limitação do `processPriceUpdate`).
-- **Drop do candle in-progress em `fetchCandles`:** A Bybit retorna o candle ainda em formação como o último elemento do array. `fetchCandles` (em `painel-core.js` e mirrored em `painel.html`) compara `candles[n-1].time + TF_INTERVAL_MS[tf] > Date.now()` e faz `candles.pop()` quando true. Detectores baseados em razão body/range (Marubozu ≥95%, Doji <10%, Engolfo, Três Soldados etc.) disparavam falsos positivos em candles parciais com poucos ticks. Boundary é estrita (`>`, não `>=`) — candle fechado exatamente no instante atual é mantido. Edge case: se a única candle retornada for in-progress, o array volta `[]` (documentado em `tests/api.test.js`, `describe('fetchCandles — in-progress candle drop')` com 7 cenários). `TF_INTERVAL_MS` ainda **não está exportado** de `painel-core.js`; testes usam literais (`15 * 60 * 1000`).
-- **`runScan` não abre mais trades (Leader era):** Desde 2026-04-29, `backend/scanner.js` retira o import de `openPosition` e o cron `*/15 * * * *` apenas acumula candidatos no array, persiste via `scan_log.candidates_json` e retorna `{ candidates, skipped_active, duration_ms, errors }`. **Não reintroduzir** `openPosition` no scanner — abertura é responsabilidade exclusiva de `POST /api/trades/open` (rota nova em `backend/routes/trades.js`), que valida campos obrigatórios e delega para `paper-trader.openPosition`. Capital, max_positions e cap de risco continuam sendo aplicados em `openPosition`, então o `/api/trades/open` retorna 409 quando o `paper-trader` rejeita.
-- **`paper-trader` appenda USDT ao `coin` — nunca passar o símbolo completo:** `openPosition` em `paper-trader.js` faz `coin: \`${setup.coin.replace(/USDT$/i, '')}USDT\`` — portanto `POST /api/trades/open` deve receber o símbolo **base sem USDT** (ex: `"XRP"`, `"FIL"`, `"1000PEPE"`). Passar `"XRPUSDT"` gera `"XRPUSDTUSDT"` no banco, que quebra o `price-checker` (símbolo inválido na Bybit) e o histórico. O fix (`.replace(/USDT$/i, '')` antes de appendar) está em `paper-trader.js:76` desde 2026-05-01 — mas a causa raiz é o prompt do Leader: o campo `coin` dos candidatos do scanner já vem no formato base correto (`"XRP"`), não alterá-lo antes do curl.
-- **Gate do Leader é obrigatório antes de `POST /api/trades/open`:** Nas primeiras rodadas do Leader (2026-05-01), 3 trades foram abertos com `analysis_json` vazio (`reasons:[], indicators:[], summary:""`), indicando que o gate `pattern-validator → news-hunter` foi bypassado. O prompt de `.claude/agents/leader.md` foi atualizado com guardrail explícito: **nunca chamar `/api/trades/open` sem que ambos os sub-agentes tenham completado com sucesso**. Se qualquer sub-agent falhar ou retornar erro, o candidato é automaticamente rejeitado.
-- **Tighten-stop é direction-aware via helper puro:** `POST /api/trades/:id/tighten-stop` usa `isStopTighter(direction, current_stop, new_stop)` de `backend/stop-validator.js`. Para BUY o novo stop precisa ser **maior** (mais perto de entry, que está acima); para SELL precisa ser **menor**. Igualdade retorna `false` (não conta como tightening). Trade inativo (status em `['stop','stopped_at_entry','expired','manual','m3']`) → 409. ID inexistente → 404. **Nunca afrouxa um stop, por design.**
-- **Reflexões da Leader são append-only:** `POST /api/reflections` insere novo registro em `trade_reflections`. Não há endpoint de update/delete. O cursor de "qual reflexão é a mais recente" é client-side: o Leader pega `MAX(created_at)` do array de `GET /api/reflections?limit=20` e define como cursor para a próxima execução. FK em `trade_id` referencia `trades(id)` — reflexões com `trade_id` inexistente são rejeitadas pela DB com SQLite constraint error (500 na rota).
-- **Servidor Node em Windows + npm:** `npm run server` no Windows não propaga sinais para o processo node filho. Para reiniciar o servidor durante desenvolvimento, **TaskStop** do background task **não basta** — é preciso matar o processo node que está com a porta 3001 usando `Get-NetTCPConnection -LocalPort 3001 -State Listen` + `Stop-Process -Id $_.OwningProcess -Force` via PowerShell. Caso contrário a próxima `npm run server` falha com `EADDRINUSE`.
+- **AbortError vs timeout:** `fetchJSON` usa `AbortController` local para timeout de 10s — idêntico ao AbortError de cancelamento do usuário. Sempre verificar `signal?.aborted` antes de re-throw: `if (e.name === 'AbortError' && signal?.aborted) throw e;`
+- **Fetches sequenciais em `runRealAnalysis`:** usa `await` sequencial (não `Promise.all`) para não esgotar os proxies CORS por rate limit. Não converter para concorrência.
+- **painel-core.js vs painel.html — diferenças intencionais de API:**
+  - `analyzeCandles`: core param 7 = `options={score,leverage,rr}`, param 8 = `news=[]`; frontend param 7 = `news=[]`, param 8 = `scoreThreshold=null`
+  - `getFibSet`/`calcMetas`: core aceita `rrMode` como parâmetro; frontend lê `state.rr` diretamente
+  - MTF scoring: core tem `applyMTFScoring()` exportada; frontend tem lógica inline em `runRealAnalysis()`
+- **OBV — nunca tornar direction-aware:** OBV em ascensão adiciona +6 independente de direção, filtrando implicitamente SHORTs fracos. Neutralizar o OBV para SHORTs permite 30+ trades de baixa qualidade (39% WR) e piora P&L de +5% para -2%.
+- **`runScan` não abre trades (Leader era):** Não reintroduzir `openPosition` no scanner — abertura é exclusiva de `POST /api/trades/open`.
+- **`paper-trader` appenda USDT:** `openPosition` faz `coin.replace(/USDT$/i,'') + USDT`. Passar `"XRPUSDT"` gera `"XRPUSDTUSDT"`. Sempre passar símbolo base (`"XRP"`, `"1000PEPE"`).
+- **Gate do Leader é obrigatório:** nunca chamar `/api/trades/open` sem ambos os sub-agentes completados com sucesso.
+- **Tighten-stop direction-aware:** BUY: novo stop precisa ser maior; SELL: menor. Igualdade = false. Usa `isStopTighter` de `backend/stop-validator.js`.
+- **min_score padrão = 85:** `db.js` migra automaticamente contas com `min_score = 70` para 85 na inicialização. Contas com outros valores não são tocadas.
+- **`setupAccount` não altera `current_capital`:** para zerar capital use `resetAccount`. Fórmula de recuperação: `initial_capital + total_pnl_closed - capital_in_use`.
+- **Servidor Node em Windows:** `npm run server` não propaga sinais. Para reiniciar: `Get-NetTCPConnection -LocalPort 3001 -State Listen | Stop-Process -Id $_.OwningProcess -Force` via PowerShell.
+- **Journal — IDs mistos:** backend trades têm IDs string (`"bk-..."`) e manuais têm IDs numéricos. Usar `String(x.id) === String(id)` em comparações; citar o id em event handlers inline: `'${e.id}'`.
+- **Candle in-progress drop:** `fetchCandles` remove o último candle se `time + TF_INTERVAL_MS[tf] > Date.now()`. Edge case: array vazio se o único candle for in-progress.
+- **Ichimoku requer ≥78 candles:** retorna null silenciosamente com menos.
+- **calcAnchoredVWAP retorna null sem swings:** dados monotônicos não têm swing points.
+- **Confluência não aplica em score=0:** guard `if (score !== 0)` é intencional.
+- **Price-checker — cascading de targets:** m1→m2→m3 em uma única janela fica para o próximo poll (limitação do `processPriceUpdate`).
+- **Reflexões são append-only:** não há endpoint de update/delete em `trade_reflections`. FK em `trade_id` — reflexões com trade inexistente são rejeitadas.
+- **Symbol mismatches:** Bybit usa `1000PEPEUSDT`, `1000BONKUSDT` etc. Verificar na API ao adicionar coins.
 
 ---
 
-## Agent Council (exploratório, não-produção)
+## Development
 
-Council de sub-agentes Claude Code para validar trades/setups além do scoring determinístico. Documentação completa: `docs/agent-council-next-steps.md`. Spec do orquestrador: `docs/superpowers/specs/2026-04-29-leader-agent-design.md`.
+```bash
+# Frontend only
+open painel.html   # ou python3 -m http.server 8080
 
-**Agentes definidos em `.claude/agents/`:**
+# Backend
+npm run server
 
-- **`news-hunter.md`** — busca notícias/macro/setor (últimos 7–14 dias), retorna bias bullish/bearish/neutro com **Verification Section** obrigatória: todo número/data/entidade específico precisa ter ≥2 fontes independentes (`[VERIFIED]`), 1 fonte (`[MEDIUM CONFIDENCE]`) ou ser dispensado (`[UNVERIFIED]`). Ferramentas: `WebSearch`, `WebFetch`. Existe para evitar a falha de hallucination observada num run anterior (cifra "$15.6M token unlock" fabricada). Cap: ~600 palavras.
-- **`pattern-validator.md`** — auditoria de coerência técnica (direção vs trend, integridade de padrões, MTF, R:R, cap de risco). Sempre termina com bloco **`[SCORE RECALIBRATION]`** (score determinístico vs score coerente + delta + justificativa de uma linha) — mesmo quando concorda com o scanner. Ferramentas: `Read`, `Grep`, `Glob` (somente leitura). Veredicto final: VALID / SUSPECT / REJECT. Cap: ~500 palavras.
-- **`leader.md`** *(adicionado 2026-04-29; guardrails reforçados 2026-05-01)* — orquestrador do council, modelo **Sonnet** (cf. `model: sonnet` no frontmatter). Roda o ciclo `/leader-review` em três fases: (1) reflexão sobre trades fechados desde a última invocação, gravando em `trade_reflections` via `POST /api/reflections`; (2) revisão dos trades ativos (HOLD / EXIT / TIGHTEN) — somente HOLD/EXIT/TIGHTEN são propostos como **curl que o usuário roda manualmente**; (3) avaliação de candidatos novos vindos de `POST /api/scan/preview`, com gate sequencial `pattern-validator` → `news-hunter`, e abertura via `POST /api/trades/open` quando aprovado. Ferramentas: `Task`, `Read`, `Bash`, `Grep`, `Glob`. Hard guardrails: NÃO executa `/close` nem `/tighten-stop` diretamente, NÃO aprova candidatos `5m`/`30m`, NÃO ultrapassa `max_positions=5`, NÃO inventa candidatos fora do array de `/scan/preview`, NÃO chama `/api/trades/open` sem ambos sub-agentes completados, NÃO passa `coin` com sufixo USDT (sempre símbolo base).
+# Tests
+npx vitest run
+```
 
-**Como invocar:** `Task` tool com `subagent_type: leader` (o caso de uso normal — o Leader então despacha os outros dois). Os sub-agentes também podem ser chamados isoladamente via `subagent_type: news-hunter` ou `subagent_type: pattern-validator`. Nenhum dos sub-agentes emite ordens de trade — somente o Leader (e somente para abertura).
+**Git:** sempre adicionar `painel-core.js painel.html` juntos quando o motor mudar.
 
-**Pipeline final (Leader era):**
-- Cron de 15min (`backend/scanner.js`) escaneia → registra candidatos em `scan_log.candidates_json` → **NÃO abre trades**.
-- Usuário invoca o Leader manualmente → Leader chama `POST /api/scan/preview` → roda gates → POST `/api/trades/open` para os aprovados.
-- Frontend `painel.html` continua funcionando (botão "Escanear" usa `/api/scan/manual`, alias de `/preview`).
+---
 
-**Helper relacionado:** `backend/stop-validator.js` exporta `isStopTighter(direction, current_stop, new_stop)` — pura, direction-aware (BUY: tighter = higher; SELL: tighter = lower; equality = false; non-finite = false). Cobertura: `tests/stop-validator.test.js` (9 testes). Usada por `POST /api/trades/:id/tighten-stop` para rejeitar afrouxamentos.
+## Default Coins (41)
 
-**Não confundir com:** o backend production scanner (`backend/scanner.js`) — desde 2026-04-29 ele é só um coletor de candidatos. O Leader é o gatekeeper. Devil's Advocate (3º agente do design original) ainda não tem prompt refinado; o achado dele de stop-integrity virou o item 1 das pendências.
+BTC, ETH, SOL, BNB, XRP, ADA, AVAX, DOGE, DOT, LINK, POL, LTC, ATOM, UNI,
+INJ, ARB, WLD, SEI, TIA, SUI, APT, OP, IMX, JUP, ONDO, STRK, BLUR, MANTA,
+ORDI, BOME, WIF, ENA, ETHFI, PENDLE, 1000PEPE, HBAR, NEAR, RENDER, TRX, FIL, HYPE
+
+> PEPE = `1000PEPEUSDT` · POL = MATIC renomeado · HYPE = Hyperliquid (adicionado Mar/2026)
