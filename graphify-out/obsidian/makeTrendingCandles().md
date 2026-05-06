@@ -5,7 +5,7 @@ community: "Test Candle Fixtures"
 location: "L11"
 tags:
   - graphify/code
-  - graphify/EXTRACTED
+  - graphify/INFERRED
   - community/Test_Candle_Fixtures
 ---
 
@@ -15,4 +15,4 @@ tags:
 - [[candles.js]] - `contains` [EXTRACTED]
 - [[getResult()]] - `calls` [INFERRED]
 
-#graphify/code #graphify/EXTRACTED #community/Test_Candle_Fixtures
+#graphify/code #graphify/INFERRED #community/Test_Candle_Fixtures

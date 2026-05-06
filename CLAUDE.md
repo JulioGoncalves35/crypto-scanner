@@ -31,7 +31,7 @@ crypto-scanner/
 │       ├── news-hunter.md
 │       ├── pattern-validator.md
 │       └── leader.md
-└── tests/               ← Vitest test suite (351 tests)
+└── tests/               ← Vitest test suite (354 tests)
 ```
 
 **Frontend (`painel.html`) funciona standalone** sem backend. **Backend requer Node.js 22.5+**: `npm run server`
@@ -166,6 +166,10 @@ Roda em `http://localhost:3001`. Cron de **15min** escaneia todos os 41 coins �
 - **Gate do Leader é obrigatório:** nunca chamar `/api/trades/open` sem ambos os sub-agentes completados com sucesso.
 - **Tighten-stop direction-aware:** BUY: novo stop precisa ser maior; SELL: menor. Igualdade = false. Usa `isStopTighter` de `backend/stop-validator.js`.
 - **min_score padrão = 85:** `db.js` migra automaticamente contas com `min_score = 70` para 85 na inicialização. Contas com outros valores não são tocadas.
+- **`_calcTechIndicators` recebe `tf`:** terceiro parâmetro obrigatório desde 2026-05-05. Qualquer novo call site deve passar o timeframe — usado para `FIND_LEVELS_LB` (lookback TF-aware: 5m=100, 15m=80, 30m/1h=60, 4h/1D=50).
+- **`calcRSI` — primeiro RSI válido em `p`:** seed de Wilder emite no índice `p` (não `p+1`). `rsi[p-1]` é sempre `null`; `rsi[p]` é o primeiro valor real.
+- **`calcOBVTrend` — guard de tamanho:** retorna `'neutral'` quando `emaOBV.length < 5` (janela insuficiente para slope confiável). Não usar `?? emaOBV[0]` — fallback para `null` causa comparações silenciosamente erradas.
+- **`db.js` migrations — PRAGMA table_info:** migrações de colunas usam `PRAGMA table_info(...)` + `.includes()` em vez de `try/catch ALTER TABLE`. Erros reais não são mais engolidos; log `[db] migration: added ...` aparece apenas na primeira vez.
 - **`setupAccount` não altera `current_capital`:** para zerar capital use `resetAccount`. Fórmula de recuperação: `initial_capital + total_pnl_closed - capital_in_use`.
 - **Servidor Node em Windows:** `npm run server` não propaga sinais. Para reiniciar: `Get-NetTCPConnection -LocalPort 3001 -State Listen | Stop-Process -Id $_.OwningProcess -Force` via PowerShell.
 - **Journal — IDs mistos:** backend trades têm IDs string (`"bk-..."`) e manuais têm IDs numéricos. Usar `String(x.id) === String(id)` em comparações; citar o id em event handlers inline: `'${e.id}'`.

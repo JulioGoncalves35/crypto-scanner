@@ -5,7 +5,7 @@ community: "Scanner Filter Tests"
 location: "L74"
 tags:
   - graphify/code
-  - graphify/EXTRACTED
+  - graphify/INFERRED
   - community/Scanner_Filter_Tests
 ---
 
@@ -15,4 +15,4 @@ tags:
 - [[calcEMA()]] - `calls` [INFERRED]
 - [[scanner-filters.test.js]] - `contains` [EXTRACTED]
 
-#graphify/code #graphify/EXTRACTED #community/Scanner_Filter_Tests
+#graphify/code #graphify/INFERRED #community/Scanner_Filter_Tests

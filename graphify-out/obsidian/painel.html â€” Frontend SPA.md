@@ -1,11 +1,11 @@
 ---
 source_file: "painel.html"
 type: "code"
-community: "Account & Database Layer"
+community: "Account & Position Management"
 tags:
   - graphify/code
   - graphify/EXTRACTED
-  - community/Account_&_Database_Layer
+  - community/Account_&_Position_Management
 ---
 
 # painel.html â€” Frontend SPA
@@ -17,4 +17,4 @@ tags:
 - [[lightweight-charts 4.1.1]] - `references` [EXTRACTED]
 - [[painel-core.js â€” Pure Analysis Engine]] - `references` [EXTRACTED]
 
-#graphify/code #graphify/EXTRACTED #community/Account_&_Database_Layer
+#graphify/code #graphify/EXTRACTED #community/Account_&_Position_Management

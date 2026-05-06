@@ -1,4 +1,11 @@
 {
+  "collapse-filter": false,
+  "search": "",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": true,
   "colorGroups": [
     {
       "query": "tag:#community/Frontend_Analysis_Engine",
@@ -22,28 +29,28 @@
       }
     },
     {
-      "query": "tag:#community/Account_&_Database_Layer",
+      "query": "tag:#community/Account_&_Position_Management",
       "color": {
         "a": 1,
         "rgb": 7780274
       }
     },
     {
-      "query": "tag:#community/Position_Lifecycle_&_Pricing",
+      "query": "tag:#community/Agent_Council_Design",
       "color": {
         "a": 1,
         "rgb": 5873999
       }
     },
     {
-      "query": "tag:#community/Scan_Engine_&_API_Fetch",
+      "query": "tag:#community/Position_Lifecycle_&_Pricing",
       "color": {
         "a": 1,
         "rgb": 15583560
       }
     },
     {
-      "query": "tag:#community/Test_Candle_Fixtures",
+      "query": "tag:#community/Scan_Engine_&_API_Fetch",
       "color": {
         "a": 1,
         "rgb": 11565729
@@ -57,137 +64,107 @@
       }
     },
     {
-      "query": "tag:#community/Pattern_Test_Fixtures",
+      "query": "tag:#community/Test_Candle_Fixtures",
       "color": {
         "a": 1,
         "rgb": 10253663
+      }
+    },
+    {
+      "query": "tag:#community/Pattern_Test_Fixtures",
+      "color": {
+        "a": 1,
+        "rgb": 12234924
       }
     },
     {
       "query": "tag:#community/Journal_&_Trade_Log",
       "color": {
         "a": 1,
-        "rgb": 12234924
+        "rgb": 5142951
       }
     },
     {
       "query": "tag:#community/Scanner_Filter_Tests",
       "color": {
         "a": 1,
-        "rgb": 5142951
+        "rgb": 15896107
+      }
+    },
+    {
+      "query": "tag:#community/Leader_Agent_Architecture",
+      "color": {
+        "a": 1,
+        "rgb": 14767961
       }
     },
     {
       "query": "tag:#community/Trades_Route",
       "color": {
         "a": 1,
-        "rgb": 15896107
+        "rgb": 7780274
       }
     },
     {
       "query": "tag:#community/Indicator_Tests",
       "color": {
         "a": 1,
-        "rgb": 14767961
+        "rgb": 5873999
       }
     },
     {
       "query": "tag:#community/Journal_Tests",
       "color": {
         "a": 1,
-        "rgb": 7780274
+        "rgb": 15583560
       }
     },
     {
       "query": "tag:#community/MTF_Tests",
       "color": {
         "a": 1,
-        "rgb": 5873999
+        "rgb": 11565729
       }
     },
     {
       "query": "tag:#community/Scoring_Tests",
       "color": {
         "a": 1,
-        "rgb": 15583560
-      }
-    },
-    {
-      "query": "tag:#community/Express_Server",
-      "color": {
-        "a": 1,
-        "rgb": 11565729
-      }
-    },
-    {
-      "query": "tag:#community/Account_Route",
-      "color": {
-        "a": 1,
         "rgb": 16752039
       }
     },
     {
-      "query": "tag:#community/Scan_Route",
+      "query": "tag:#community/Stop_Validator",
       "color": {
         "a": 1,
         "rgb": 10253663
       }
     },
     {
-      "query": "tag:#community/Risk_Tests",
+      "query": "tag:#community/Frontend_Scoring_Flow",
       "color": {
         "a": 1,
         "rgb": 12234924
       }
     },
     {
-      "query": "tag:#community/deleteEntry()",
+      "query": "tag:#community/Stop_Validator_Planning",
       "color": {
         "a": 1,
         "rgb": 5142951
       }
-    },
-    {
-      "query": "tag:#community/initCoins()",
-      "color": {
-        "a": 1,
-        "rgb": 15896107
-      }
-    },
-    {
-      "query": "tag:#community/isWeekendWarning()",
-      "color": {
-        "a": 1,
-        "rgb": 14767961
-      }
-    },
-    {
-      "query": "tag:#community/paper-trader_module",
-      "color": {
-        "a": 1,
-        "rgb": 7780274
-      }
-    },
-    {
-      "query": "tag:#community/closeManualAt()",
-      "color": {
-        "a": 1,
-        "rgb": 5873999
-      }
-    },
-    {
-      "query": "tag:#community/getAccount()",
-      "color": {
-        "a": 1,
-        "rgb": 15583560
-      }
-    },
-    {
-      "query": "tag:#community/getTrades()",
-      "color": {
-        "a": 1,
-        "rgb": 11565729
-      }
     }
-  ]
+  ],
+  "collapse-display": true,
+  "showArrow": false,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": true,
+  "centerStrength": 0.518713248970312,
+  "repelStrength": 10,
+  "linkStrength": 1,
+  "linkDistance": 250,
+  "scale": 0.15072486973809734,
+  "close": true
 }

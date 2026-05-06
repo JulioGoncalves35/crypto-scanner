@@ -1,12 +1,12 @@
 ---
 source_file: "backend/paper-trader.js"
 type: "code"
-community: "Account & Database Layer"
+community: "Account & Position Management"
 location: "line 35"
 tags:
   - graphify/code
   - graphify/EXTRACTED
-  - community/Account_&_Database_Layer
+  - community/Account_&_Position_Management
 ---
 
 # openPosition()
@@ -16,4 +16,4 @@ tags:
 - [[backendscanner.js â€” Auto-Scan Engine]] - `calls` [EXTRACTED]
 - [[runScan()_1]] - `calls` [EXTRACTED]
 
-#graphify/code #graphify/EXTRACTED #community/Account_&_Database_Layer
+#graphify/code #graphify/EXTRACTED #community/Account_&_Position_Management

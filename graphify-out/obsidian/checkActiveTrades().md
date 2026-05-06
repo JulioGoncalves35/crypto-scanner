@@ -2,7 +2,7 @@
 source_file: "backend\price-checker.js"
 type: "code"
 community: "Backend Trading System"
-location: "L45"
+location: "L81"
 tags:
   - graphify/code
   - graphify/EXTRACTED
@@ -12,8 +12,10 @@ tags:
 # checkActiveTrades()
 
 ## Connections
+- [[Log()]] - `calls` [INFERRED]
 - [[expireTrade()]] - `calls` [EXTRACTED]
 - [[fetchCurrentPrice()]] - `calls` [EXTRACTED]
+- [[fetchRecentPriceWindow()]] - `calls` [EXTRACTED]
 - [[getActiveTrades()]] - `calls` [INFERRED]
 - [[isExpired()]] - `calls` [EXTRACTED]
 - [[price-checker.js]] - `contains` [EXTRACTED]

@@ -1,11 +1,11 @@
 ---
 source_file: "backend/scanner.js"
 type: "code"
-community: "Account & Database Layer"
+community: "Account & Position Management"
 tags:
   - graphify/code
   - graphify/EXTRACTED
-  - community/Account_&_Database_Layer
+  - community/Account_&_Position_Management
 ---
 
 # backend/scanner.js â€” Auto-Scan Engine
@@ -20,4 +20,4 @@ tags:
 - [[openPosition()_1]] - `calls` [EXTRACTED]
 - [[painel-core.js â€” Pure Analysis Engine]] - `references` [EXTRACTED]
 
-#graphify/code #graphify/EXTRACTED #community/Account_&_Database_Layer
+#graphify/code #graphify/EXTRACTED #community/Account_&_Position_Management

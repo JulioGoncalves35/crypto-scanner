@@ -1,13 +1,13 @@
 ---
 type: community
-cohesion: 0.33
-members: 6
+cohesion: 0.29
+members: 7
 ---
 
 # API Test Helpers
 
-**Cohesion:** 0.33 - loosely connected
-**Members:** 6 nodes
+**Cohesion:** 0.29 - loosely connected
+**Members:** 7 nodes
 
 ## Members
 - [[api.test.js]] - code - tests\api.test.js
@@ -16,6 +16,7 @@ members: 6
 - [[makeFetchNetworkError()]] - code - tests\api.test.js
 - [[makeFetchOk()]] - code - tests\api.test.js
 - [[makeKlineRow()]] - code - tests\api.test.js
+- [[makeKlineRowAt()]] - code - tests\api.test.js
 
 ## Live Query (requires Dataview plugin)
 

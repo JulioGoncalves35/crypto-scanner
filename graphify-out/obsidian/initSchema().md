@@ -12,6 +12,7 @@ tags:
 # initSchema()
 
 ## Connections
+- [[Log()]] - `calls` [INFERRED]
 - [[db.js]] - `contains` [EXTRACTED]
 - [[getDb()]] - `calls` [EXTRACTED]
 

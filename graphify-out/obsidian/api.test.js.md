@@ -17,5 +17,6 @@ tags:
 - [[makeFetchNetworkError()]] - `contains` [EXTRACTED]
 - [[makeFetchOk()]] - `contains` [EXTRACTED]
 - [[makeKlineRow()]] - `contains` [EXTRACTED]
+- [[makeKlineRowAt()]] - `contains` [EXTRACTED]
 
 #graphify/code #graphify/EXTRACTED #community/API_Test_Helpers

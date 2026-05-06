@@ -26,14 +26,14 @@ const TF_TYPE = {
   '4h': 'swing', '1D': 'swing',
 };
 
-// Default 39 coins
+// Default 41 coins (aligned with CLAUDE.md)
 const DEFAULT_COINS = [
   'BTC','ETH','SOL','BNB','XRP','ADA','AVAX',
-  'DOGE','DOT','LINK','LTC','ATOM','UNI',
-  'INJ','ARB','WLD','SEI','TIA','APT',
-  'OP','NEAR','FIL','AAVE','MKR','SNX',
-  'CRV','LDO','GMX','PENDLE',
-  'WIF','1000PEPE','JTO','PYTH','STRK',
+  'DOGE','DOT','LINK','POL','LTC','ATOM','UNI',
+  'INJ','ARB','WLD','SEI','TIA','SUI','APT',
+  'OP','IMX','JUP','ONDO','STRK','BLUR','MANTA',
+  'ORDI','BOME','WIF','ENA','ETHFI','PENDLE',
+  '1000PEPE','HBAR','NEAR','RENDER','TRX','FIL','HYPE',
 ];
 
 // ─── Macro trend filter ───────────────────────────────────────────────────────

@@ -1,12 +1,12 @@
 ---
 source_file: "backend/scanner.js"
 type: "code"
-community: "Account & Database Layer"
+community: "Account & Position Management"
 location: "line 111"
 tags:
   - graphify/code
   - graphify/EXTRACTED
-  - community/Account_&_Database_Layer
+  - community/Account_&_Position_Management
 ---
 
 # runScan()
@@ -16,4 +16,4 @@ tags:
 - [[fetchMacroBtcTrend() â€” BTC EMA200 macro filter]] - `calls` [EXTRACTED]
 - [[openPosition()_1]] - `calls` [EXTRACTED]
 
-#graphify/code #graphify/EXTRACTED #community/Account_&_Database_Layer
+#graphify/code #graphify/EXTRACTED #community/Account_&_Position_Management

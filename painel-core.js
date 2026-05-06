@@ -67,9 +67,9 @@ function calcRSI(closes, p=14) {
   let g=0,l=0;
   for (let i=1;i<=p;i++) { const d=closes[i]-closes[i-1]; if(d>=0) g+=d; else l-=d; }
   let ag=g/p, al=l/p;
-  const rsi=[null];
-  for (let i=1;i<closes.length;i++) {
-    if(i<=p){rsi.push(null);continue;}
+  const rsi=new Array(p).fill(null);
+  rsi[p]=al===0?100:100-100/(1+ag/al);
+  for (let i=p+1;i<closes.length;i++) {
     const d=closes[i]-closes[i-1];
     ag=(ag*(p-1)+(d>0?d:0))/p; al=(al*(p-1)+(d<0?-d:0))/p;
     rsi.push(al===0?100:100-100/(1+ag/al));
@@ -324,8 +324,9 @@ function calcOBVTrend(candles, period = 20) {
   }
   const recent = obvArr.slice(-period);
   const emaOBV = calcEMA(recent, Math.floor(period / 2));
+  if (emaOBV.length < 5) return 'neutral';
   const last  = emaOBV[emaOBV.length - 1];
-  const prev  = emaOBV[emaOBV.length - 4] ?? emaOBV[0];
+  const prev  = emaOBV[emaOBV.length - 4];
   if (last > prev * 1.005)  return 'rising';
   if (last < prev * 0.995)  return 'falling';
   return 'neutral';
@@ -1215,7 +1216,9 @@ async function fetchCandles(symbol, tf, signal = null) {
 // ANALYSIS ENGINE
 // ─────────────────────────────────────────
 
-function _calcTechIndicators(candles, closes) {
+const FIND_LEVELS_LB = { '5m': 100, '15m': 80, '30m': 60, '1h': 60, '4h': 50, '1D': 50 };
+
+function _calcTechIndicators(candles, closes, tf) {
   const last     = candles[candles.length-1];
   const price    = last.close;
 
@@ -1242,7 +1245,7 @@ function _calcTechIndicators(candles, closes) {
   const atr      = atrs[atrs.length-1];
   const volAvg   = avgVol(candles);
   const volRatio = last.volume / volAvg;
-  const levels   = findLevels(candles);
+  const levels   = findLevels(candles, FIND_LEVELS_LB[tf] ?? 50);
 
   const vwap      = calcVWAP(candles);
   const obvTrend  = calcOBVTrend(candles);
@@ -1643,7 +1646,7 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
 
   const closes = candles.map(c => c.close);
 
-  const ind = _calcTechIndicators(candles, closes);
+  const ind = _calcTechIndicators(candles, closes, tf);
   const { price, rsi, ema200, atr, levels, vwap, obvTrend, stochRSI, patterns, divergences } = ind;
 
   // Filtro duro por TF: scalp exige tendência mais forte que swing

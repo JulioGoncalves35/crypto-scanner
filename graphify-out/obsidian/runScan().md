@@ -2,7 +2,7 @@
 source_file: "backend\scanner.js"
 type: "code"
 community: "Scan Engine & API Fetch"
-location: "L111"
+location: "L107"
 tags:
   - graphify/code
   - graphify/INFERRED
@@ -12,6 +12,8 @@ tags:
 # runScan()
 
 ## Connections
+- [[Log()]] - `calls` [INFERRED]
+- [[_runOnce()]] - `calls` [INFERRED]
 - [[analyzeCandles()]] - `calls` [INFERRED]
 - [[applyMTFScoring()]] - `calls` [INFERRED]
 - [[fetchCandles()]] - `calls` [INFERRED]

@@ -1,11 +1,11 @@
 ---
 source_file: "backend/server.js"
 type: "code"
-community: "Account & Database Layer"
+community: "Account & Position Management"
 tags:
   - graphify/code
   - graphify/EXTRACTED
-  - community/Account_&_Database_Layer
+  - community/Account_&_Position_Management
 ---
 
 # backend/server.js â€” Express Server
@@ -20,4 +20,4 @@ tags:
 - [[painel.html â€” Frontend SPA]] - `references` [EXTRACTED]
 - [[runScan()_1]] - `calls` [EXTRACTED]
 
-#graphify/code #graphify/EXTRACTED #community/Account_&_Database_Layer
+#graphify/code #graphify/EXTRACTED #community/Account_&_Position_Management

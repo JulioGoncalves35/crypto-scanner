@@ -2,7 +2,7 @@
 source_file: "backend\scanner.js"
 type: "code"
 community: "Scan Engine & API Fetch"
-location: "L80"
+location: "L76"
 tags:
   - graphify/code
   - graphify/EXTRACTED

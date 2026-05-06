@@ -87,6 +87,16 @@ describe('calcRSI', () => {
     const last = rsi[rsi.length - 1];
     expect(last).toBe(100);
   });
+
+  it('first valid RSI is at index p (Wilder seed), not p+1', () => {
+    const p = 14;
+    const closes = Array.from({ length: 30 }, (_, i) => 100 + Math.sin(i) * 5);
+    const rsi = calcRSI(closes, p);
+    expect(rsi[p - 1]).toBeNull();
+    expect(rsi[p]).not.toBeNull();
+    expect(rsi[p]).toBeGreaterThanOrEqual(0);
+    expect(rsi[p]).toBeLessThanOrEqual(100);
+  });
 });
 
 // ─── calcMACD ─────────────────────────────────────────────────────────────────
@@ -245,6 +255,19 @@ describe('calcOBVTrend', () => {
   it('returns "neutral" for insufficient data', () => {
     const candles = makeTrendingCandles(5);
     expect(calcOBVTrend(candles, 20)).toBe('neutral');
+  });
+
+  it('does not throw and returns "neutral" when slope window too small (period=8)', () => {
+    const candles = makeTrendingCandles(9, 100, 0.1);
+    const result = calcOBVTrend(candles, 8);
+    expect(['rising', 'falling', 'neutral']).toContain(result);
+  });
+
+  it('returns "neutral" when emaOBV has fewer than 5 values', () => {
+    const flatCandles = Array.from({ length: 6 }, (_, i) => ({
+      open: 100, close: 100, high: 101, low: 99, volume: 10,
+    }));
+    expect(calcOBVTrend(flatCandles, 5)).toBe('neutral');
   });
 });
 

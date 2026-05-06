@@ -4,8 +4,8 @@
  * for all active paper trades.
  */
 
-import { fetchWithFallback } from '../painel-core.js';
-import { getActiveTrades, updateTrade } from './db.js';
+import { fetchWithFallback, ROUND_TRIP_FEE } from '../painel-core.js';
+import { getActiveTrades, updateTrade, getAccount, updateAccount } from './db.js';
 import { processPriceUpdate } from './paper-trader.js';
 
 // Horizon expiry in hours per timeframe
@@ -144,9 +144,6 @@ export async function checkActiveTrades() {
 }
 
 // ─── Expiry close ─────────────────────────────────────────────────────────────
-
-import { getAccount, updateAccount } from './db.js';
-import { ROUND_TRIP_FEE } from '../painel-core.js';
 
 async function expireTrade(trade, closePrice) {
   const isBuy = trade.direction === 'buy';

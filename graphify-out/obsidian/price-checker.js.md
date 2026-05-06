@@ -16,6 +16,7 @@ tags:
 - [[checkActiveTrades()]] - `contains` [EXTRACTED]
 - [[expireTrade()]] - `contains` [EXTRACTED]
 - [[fetchCurrentPrice()]] - `contains` [EXTRACTED]
+- [[fetchRecentPriceWindow()]] - `contains` [EXTRACTED]
 - [[isExpired()]] - `contains` [EXTRACTED]
 
 #graphify/code #graphify/EXTRACTED #community/Backend_Trading_System

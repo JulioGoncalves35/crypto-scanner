@@ -2,16 +2,17 @@
 source_file: "backend\price-checker.js"
 type: "code"
 community: "Backend Trading System"
-location: "L89"
+location: "L151"
 tags:
   - graphify/code
-  - graphify/EXTRACTED
+  - graphify/INFERRED
   - community/Backend_Trading_System
 ---
 
 # expireTrade()
 
 ## Connections
+- [[Log()]] - `calls` [INFERRED]
 - [[_alreadyClosedFraction()_1]] - `calls` [EXTRACTED]
 - [[checkActiveTrades()]] - `calls` [EXTRACTED]
 - [[getAccount()]] - `calls` [INFERRED]
@@ -19,4 +20,4 @@ tags:
 - [[updateAccount()]] - `calls` [INFERRED]
 - [[updateTrade()]] - `calls` [INFERRED]
 
-#graphify/code #graphify/EXTRACTED #community/Backend_Trading_System
+#graphify/code #graphify/INFERRED #community/Backend_Trading_System

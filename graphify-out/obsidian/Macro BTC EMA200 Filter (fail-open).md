@@ -1,11 +1,11 @@
 ---
 source_file: "backend/scanner.js"
 type: "code"
-community: "Account & Database Layer"
+community: "Account & Position Management"
 tags:
   - graphify/code
   - graphify/EXTRACTED
-  - community/Account_&_Database_Layer
+  - community/Account_&_Position_Management
 ---
 
 # Macro BTC EMA200 Filter (fail-open)
@@ -13,4 +13,4 @@ tags:
 ## Connections
 - [[fetchMacroBtcTrend() â€” BTC EMA200 macro filter]] - `implements` [EXTRACTED]
 
-#graphify/code #graphify/EXTRACTED #community/Account_&_Database_Layer
+#graphify/code #graphify/EXTRACTED #community/Account_&_Position_Management

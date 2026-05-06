@@ -40,7 +40,8 @@
       "Bash(date /t)",
       "Bash(time /t)",
       "Bash(where.exe claude *)",
-      "Bash(claude --version)"
+      "Bash(claude --version)",
+      "Bash(Read *)"
     ]
   }
 }

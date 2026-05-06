@@ -5,13 +5,14 @@ community: "Backend Trading System"
 location: "L177"
 tags:
   - graphify/code
-  - graphify/EXTRACTED
+  - graphify/INFERRED
   - community/Backend_Trading_System
 ---
 
 # _closePartial()
 
 ## Connections
+- [[Log()]] - `calls` [INFERRED]
 - [[closeManualAt()]] - `calls` [EXTRACTED]
 - [[getAccount()]] - `calls` [INFERRED]
 - [[paper-trader.js]] - `contains` [EXTRACTED]
@@ -19,4 +20,4 @@ tags:
 - [[updateAccount()]] - `calls` [INFERRED]
 - [[updateTrade()]] - `calls` [INFERRED]
 
-#graphify/code #graphify/EXTRACTED #community/Backend_Trading_System
+#graphify/code #graphify/INFERRED #community/Backend_Trading_System

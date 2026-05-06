@@ -8,1026 +8,1026 @@
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L1",
-      "id": "painel_core_js",
       "community": 1,
-      "norm_label": "painel-core.js"
+      "norm_label": "painel-core.js",
+      "id": "painel_core_js"
     },
     {
       "label": "getMTFWeight()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L46",
-      "id": "painel_core_getmtfweight",
       "community": 1,
-      "norm_label": "getmtfweight()"
+      "norm_label": "getmtfweight()",
+      "id": "painel_core_getmtfweight"
     },
     {
       "label": "calcEMA()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L53",
-      "id": "painel_core_calcema",
       "community": 1,
-      "norm_label": "calcema()"
+      "norm_label": "calcema()",
+      "id": "painel_core_calcema"
     },
     {
       "label": "calcRSI()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L66",
-      "id": "painel_core_calcrsi",
       "community": 1,
-      "norm_label": "calcrsi()"
+      "norm_label": "calcrsi()",
+      "id": "painel_core_calcrsi"
     },
     {
       "label": "calcMACD()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L80",
-      "id": "painel_core_calcmacd",
       "community": 1,
-      "norm_label": "calcmacd()"
+      "norm_label": "calcmacd()",
+      "id": "painel_core_calcmacd"
     },
     {
       "label": "calcBollinger()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L88",
-      "id": "painel_core_calcbollinger",
       "community": 1,
-      "norm_label": "calcbollinger()"
+      "norm_label": "calcbollinger()",
+      "id": "painel_core_calcbollinger"
     },
     {
       "label": "calcATR()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L98",
-      "id": "painel_core_calcatr",
       "community": 1,
-      "norm_label": "calcatr()"
+      "norm_label": "calcatr()",
+      "id": "painel_core_calcatr"
     },
     {
       "label": "calcADX()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L109",
-      "id": "painel_core_calcadx",
       "community": 1,
-      "norm_label": "calcadx()"
+      "norm_label": "calcadx()",
+      "id": "painel_core_calcadx"
     },
     {
       "label": "avgVol()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L139",
-      "id": "painel_core_avgvol",
       "community": 1,
-      "norm_label": "avgvol()"
+      "norm_label": "avgvol()",
+      "id": "painel_core_avgvol"
     },
     {
       "label": "findLevels()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L144",
-      "id": "painel_core_findlevels",
       "community": 1,
-      "norm_label": "findlevels()"
+      "norm_label": "findlevels()",
+      "id": "painel_core_findlevels"
     },
     {
       "label": "calcVWAP()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L153",
-      "id": "painel_core_calcvwap",
       "community": 1,
-      "norm_label": "calcvwap()"
+      "norm_label": "calcvwap()",
+      "id": "painel_core_calcvwap"
     },
     {
       "label": "calcAnchoredVWAP()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L164",
-      "id": "painel_core_calcanchoredvwap",
       "community": 1,
-      "norm_label": "calcanchoredvwap()"
+      "norm_label": "calcanchoredvwap()",
+      "id": "painel_core_calcanchoredvwap"
     },
     {
       "label": "calcVolumeProfile()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L205",
-      "id": "painel_core_calcvolumeprofile",
       "community": 1,
-      "norm_label": "calcvolumeprofile()"
+      "norm_label": "calcvolumeprofile()",
+      "id": "painel_core_calcvolumeprofile"
     },
     {
       "label": "calcIchimoku()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L262",
-      "id": "painel_core_calcichimoku",
       "community": 1,
-      "norm_label": "calcichimoku()"
+      "norm_label": "calcichimoku()",
+      "id": "painel_core_calcichimoku"
     },
     {
       "label": "calcOBVTrend()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L316",
-      "id": "painel_core_calcobvtrend",
       "community": 1,
-      "norm_label": "calcobvtrend()"
+      "norm_label": "calcobvtrend()",
+      "id": "painel_core_calcobvtrend"
     },
     {
       "label": "calcCVD()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L337",
-      "id": "painel_core_calccvd",
       "community": 1,
-      "norm_label": "calccvd()"
+      "norm_label": "calccvd()",
+      "id": "painel_core_calccvd"
     },
     {
       "label": "calcSqueezeMomentum()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L371",
-      "id": "painel_core_calcsqueezemomentum",
       "community": 1,
-      "norm_label": "calcsqueezemomentum()"
+      "norm_label": "calcsqueezemomentum()",
+      "id": "painel_core_calcsqueezemomentum"
     },
     {
       "label": "calcStochRSI()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L421",
-      "id": "painel_core_calcstochrsi",
       "community": 1,
-      "norm_label": "calcstochrsi()"
+      "norm_label": "calcstochrsi()",
+      "id": "painel_core_calcstochrsi"
     },
     {
       "label": "detectCandlePatterns()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L434",
-      "id": "painel_core_detectcandlepatterns",
       "community": 1,
-      "norm_label": "detectcandlepatterns()"
+      "norm_label": "detectcandlepatterns()",
+      "id": "painel_core_detectcandlepatterns"
     },
     {
       "label": "detectDivergences()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L610",
-      "id": "painel_core_detectdivergences",
       "community": 1,
-      "norm_label": "detectdivergences()"
+      "norm_label": "detectdivergences()",
+      "id": "painel_core_detectdivergences"
     },
     {
       "label": "detectEMACross()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L687",
-      "id": "painel_core_detectemacross",
       "community": 1,
-      "norm_label": "detectemacross()"
+      "norm_label": "detectemacross()",
+      "id": "painel_core_detectemacross"
     },
     {
       "label": "detectMarketStructure()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L712",
-      "id": "painel_core_detectmarketstructure",
       "community": 1,
-      "norm_label": "detectmarketstructure()"
+      "norm_label": "detectmarketstructure()",
+      "id": "painel_core_detectmarketstructure"
     },
     {
       "label": "detectBOSCHoCH()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L745",
-      "id": "painel_core_detectboschoch",
       "community": 1,
-      "norm_label": "detectboschoch()"
+      "norm_label": "detectboschoch()",
+      "id": "painel_core_detectboschoch"
     },
     {
       "label": "detectOrderBlocks()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L811",
-      "id": "painel_core_detectorderblocks",
       "community": 1,
-      "norm_label": "detectorderblocks()"
+      "norm_label": "detectorderblocks()",
+      "id": "painel_core_detectorderblocks"
     },
     {
       "label": "detectTrendlineBreak()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L871",
-      "id": "painel_core_detecttrendlinebreak",
       "community": 1,
-      "norm_label": "detecttrendlinebreak()"
+      "norm_label": "detecttrendlinebreak()",
+      "id": "painel_core_detecttrendlinebreak"
     },
     {
       "label": "detectTriangle()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L931",
-      "id": "painel_core_detecttriangle",
       "community": 1,
-      "norm_label": "detecttriangle()"
+      "norm_label": "detecttriangle()",
+      "id": "painel_core_detecttriangle"
     },
     {
       "label": "detectDoubleTopBottom()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L983",
-      "id": "painel_core_detectdoubletopbottom",
       "community": 1,
-      "norm_label": "detectdoubletopbottom()"
+      "norm_label": "detectdoubletopbottom()",
+      "id": "painel_core_detectdoubletopbottom"
     },
     {
       "label": "calcLiqPrice()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L1036",
-      "id": "painel_core_calcliqprice",
       "community": 1,
-      "norm_label": "calcliqprice()"
+      "norm_label": "calcliqprice()",
+      "id": "painel_core_calcliqprice"
     },
     {
       "label": "capReturn()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L1041",
-      "id": "painel_core_capreturn",
       "community": 1,
-      "norm_label": "capreturn()"
+      "norm_label": "capreturn()",
+      "id": "painel_core_capreturn"
     },
     {
       "label": "getFibSet()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L1056",
-      "id": "painel_core_getfibset",
       "community": 1,
-      "norm_label": "getfibset()"
+      "norm_label": "getfibset()",
+      "id": "painel_core_getfibset"
     },
     {
       "label": "calcMetas()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L1063",
-      "id": "painel_core_calcmetas",
       "community": 1,
-      "norm_label": "calcmetas()"
+      "norm_label": "calcmetas()",
+      "id": "painel_core_calcmetas"
     },
     {
       "label": "buildJournalEntry()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L1078",
-      "id": "painel_core_buildjournalentry",
-      "community": 11,
-      "norm_label": "buildjournalentry()"
+      "community": 13,
+      "norm_label": "buildjournalentry()",
+      "id": "painel_core_buildjournalentry"
     },
     {
       "label": "isDuplicateEntry()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L1112",
-      "id": "painel_core_isduplicateentry",
       "community": 1,
-      "norm_label": "isduplicateentry()"
+      "norm_label": "isduplicateentry()",
+      "id": "painel_core_isduplicateentry"
     },
     {
       "label": "computeJournalStats()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L1123",
-      "id": "painel_core_computejournalstats",
       "community": 1,
-      "norm_label": "computejournalstats()"
+      "norm_label": "computejournalstats()",
+      "id": "painel_core_computejournalstats"
     },
     {
       "label": "fetchJSON()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L1157",
-      "id": "painel_core_fetchjson",
-      "community": 5,
-      "norm_label": "fetchjson()"
+      "community": 6,
+      "norm_label": "fetchjson()",
+      "id": "painel_core_fetchjson"
     },
     {
       "label": "fetchWithFallback()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L1178",
-      "id": "painel_core_fetchwithfallback",
-      "community": 5,
-      "norm_label": "fetchwithfallback()"
+      "community": 6,
+      "norm_label": "fetchwithfallback()",
+      "id": "painel_core_fetchwithfallback"
     },
     {
       "label": "fetchCandles()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L1194",
-      "id": "painel_core_fetchcandles",
-      "community": 5,
-      "norm_label": "fetchcandles()"
+      "community": 6,
+      "norm_label": "fetchcandles()",
+      "id": "painel_core_fetchcandles"
     },
     {
       "label": "_calcTechIndicators()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L1218",
-      "id": "painel_core_calctechindicators",
       "community": 1,
-      "norm_label": "_calctechindicators()"
+      "norm_label": "_calctechindicators()",
+      "id": "painel_core_calctechindicators"
     },
     {
       "label": "_computeScore()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L1273",
-      "id": "painel_core_computescore",
       "community": 1,
-      "norm_label": "_computescore()"
+      "norm_label": "_computescore()",
+      "id": "painel_core_computescore"
     },
     {
       "label": "analyzeCandles()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L1628",
-      "id": "painel_core_analyzecandles",
       "community": 1,
-      "norm_label": "analyzecandles()"
+      "norm_label": "analyzecandles()",
+      "id": "painel_core_analyzecandles"
     },
     {
       "label": "applyMTFScoring()",
       "file_type": "code",
       "source_file": "painel-core.js",
       "source_location": "L1756",
-      "id": "painel_core_applymtfscoring",
-      "community": 5,
-      "norm_label": "applymtfscoring()"
+      "community": 6,
+      "norm_label": "applymtfscoring()",
+      "id": "painel_core_applymtfscoring"
     },
     {
       "label": "db.js",
       "file_type": "code",
       "source_file": "backend\\db.js",
       "source_location": "L1",
-      "id": "backend_db_js",
       "community": 2,
-      "norm_label": "db.js"
+      "norm_label": "db.js",
+      "id": "backend_db_js"
     },
     {
       "label": "getDb()",
       "file_type": "code",
       "source_file": "backend\\db.js",
       "source_location": "L15",
-      "id": "db_getdb",
       "community": 2,
-      "norm_label": "getdb()"
+      "norm_label": "getdb()",
+      "id": "db_getdb"
     },
     {
       "label": "initSchema()",
       "file_type": "code",
       "source_file": "backend\\db.js",
       "source_location": "L25",
-      "id": "db_initschema",
       "community": 2,
-      "norm_label": "initschema()"
+      "norm_label": "initschema()",
+      "id": "db_initschema"
     },
     {
       "label": "getAccount()",
       "file_type": "code",
       "source_file": "backend\\db.js",
-      "source_location": "L104",
-      "id": "db_getaccount",
+      "source_location": "L120",
       "community": 2,
-      "norm_label": "getaccount()"
+      "norm_label": "getaccount()",
+      "id": "db_getaccount"
     },
     {
       "label": "updateAccount()",
       "file_type": "code",
       "source_file": "backend\\db.js",
-      "source_location": "L108",
-      "id": "db_updateaccount",
+      "source_location": "L124",
       "community": 2,
-      "norm_label": "updateaccount()"
+      "norm_label": "updateaccount()",
+      "id": "db_updateaccount"
     },
     {
       "label": "setupAccount()",
       "file_type": "code",
       "source_file": "backend\\db.js",
-      "source_location": "L116",
-      "id": "db_setupaccount",
+      "source_location": "L132",
       "community": 2,
-      "norm_label": "setupaccount()"
+      "norm_label": "setupaccount()",
+      "id": "db_setupaccount"
     },
     {
       "label": "resetAccount()",
       "file_type": "code",
       "source_file": "backend\\db.js",
-      "source_location": "L128",
-      "id": "db_resetaccount",
+      "source_location": "L144",
       "community": 2,
-      "norm_label": "resetaccount()"
+      "norm_label": "resetaccount()",
+      "id": "db_resetaccount"
     },
     {
       "label": "getTrade()",
       "file_type": "code",
       "source_file": "backend\\db.js",
-      "source_location": "L142",
-      "id": "db_gettrade",
+      "source_location": "L158",
       "community": 2,
-      "norm_label": "gettrade()"
+      "norm_label": "gettrade()",
+      "id": "db_gettrade"
     },
     {
       "label": "getActiveTrades()",
       "file_type": "code",
       "source_file": "backend\\db.js",
-      "source_location": "L146",
-      "id": "db_getactivetrades",
+      "source_location": "L162",
       "community": 2,
-      "norm_label": "getactivetrades()"
+      "norm_label": "getactivetrades()",
+      "id": "db_getactivetrades"
     },
     {
       "label": "getActiveCoins()",
       "file_type": "code",
       "source_file": "backend\\db.js",
-      "source_location": "L152",
-      "id": "db_getactivecoins",
+      "source_location": "L168",
       "community": 2,
-      "norm_label": "getactivecoins()"
+      "norm_label": "getactivecoins()",
+      "id": "db_getactivecoins"
     },
     {
       "label": "countActivePositions()",
       "file_type": "code",
       "source_file": "backend\\db.js",
-      "source_location": "L159",
-      "id": "db_countactivepositions",
+      "source_location": "L175",
       "community": 2,
-      "norm_label": "countactivepositions()"
+      "norm_label": "countactivepositions()",
+      "id": "db_countactivepositions"
     },
     {
       "label": "getTrades()",
       "file_type": "code",
       "source_file": "backend\\db.js",
-      "source_location": "L166",
-      "id": "db_gettrades",
+      "source_location": "L182",
       "community": 2,
-      "norm_label": "gettrades()"
+      "norm_label": "gettrades()",
+      "id": "db_gettrades"
     },
     {
       "label": "insertTrade()",
       "file_type": "code",
       "source_file": "backend\\db.js",
-      "source_location": "L177",
-      "id": "db_inserttrade",
+      "source_location": "L193",
       "community": 2,
-      "norm_label": "inserttrade()"
+      "norm_label": "inserttrade()",
+      "id": "db_inserttrade"
     },
     {
       "label": "updateTrade()",
       "file_type": "code",
       "source_file": "backend\\db.js",
-      "source_location": "L191",
-      "id": "db_updatetrade",
+      "source_location": "L207",
       "community": 2,
-      "norm_label": "updatetrade()"
+      "norm_label": "updatetrade()",
+      "id": "db_updatetrade"
     },
     {
       "label": "insertScanLog()",
       "file_type": "code",
       "source_file": "backend\\db.js",
-      "source_location": "L199",
-      "id": "db_insertscanlog",
+      "source_location": "L215",
       "community": 2,
-      "norm_label": "insertscanlog()"
+      "norm_label": "insertscanlog()",
+      "id": "db_insertscanlog"
     },
     {
       "label": "getStats()",
       "file_type": "code",
       "source_file": "backend\\db.js",
-      "source_location": "L208",
-      "id": "db_getstats",
+      "source_location": "L224",
       "community": 2,
-      "norm_label": "getstats()"
+      "norm_label": "getstats()",
+      "id": "db_getstats"
     },
     {
       "label": "paper-trader.js",
       "file_type": "code",
       "source_file": "backend\\paper-trader.js",
       "source_location": "L1",
-      "id": "backend_paper_trader_js",
       "community": 2,
-      "norm_label": "paper-trader.js"
+      "norm_label": "paper-trader.js",
+      "id": "backend_paper_trader_js"
     },
     {
       "label": "openPosition()",
       "file_type": "code",
       "source_file": "backend\\paper-trader.js",
       "source_location": "L35",
-      "id": "paper_trader_openposition",
       "community": 2,
-      "norm_label": "openposition()"
+      "norm_label": "openposition()",
+      "id": "paper_trader_openposition"
     },
     {
       "label": "processPriceUpdate()",
       "file_type": "code",
       "source_file": "backend\\paper-trader.js",
       "source_location": "L126",
-      "id": "paper_trader_processpriceupdate",
       "community": 2,
-      "norm_label": "processpriceupdate()"
+      "norm_label": "processpriceupdate()",
+      "id": "paper_trader_processpriceupdate"
     },
     {
       "label": "_stopStatus()",
       "file_type": "code",
       "source_file": "backend\\paper-trader.js",
       "source_location": "L160",
-      "id": "paper_trader_stopstatus",
       "community": 2,
-      "norm_label": "_stopstatus()"
+      "norm_label": "_stopstatus()",
+      "id": "paper_trader_stopstatus"
     },
     {
       "label": "_alreadyClosedFraction()",
       "file_type": "code",
       "source_file": "backend\\paper-trader.js",
       "source_location": "L166",
-      "id": "paper_trader_alreadyclosedfraction",
       "community": 2,
-      "norm_label": "_alreadyclosedfraction()"
+      "norm_label": "_alreadyclosedfraction()",
+      "id": "paper_trader_alreadyclosedfraction"
     },
     {
       "label": "_closePartial()",
       "file_type": "code",
       "source_file": "backend\\paper-trader.js",
       "source_location": "L177",
-      "id": "paper_trader_closepartial",
       "community": 2,
-      "norm_label": "_closepartial()"
+      "norm_label": "_closepartial()",
+      "id": "paper_trader_closepartial"
     },
     {
       "label": "closeManualAt()",
       "file_type": "code",
       "source_file": "backend\\paper-trader.js",
       "source_location": "L237",
-      "id": "paper_trader_closemanualat",
       "community": 2,
-      "norm_label": "closemanualat()"
+      "norm_label": "closemanualat()",
+      "id": "paper_trader_closemanualat"
     },
     {
       "label": "price-checker.js",
       "file_type": "code",
       "source_file": "backend\\price-checker.js",
       "source_location": "L1",
-      "id": "backend_price_checker_js",
       "community": 2,
-      "norm_label": "price-checker.js"
+      "norm_label": "price-checker.js",
+      "id": "backend_price_checker_js"
     },
     {
       "label": "fetchCurrentPrice()",
       "file_type": "code",
       "source_file": "backend\\price-checker.js",
       "source_location": "L23",
-      "id": "price_checker_fetchcurrentprice",
       "community": 2,
-      "norm_label": "fetchcurrentprice()"
+      "norm_label": "fetchcurrentprice()",
+      "id": "price_checker_fetchcurrentprice"
     },
     {
       "label": "isExpired()",
       "file_type": "code",
       "source_file": "backend\\price-checker.js",
-      "source_location": "L36",
-      "id": "price_checker_isexpired",
+      "source_location": "L72",
       "community": 2,
-      "norm_label": "isexpired()"
+      "norm_label": "isexpired()",
+      "id": "price_checker_isexpired"
     },
     {
       "label": "checkActiveTrades()",
       "file_type": "code",
       "source_file": "backend\\price-checker.js",
-      "source_location": "L45",
-      "id": "price_checker_checkactivetrades",
+      "source_location": "L81",
       "community": 2,
-      "norm_label": "checkactivetrades()"
+      "norm_label": "checkactivetrades()",
+      "id": "price_checker_checkactivetrades"
     },
     {
       "label": "expireTrade()",
       "file_type": "code",
       "source_file": "backend\\price-checker.js",
-      "source_location": "L89",
-      "id": "price_checker_expiretrade",
+      "source_location": "L151",
       "community": 2,
-      "norm_label": "expiretrade()"
+      "norm_label": "expiretrade()",
+      "id": "price_checker_expiretrade"
     },
     {
       "label": "_alreadyClosedFraction()",
       "file_type": "code",
       "source_file": "backend\\price-checker.js",
-      "source_location": "L123",
-      "id": "price_checker_alreadyclosedfraction",
+      "source_location": "L185",
       "community": 2,
-      "norm_label": "_alreadyclosedfraction()"
+      "norm_label": "_alreadyclosedfraction()",
+      "id": "price_checker_alreadyclosedfraction"
     },
     {
       "label": "scanner.js",
       "file_type": "code",
       "source_file": "backend\\scanner.js",
       "source_location": "L1",
-      "id": "backend_scanner_js",
-      "community": 5,
-      "norm_label": "scanner.js"
+      "community": 6,
+      "norm_label": "scanner.js",
+      "id": "backend_scanner_js"
     },
     {
       "label": "fetchMacroBtcTrend()",
       "file_type": "code",
       "source_file": "backend\\scanner.js",
-      "source_location": "L53",
-      "id": "scanner_fetchmacrobtctrend",
-      "community": 5,
-      "norm_label": "fetchmacrobtctrend()"
+      "source_location": "L49",
+      "community": 6,
+      "norm_label": "fetchmacrobtctrend()",
+      "id": "scanner_fetchmacrobtctrend"
     },
     {
       "label": "fetchFearGreed()",
       "file_type": "code",
       "source_file": "backend\\scanner.js",
-      "source_location": "L72",
-      "id": "scanner_fetchfeargreed",
-      "community": 5,
-      "norm_label": "fetchfeargreed()"
+      "source_location": "L68",
+      "community": 6,
+      "norm_label": "fetchfeargreed()",
+      "id": "scanner_fetchfeargreed"
     },
     {
       "label": "fetchFundingRate()",
       "file_type": "code",
       "source_file": "backend\\scanner.js",
-      "source_location": "L80",
-      "id": "scanner_fetchfundingrate",
-      "community": 5,
-      "norm_label": "fetchfundingrate()"
+      "source_location": "L76",
+      "community": 6,
+      "norm_label": "fetchfundingrate()",
+      "id": "scanner_fetchfundingrate"
     },
     {
       "label": "fetchOpenInterest()",
       "file_type": "code",
       "source_file": "backend\\scanner.js",
-      "source_location": "L89",
-      "id": "scanner_fetchopeninterest",
-      "community": 5,
-      "norm_label": "fetchopeninterest()"
+      "source_location": "L85",
+      "community": 6,
+      "norm_label": "fetchopeninterest()",
+      "id": "scanner_fetchopeninterest"
     },
     {
       "label": "runScan()",
       "file_type": "code",
       "source_file": "backend\\scanner.js",
-      "source_location": "L111",
-      "id": "scanner_runscan",
-      "community": 5,
-      "norm_label": "runscan()"
+      "source_location": "L107",
+      "community": 6,
+      "norm_label": "runscan()",
+      "id": "scanner_runscan"
     },
     {
       "label": "server.js",
       "file_type": "code",
       "source_file": "backend\\server.js",
       "source_location": "L1",
-      "id": "backend_server_js",
-      "community": 16,
-      "norm_label": "server.js"
+      "community": 21,
+      "norm_label": "server.js",
+      "id": "backend_server_js"
     },
     {
       "label": "account.js",
       "file_type": "code",
       "source_file": "backend\\routes\\account.js",
       "source_location": "L1",
-      "id": "backend_routes_account_js",
-      "community": 17,
-      "norm_label": "account.js"
+      "community": 22,
+      "norm_label": "account.js",
+      "id": "backend_routes_account_js"
     },
     {
       "label": "scan.js",
       "file_type": "code",
       "source_file": "backend\\routes\\scan.js",
       "source_location": "L1",
-      "id": "backend_routes_scan_js",
-      "community": 18,
-      "norm_label": "scan.js"
+      "community": 6,
+      "norm_label": "scan.js",
+      "id": "backend_routes_scan_js"
     },
     {
       "label": "trades.js",
       "file_type": "code",
       "source_file": "backend\\routes\\trades.js",
       "source_location": "L1",
-      "id": "backend_routes_trades_js",
-      "community": 11,
-      "norm_label": "trades.js"
+      "community": 13,
+      "norm_label": "trades.js",
+      "id": "backend_routes_trades_js"
     },
     {
       "label": "fp()",
       "file_type": "code",
       "source_file": "backend\\routes\\trades.js",
-      "source_location": "L24",
-      "id": "trades_fp",
-      "community": 11,
-      "norm_label": "fp()"
+      "source_location": "L25",
+      "community": 13,
+      "norm_label": "fp()",
+      "id": "trades_fp"
     },
     {
       "label": "api.test.js",
       "file_type": "code",
       "source_file": "tests\\api.test.js",
       "source_location": "L1",
-      "id": "tests_api_test_js",
       "community": 7,
-      "norm_label": "api.test.js"
+      "norm_label": "api.test.js",
+      "id": "tests_api_test_js"
     },
     {
       "label": "makeFetchOk()",
       "file_type": "code",
       "source_file": "tests\\api.test.js",
       "source_location": "L5",
-      "id": "api_test_makefetchok",
       "community": 7,
-      "norm_label": "makefetchok()"
+      "norm_label": "makefetchok()",
+      "id": "api_test_makefetchok"
     },
     {
       "label": "makeFetchError()",
       "file_type": "code",
       "source_file": "tests\\api.test.js",
       "source_location": "L12",
-      "id": "api_test_makefetcherror",
       "community": 7,
-      "norm_label": "makefetcherror()"
+      "norm_label": "makefetcherror()",
+      "id": "api_test_makefetcherror"
     },
     {
       "label": "makeFetchNetworkError()",
       "file_type": "code",
       "source_file": "tests\\api.test.js",
       "source_location": "L16",
-      "id": "api_test_makefetchnetworkerror",
       "community": 7,
-      "norm_label": "makefetchnetworkerror()"
+      "norm_label": "makefetchnetworkerror()",
+      "id": "api_test_makefetchnetworkerror"
     },
     {
       "label": "makeBybitResponse()",
       "file_type": "code",
       "source_file": "tests\\api.test.js",
       "source_location": "L20",
-      "id": "api_test_makebybitresponse",
       "community": 7,
-      "norm_label": "makebybitresponse()"
+      "norm_label": "makebybitresponse()",
+      "id": "api_test_makebybitresponse"
     },
     {
       "label": "makeKlineRow()",
       "file_type": "code",
       "source_file": "tests\\api.test.js",
       "source_location": "L28",
-      "id": "api_test_makeklinerow",
       "community": 7,
-      "norm_label": "makeklinerow()"
+      "norm_label": "makeklinerow()",
+      "id": "api_test_makeklinerow"
     },
     {
       "label": "indicators.test.js",
       "file_type": "code",
       "source_file": "tests\\indicators.test.js",
       "source_location": "L1",
-      "id": "tests_indicators_test_js",
-      "community": 12,
-      "norm_label": "indicators.test.js"
+      "community": 14,
+      "norm_label": "indicators.test.js",
+      "id": "tests_indicators_test_js"
     },
     {
       "label": "makeSwingCandles()",
       "file_type": "code",
       "source_file": "tests\\indicators.test.js",
       "source_location": "L412",
-      "id": "indicators_test_makeswingcandles",
-      "community": 12,
-      "norm_label": "makeswingcandles()"
+      "community": 14,
+      "norm_label": "makeswingcandles()",
+      "id": "indicators_test_makeswingcandles"
     },
     {
       "label": "integration.test.js",
       "file_type": "code",
       "source_file": "tests\\integration.test.js",
       "source_location": "L1",
-      "id": "tests_integration_test_js",
-      "community": 6,
-      "norm_label": "integration.test.js"
+      "community": 8,
+      "norm_label": "integration.test.js",
+      "id": "tests_integration_test_js"
     },
     {
       "label": "getResult()",
       "file_type": "code",
       "source_file": "tests\\integration.test.js",
       "source_location": "L47",
-      "id": "integration_test_getresult",
-      "community": 6,
-      "norm_label": "getresult()"
+      "community": 8,
+      "norm_label": "getresult()",
+      "id": "integration_test_getresult"
     },
     {
       "label": "journal.test.js",
       "file_type": "code",
       "source_file": "tests\\journal.test.js",
       "source_location": "L1",
-      "id": "tests_journal_test_js",
-      "community": 13,
-      "norm_label": "journal.test.js"
+      "community": 15,
+      "norm_label": "journal.test.js",
+      "id": "tests_journal_test_js"
     },
     {
       "label": "makeMockSetup()",
       "file_type": "code",
       "source_file": "tests\\journal.test.js",
       "source_location": "L8",
-      "id": "journal_test_makemocksetup",
-      "community": 13,
-      "norm_label": "makemocksetup()"
+      "community": 15,
+      "norm_label": "makemocksetup()",
+      "id": "journal_test_makemocksetup"
     },
     {
       "label": "mtf.test.js",
       "file_type": "code",
       "source_file": "tests\\mtf.test.js",
       "source_location": "L1",
-      "id": "tests_mtf_test_js",
-      "community": 14,
-      "norm_label": "mtf.test.js"
+      "community": 16,
+      "norm_label": "mtf.test.js",
+      "id": "tests_mtf_test_js"
     },
     {
       "label": "makeSetup()",
       "file_type": "code",
       "source_file": "tests\\mtf.test.js",
       "source_location": "L6",
-      "id": "mtf_test_makesetup",
-      "community": 14,
-      "norm_label": "makesetup()"
+      "community": 16,
+      "norm_label": "makesetup()",
+      "id": "mtf_test_makesetup"
     },
     {
       "label": "patterns.test.js",
       "file_type": "code",
       "source_file": "tests\\patterns.test.js",
       "source_location": "L1",
-      "id": "tests_patterns_test_js",
-      "community": 8,
-      "norm_label": "patterns.test.js"
+      "community": 9,
+      "norm_label": "patterns.test.js",
+      "id": "tests_patterns_test_js"
     },
     {
       "label": "candle()",
       "file_type": "code",
       "source_file": "tests\\patterns.test.js",
       "source_location": "L8",
-      "id": "patterns_test_candle",
-      "community": 8,
-      "norm_label": "candle()"
+      "community": 9,
+      "norm_label": "candle()",
+      "id": "patterns_test_candle"
     },
     {
       "label": "withContext()",
       "file_type": "code",
       "source_file": "tests\\patterns.test.js",
       "source_location": "L12",
-      "id": "patterns_test_withcontext",
-      "community": 8,
-      "norm_label": "withcontext()"
+      "community": 9,
+      "norm_label": "withcontext()",
+      "id": "patterns_test_withcontext"
     },
     {
       "label": "makeCandles()",
       "file_type": "code",
       "source_file": "tests\\patterns.test.js",
       "source_location": "L201",
-      "id": "patterns_test_makecandles",
-      "community": 8,
-      "norm_label": "makecandles()"
+      "community": 9,
+      "norm_label": "makecandles()",
+      "id": "patterns_test_makecandles"
     },
     {
       "label": "makeBear()",
       "file_type": "code",
       "source_file": "tests\\patterns.test.js",
       "source_location": "L587",
-      "id": "patterns_test_makebear",
-      "community": 8,
-      "norm_label": "makebear()"
+      "community": 9,
+      "norm_label": "makebear()",
+      "id": "patterns_test_makebear"
     },
     {
       "label": "makeOrderBlockCandles()",
       "file_type": "code",
       "source_file": "tests\\patterns.test.js",
       "source_location": "L605",
-      "id": "patterns_test_makeorderblockcandles",
-      "community": 8,
-      "norm_label": "makeorderblockcandles()"
+      "community": 9,
+      "norm_label": "makeorderblockcandles()",
+      "id": "patterns_test_makeorderblockcandles"
     },
     {
       "label": "risk.test.js",
       "file_type": "code",
       "source_file": "tests\\risk.test.js",
       "source_location": "L1",
-      "id": "tests_risk_test_js",
-      "community": 19,
-      "norm_label": "risk.test.js"
+      "community": 23,
+      "norm_label": "risk.test.js",
+      "id": "tests_risk_test_js"
     },
     {
       "label": "scanner-filters.test.js",
       "file_type": "code",
       "source_file": "tests\\scanner-filters.test.js",
       "source_location": "L1",
-      "id": "tests_scanner_filters_test_js",
-      "community": 10,
-      "norm_label": "scanner-filters.test.js"
+      "community": 11,
+      "norm_label": "scanner-filters.test.js",
+      "id": "tests_scanner_filters_test_js"
     },
     {
       "label": "isRiskTooHigh()",
       "file_type": "code",
       "source_file": "tests\\scanner-filters.test.js",
       "source_location": "L21",
-      "id": "scanner_filters_test_isrisktoohigh",
-      "community": 10,
-      "norm_label": "isrisktoohigh()"
+      "community": 11,
+      "norm_label": "isrisktoohigh()",
+      "id": "scanner_filters_test_isrisktoohigh"
     },
     {
       "label": "detectTrend()",
       "file_type": "code",
       "source_file": "tests\\scanner-filters.test.js",
       "source_location": "L74",
-      "id": "scanner_filters_test_detecttrend",
-      "community": 10,
-      "norm_label": "detecttrend()"
+      "community": 11,
+      "norm_label": "detecttrend()",
+      "id": "scanner_filters_test_detecttrend"
     },
     {
       "label": "makeTrendingUp()",
       "file_type": "code",
       "source_file": "tests\\scanner-filters.test.js",
       "source_location": "L82",
-      "id": "scanner_filters_test_maketrendingup",
-      "community": 10,
-      "norm_label": "maketrendingup()"
+      "community": 11,
+      "norm_label": "maketrendingup()",
+      "id": "scanner_filters_test_maketrendingup"
     },
     {
       "label": "makeTrendingDown()",
       "file_type": "code",
       "source_file": "tests\\scanner-filters.test.js",
       "source_location": "L86",
-      "id": "scanner_filters_test_maketrendingdown",
-      "community": 10,
-      "norm_label": "maketrendingdown()"
+      "community": 11,
+      "norm_label": "maketrendingdown()",
+      "id": "scanner_filters_test_maketrendingdown"
     },
     {
       "label": "scoring.test.js",
       "file_type": "code",
       "source_file": "tests\\scoring.test.js",
       "source_location": "L1",
-      "id": "tests_scoring_test_js",
-      "community": 15,
-      "norm_label": "scoring.test.js"
+      "community": 17,
+      "norm_label": "scoring.test.js",
+      "id": "tests_scoring_test_js"
     },
     {
       "label": "makeInd()",
       "file_type": "code",
       "source_file": "tests\\scoring.test.js",
       "source_location": "L12",
-      "id": "scoring_test_makeind",
-      "community": 15,
-      "norm_label": "makeind()"
+      "community": 17,
+      "norm_label": "makeind()",
+      "id": "scoring_test_makeind"
     },
     {
       "label": "candles.js",
       "file_type": "code",
       "source_file": "tests\\fixtures\\candles.js",
       "source_location": "L1",
-      "id": "tests_fixtures_candles_js",
-      "community": 6,
-      "norm_label": "candles.js"
+      "community": 8,
+      "norm_label": "candles.js",
+      "id": "tests_fixtures_candles_js"
     },
     {
       "label": "makeTrendingCandles()",
       "file_type": "code",
       "source_file": "tests\\fixtures\\candles.js",
       "source_location": "L11",
-      "id": "candles_maketrendingcandles",
-      "community": 6,
-      "norm_label": "maketrendingcandles()"
+      "community": 8,
+      "norm_label": "maketrendingcandles()",
+      "id": "candles_maketrendingcandles"
     },
     {
       "label": "makeFlatCandles()",
       "file_type": "code",
       "source_file": "tests\\fixtures\\candles.js",
       "source_location": "L31",
-      "id": "candles_makeflatcandles",
-      "community": 6,
-      "norm_label": "makeflatcandles()"
+      "community": 8,
+      "norm_label": "makeflatcandles()",
+      "id": "candles_makeflatcandles"
     },
     {
       "label": "makeDowntrendCandles()",
       "file_type": "code",
       "source_file": "tests\\fixtures\\candles.js",
       "source_location": "L45",
-      "id": "candles_makedowntrendcandles",
-      "community": 6,
-      "norm_label": "makedowntrendcandles()"
+      "community": 8,
+      "norm_label": "makedowntrendcandles()",
+      "id": "candles_makedowntrendcandles"
     },
     {
       "label": "makePatternCandles()",
       "file_type": "code",
       "source_file": "tests\\fixtures\\candles.js",
       "source_location": "L66",
-      "id": "candles_makepatterncandles",
-      "community": 6,
-      "norm_label": "makepatterncandles()"
+      "community": 8,
+      "norm_label": "makepatterncandles()",
+      "id": "candles_makepatterncandles"
     },
     {
       "label": "Crypto Scanner Project Documentation",
@@ -1038,9 +1038,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "claudemd_cryptoscanner",
       "community": 3,
-      "norm_label": "crypto scanner project documentation"
+      "norm_label": "crypto scanner project documentation",
+      "id": "claudemd_cryptoscanner"
     },
     {
       "label": "painel.html \u00e2\u20ac\u201d Frontend SPA",
@@ -1051,9 +1051,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_spa",
       "community": 3,
-      "norm_label": "painel.html a\u20ac\u201d frontend spa"
+      "norm_label": "painel.html a\u20ac\u201d frontend spa",
+      "id": "pailnelhtml_spa"
     },
     {
       "label": "Agent Council Next Steps",
@@ -1064,9 +1064,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "docs_agentcouncil",
       "community": 3,
-      "norm_label": "agent council next steps"
+      "norm_label": "agent council next steps",
+      "id": "docs_agentcouncil"
     },
     {
       "label": "Application State Object",
@@ -1077,9 +1077,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_state",
       "community": 0,
-      "norm_label": "application state object"
+      "norm_label": "application state object",
+      "id": "pailnelhtml_state"
     },
     {
       "label": "fetchCandles()",
@@ -1090,9 +1090,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_fetchCandles",
-      "community": 4,
-      "norm_label": "fetchcandles()"
+      "community": 5,
+      "norm_label": "fetchcandles()",
+      "id": "pailnelhtml_fetchCandles"
     },
     {
       "label": "fetchJSON()",
@@ -1103,9 +1103,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_fetchJSON",
       "community": 0,
-      "norm_label": "fetchjson()"
+      "norm_label": "fetchjson()",
+      "id": "pailnelhtml_fetchJSON"
     },
     {
       "label": "fetchWithFallback()",
@@ -1116,9 +1116,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_fetchWithFallback",
       "community": 0,
-      "norm_label": "fetchwithfallback()"
+      "norm_label": "fetchwithfallback()",
+      "id": "pailnelhtml_fetchWithFallback"
     },
     {
       "label": "fetchFearGreed()",
@@ -1129,9 +1129,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_fetchFearGreed",
       "community": 0,
-      "norm_label": "fetchfeargreed()"
+      "norm_label": "fetchfeargreed()",
+      "id": "pailnelhtml_fetchFearGreed"
     },
     {
       "label": "calcEMA()",
@@ -1142,9 +1142,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_calcEMA",
       "community": 0,
-      "norm_label": "calcema()"
+      "norm_label": "calcema()",
+      "id": "pailnelhtml_calcEMA"
     },
     {
       "label": "calcRSI()",
@@ -1155,9 +1155,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_calcRSI",
       "community": 0,
-      "norm_label": "calcrsi()"
+      "norm_label": "calcrsi()",
+      "id": "pailnelhtml_calcRSI"
     },
     {
       "label": "calcMACD()",
@@ -1168,9 +1168,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_calcMACD",
       "community": 0,
-      "norm_label": "calcmacd()"
+      "norm_label": "calcmacd()",
+      "id": "pailnelhtml_calcMACD"
     },
     {
       "label": "calcATR()",
@@ -1181,9 +1181,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_calcATR",
       "community": 0,
-      "norm_label": "calcatr()"
+      "norm_label": "calcatr()",
+      "id": "pailnelhtml_calcATR"
     },
     {
       "label": "calcADX()",
@@ -1194,9 +1194,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_calcADX",
       "community": 0,
-      "norm_label": "calcadx()"
+      "norm_label": "calcadx()",
+      "id": "pailnelhtml_calcADX"
     },
     {
       "label": "calcBollinger() \u00e2\u20ac\u201d Bollinger Bands",
@@ -1207,9 +1207,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_calcBollinger",
       "community": 0,
-      "norm_label": "calcbollinger() a\u20ac\u201d bollinger bands"
+      "norm_label": "calcbollinger() a\u20ac\u201d bollinger bands",
+      "id": "pailnelhtml_calcBollinger"
     },
     {
       "label": "calcVWAP()",
@@ -1220,9 +1220,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_calcVWAP",
       "community": 0,
-      "norm_label": "calcvwap()"
+      "norm_label": "calcvwap()",
+      "id": "pailnelhtml_calcVWAP"
     },
     {
       "label": "calcAnchoredVWAP()",
@@ -1233,9 +1233,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_calcAnchoredVWAP",
       "community": 0,
-      "norm_label": "calcanchoredvwap()"
+      "norm_label": "calcanchoredvwap()",
+      "id": "pailnelhtml_calcAnchoredVWAP"
     },
     {
       "label": "calcVolumeProfile()",
@@ -1246,9 +1246,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_calcVolumeProfile",
       "community": 0,
-      "norm_label": "calcvolumeprofile()"
+      "norm_label": "calcvolumeprofile()",
+      "id": "pailnelhtml_calcVolumeProfile"
     },
     {
       "label": "calcIchimoku()",
@@ -1259,9 +1259,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_calcIchimoku",
       "community": 0,
-      "norm_label": "calcichimoku()"
+      "norm_label": "calcichimoku()",
+      "id": "pailnelhtml_calcIchimoku"
     },
     {
       "label": "calcCVD() \u00e2\u20ac\u201d Cumulative Volume Delta",
@@ -1272,9 +1272,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_calcCVD",
       "community": 0,
-      "norm_label": "calccvd() a\u20ac\u201d cumulative volume delta"
+      "norm_label": "calccvd() a\u20ac\u201d cumulative volume delta",
+      "id": "pailnelhtml_calcCVD"
     },
     {
       "label": "calcSqueezeMomentum()",
@@ -1285,9 +1285,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_calcSqueezeMomentum",
       "community": 0,
-      "norm_label": "calcsqueezemomentum()"
+      "norm_label": "calcsqueezemomentum()",
+      "id": "pailnelhtml_calcSqueezeMomentum"
     },
     {
       "label": "calcOBVTrend()",
@@ -1298,9 +1298,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_calcOBV",
       "community": 0,
-      "norm_label": "calcobvtrend()"
+      "norm_label": "calcobvtrend()",
+      "id": "pailnelhtml_calcOBV"
     },
     {
       "label": "calcStochRSI()",
@@ -1311,9 +1311,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_calcStochRSI",
       "community": 0,
-      "norm_label": "calcstochrsi()"
+      "norm_label": "calcstochrsi()",
+      "id": "pailnelhtml_calcStochRSI"
     },
     {
       "label": "detectCandlePatterns()",
@@ -1324,9 +1324,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_detectCandlePatterns",
       "community": 0,
-      "norm_label": "detectcandlepatterns()"
+      "norm_label": "detectcandlepatterns()",
+      "id": "pailnelhtml_detectCandlePatterns"
     },
     {
       "label": "detectDivergences()",
@@ -1337,9 +1337,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_detectDivergences",
       "community": 0,
-      "norm_label": "detectdivergences()"
+      "norm_label": "detectdivergences()",
+      "id": "pailnelhtml_detectDivergences"
     },
     {
       "label": "detectEMACross()",
@@ -1350,9 +1350,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_detectEMACross",
       "community": 0,
-      "norm_label": "detectemacross()"
+      "norm_label": "detectemacross()",
+      "id": "pailnelhtml_detectEMACross"
     },
     {
       "label": "detectMarketStructure()",
@@ -1363,9 +1363,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_detectMarketStructure",
       "community": 0,
-      "norm_label": "detectmarketstructure()"
+      "norm_label": "detectmarketstructure()",
+      "id": "pailnelhtml_detectMarketStructure"
     },
     {
       "label": "detectBOSCHoCH()",
@@ -1376,9 +1376,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_detectBOSCHoCH",
       "community": 0,
-      "norm_label": "detectboschoch()"
+      "norm_label": "detectboschoch()",
+      "id": "pailnelhtml_detectBOSCHoCH"
     },
     {
       "label": "detectOrderBlocks()",
@@ -1389,9 +1389,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_detectOrderBlocks",
       "community": 0,
-      "norm_label": "detectorderblocks()"
+      "norm_label": "detectorderblocks()",
+      "id": "pailnelhtml_detectOrderBlocks"
     },
     {
       "label": "detectTrendlineBreak()",
@@ -1402,9 +1402,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_detectTrendlineBreak",
       "community": 0,
-      "norm_label": "detecttrendlinebreak()"
+      "norm_label": "detecttrendlinebreak()",
+      "id": "pailnelhtml_detectTrendlineBreak"
     },
     {
       "label": "detectTriangle()",
@@ -1415,9 +1415,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_detectTriangle",
       "community": 0,
-      "norm_label": "detecttriangle()"
+      "norm_label": "detecttriangle()",
+      "id": "pailnelhtml_detectTriangle"
     },
     {
       "label": "detectDoubleTopBottom()",
@@ -1428,9 +1428,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_detectDoubleTopBottom",
       "community": 0,
-      "norm_label": "detectdoubletopbottom()"
+      "norm_label": "detectdoubletopbottom()",
+      "id": "pailnelhtml_detectDoubleTopBottom"
     },
     {
       "label": "_calcTechIndicators()",
@@ -1441,9 +1441,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_calcTechIndicators",
       "community": 0,
-      "norm_label": "_calctechindicators()"
+      "norm_label": "_calctechindicators()",
+      "id": "pailnelhtml_calcTechIndicators"
     },
     {
       "label": "_computeScore()",
@@ -1454,9 +1454,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_computeScore",
       "community": 0,
-      "norm_label": "_computescore()"
+      "norm_label": "_computescore()",
+      "id": "pailnelhtml_computeScore"
     },
     {
       "label": "getFibSet()",
@@ -1467,9 +1467,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_getFibSet",
       "community": 0,
-      "norm_label": "getfibset()"
+      "norm_label": "getfibset()",
+      "id": "pailnelhtml_getFibSet"
     },
     {
       "label": "calcMetas()",
@@ -1480,9 +1480,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_calcMetas",
       "community": 0,
-      "norm_label": "calcmetas()"
+      "norm_label": "calcmetas()",
+      "id": "pailnelhtml_calcMetas"
     },
     {
       "label": "analyzeCandles()",
@@ -1493,9 +1493,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_analyzeCandles",
       "community": 0,
-      "norm_label": "analyzecandles()"
+      "norm_label": "analyzecandles()",
+      "id": "pailnelhtml_analyzeCandles"
     },
     {
       "label": "runRealAnalysis()",
@@ -1506,9 +1506,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_runRealAnalysis",
       "community": 0,
-      "norm_label": "runrealanalysis()"
+      "norm_label": "runrealanalysis()",
+      "id": "pailnelhtml_runRealAnalysis"
     },
     {
       "label": "renderCards()",
@@ -1519,9 +1519,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_renderCards",
       "community": 0,
-      "norm_label": "rendercards()"
+      "norm_label": "rendercards()",
+      "id": "pailnelhtml_renderCards"
     },
     {
       "label": "renderGroupCard()",
@@ -1532,9 +1532,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_renderGroupCard",
       "community": 0,
-      "norm_label": "rendergroupcard()"
+      "norm_label": "rendergroupcard()",
+      "id": "pailnelhtml_renderGroupCard"
     },
     {
       "label": "saveToJournal()",
@@ -1545,9 +1545,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_saveToJournal",
-      "community": 9,
-      "norm_label": "savetojournal()"
+      "community": 10,
+      "norm_label": "savetojournal()",
+      "id": "pailnelhtml_saveToJournal"
     },
     {
       "label": "loadJournal()",
@@ -1558,9 +1558,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_loadJournal",
-      "community": 9,
-      "norm_label": "loadjournal()"
+      "community": 10,
+      "norm_label": "loadjournal()",
+      "id": "pailnelhtml_loadJournal"
     },
     {
       "label": "renderJournal()",
@@ -1571,9 +1571,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_renderJournal",
-      "community": 9,
-      "norm_label": "renderjournal()"
+      "community": 10,
+      "norm_label": "renderjournal()",
+      "id": "pailnelhtml_renderJournal"
     },
     {
       "label": "renderEntryHTML()",
@@ -1584,9 +1584,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_renderEntryHTML",
-      "community": 9,
-      "norm_label": "renderentryhtml()"
+      "community": 10,
+      "norm_label": "renderentryhtml()",
+      "id": "pailnelhtml_renderEntryHTML"
     },
     {
       "label": "updateResult()",
@@ -1597,9 +1597,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_updateResult",
-      "community": 9,
-      "norm_label": "updateresult()"
+      "community": 10,
+      "norm_label": "updateresult()",
+      "id": "pailnelhtml_updateResult"
     },
     {
       "label": "deleteEntry()",
@@ -1610,9 +1610,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_deleteEntry",
-      "community": 20,
-      "norm_label": "deleteentry()"
+      "community": 24,
+      "norm_label": "deleteentry()",
+      "id": "pailnelhtml_deleteEntry"
     },
     {
       "label": "initCoins()",
@@ -1623,9 +1623,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_initCoins",
-      "community": 21,
-      "norm_label": "initcoins()"
+      "community": 25,
+      "norm_label": "initcoins()",
+      "id": "pailnelhtml_initCoins"
     },
     {
       "label": "setLeverage()",
@@ -1636,9 +1636,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_setLeverage",
       "community": 0,
-      "norm_label": "setleverage()"
+      "norm_label": "setleverage()",
+      "id": "pailnelhtml_setLeverage"
     },
     {
       "label": "isWeekendWarning()",
@@ -1649,9 +1649,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_isWeekendWarning",
-      "community": 22,
-      "norm_label": "isweekendwarning()"
+      "community": 26,
+      "norm_label": "isweekendwarning()",
+      "id": "pailnelhtml_isWeekendWarning"
     },
     {
       "label": "localStorage Journal (cryptoscanner_journal_v2)",
@@ -1662,9 +1662,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_journalStorage",
-      "community": 9,
-      "norm_label": "localstorage journal (cryptoscanner_journal_v2)"
+      "community": 10,
+      "norm_label": "localstorage journal (cryptoscanner_journal_v2)",
+      "id": "pailnelhtml_journalStorage"
     },
     {
       "label": "MTF Scoring Logic (inline in runRealAnalysis)",
@@ -1675,9 +1675,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "pailnelhtml_mtfScoring",
       "community": 3,
-      "norm_label": "mtf scoring logic (inline in runrealanalysis)"
+      "norm_label": "mtf scoring logic (inline in runrealanalysis)",
+      "id": "pailnelhtml_mtfScoring"
     },
     {
       "label": "painel-core.js \u00e2\u20ac\u201d Pure Analysis Engine",
@@ -1688,9 +1688,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "panelcorejs_module",
       "community": 3,
-      "norm_label": "painel-core.js a\u20ac\u201d pure analysis engine"
+      "norm_label": "painel-core.js a\u20ac\u201d pure analysis engine",
+      "id": "panelcorejs_module"
     },
     {
       "label": "analyzeCandles() in painel-core.js",
@@ -1701,9 +1701,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "panelcorejs_analyzeCandles",
       "community": 3,
-      "norm_label": "analyzecandles() in painel-core.js"
+      "norm_label": "analyzecandles() in painel-core.js",
+      "id": "panelcorejs_analyzeCandles"
     },
     {
       "label": "applyMTFScoring() \u00e2\u20ac\u201d exported",
@@ -1714,9 +1714,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "panelcorejs_applyMTFScoring",
       "community": 3,
-      "norm_label": "applymtfscoring() a\u20ac\u201d exported"
+      "norm_label": "applymtfscoring() a\u20ac\u201d exported",
+      "id": "panelcorejs_applyMTFScoring"
     },
     {
       "label": "fetchWithFallback() in painel-core.js",
@@ -1727,9 +1727,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "panelcorejs_fetchWithFallback",
       "community": 3,
-      "norm_label": "fetchwithfallback() in painel-core.js"
+      "norm_label": "fetchwithfallback() in painel-core.js",
+      "id": "panelcorejs_fetchWithFallback"
     },
     {
       "label": "fetchCandles() in painel-core.js",
@@ -1740,9 +1740,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "panelcorejs_fetchCandles",
-      "community": 4,
-      "norm_label": "fetchcandles() in painel-core.js"
+      "community": 5,
+      "norm_label": "fetchcandles() in painel-core.js",
+      "id": "panelcorejs_fetchCandles"
     },
     {
       "label": "calcEMA() in painel-core.js",
@@ -1753,9 +1753,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "panelcorejs_calcEMA",
       "community": 3,
-      "norm_label": "calcema() in painel-core.js"
+      "norm_label": "calcema() in painel-core.js",
+      "id": "panelcorejs_calcEMA"
     },
     {
       "label": "backend/server.js \u00e2\u20ac\u201d Express Server",
@@ -1766,9 +1766,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_serverjs",
       "community": 3,
-      "norm_label": "backend/server.js a\u20ac\u201d express server"
+      "norm_label": "backend/server.js a\u20ac\u201d express server",
+      "id": "backend_serverjs"
     },
     {
       "label": "backend/db.js \u00e2\u20ac\u201d SQLite Database Layer",
@@ -1779,9 +1779,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_dbjs",
       "community": 3,
-      "norm_label": "backend/db.js a\u20ac\u201d sqlite database layer"
+      "norm_label": "backend/db.js a\u20ac\u201d sqlite database layer",
+      "id": "backend_dbjs"
     },
     {
       "label": "backend/scanner.js \u00e2\u20ac\u201d Auto-Scan Engine",
@@ -1792,9 +1792,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_scannerjs",
       "community": 3,
-      "norm_label": "backend/scanner.js a\u20ac\u201d auto-scan engine"
+      "norm_label": "backend/scanner.js a\u20ac\u201d auto-scan engine",
+      "id": "backend_scannerjs"
     },
     {
       "label": "backend/paper-trader.js \u00e2\u20ac\u201d Capital Allocation",
@@ -1805,9 +1805,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_papertraderjs",
-      "community": 23,
-      "norm_label": "backend/paper-trader.js a\u20ac\u201d capital allocation"
+      "community": 27,
+      "norm_label": "backend/paper-trader.js a\u20ac\u201d capital allocation",
+      "id": "backend_papertraderjs"
     },
     {
       "label": "backend/price-checker.js \u00e2\u20ac\u201d Price Polling Cron",
@@ -1818,9 +1818,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_pricecheckerjs",
-      "community": 4,
-      "norm_label": "backend/price-checker.js a\u20ac\u201d price polling cron"
+      "community": 5,
+      "norm_label": "backend/price-checker.js a\u20ac\u201d price polling cron",
+      "id": "backend_pricecheckerjs"
     },
     {
       "label": "backend/routes/trades.js",
@@ -1831,9 +1831,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_tradesroute",
       "community": 3,
-      "norm_label": "backend/routes/trades.js"
+      "norm_label": "backend/routes/trades.js",
+      "id": "backend_tradesroute"
     },
     {
       "label": "backend/routes/account.js",
@@ -1844,9 +1844,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_accountroute",
       "community": 3,
-      "norm_label": "backend/routes/account.js"
+      "norm_label": "backend/routes/account.js",
+      "id": "backend_accountroute"
     },
     {
       "label": "backend/routes/scan.js",
@@ -1857,9 +1857,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_scanroute",
       "community": 3,
-      "norm_label": "backend/routes/scan.js"
+      "norm_label": "backend/routes/scan.js",
+      "id": "backend_scanroute"
     },
     {
       "label": "fetchMacroBtcTrend() \u00e2\u20ac\u201d BTC EMA200 macro filter",
@@ -1870,9 +1870,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_scannerjs_fetchMacroBtcTrend",
       "community": 3,
-      "norm_label": "fetchmacrobtctrend() a\u20ac\u201d btc ema200 macro filter"
+      "norm_label": "fetchmacrobtctrend() a\u20ac\u201d btc ema200 macro filter",
+      "id": "backend_scannerjs_fetchMacroBtcTrend"
     },
     {
       "label": "runScan()",
@@ -1883,9 +1883,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_scannerjs_runScan",
       "community": 3,
-      "norm_label": "runscan()"
+      "norm_label": "runscan()",
+      "id": "backend_scannerjs_runScan"
     },
     {
       "label": "openPosition()",
@@ -1896,9 +1896,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_papertraderjs_openPosition",
       "community": 3,
-      "norm_label": "openposition()"
+      "norm_label": "openposition()",
+      "id": "backend_papertraderjs_openPosition"
     },
     {
       "label": "processPriceUpdate()",
@@ -1909,9 +1909,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_papertraderjs_processPriceUpdate",
-      "community": 4,
-      "norm_label": "processpriceupdate()"
+      "community": 5,
+      "norm_label": "processpriceupdate()",
+      "id": "backend_papertraderjs_processPriceUpdate"
     },
     {
       "label": "closeManualAt()",
@@ -1922,9 +1922,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_papertraderjs_closeManualAt",
-      "community": 24,
-      "norm_label": "closemanualat()"
+      "community": 28,
+      "norm_label": "closemanualat()",
+      "id": "backend_papertraderjs_closeManualAt"
     },
     {
       "label": "checkActiveTrades()",
@@ -1935,9 +1935,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_pricecheckerjs_checkActiveTrades",
-      "community": 4,
-      "norm_label": "checkactivetrades()"
+      "community": 5,
+      "norm_label": "checkactivetrades()",
+      "id": "backend_pricecheckerjs_checkActiveTrades"
     },
     {
       "label": "getAccount()",
@@ -1948,9 +1948,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_dbjs_getAccount",
-      "community": 25,
-      "norm_label": "getaccount()"
+      "community": 29,
+      "norm_label": "getaccount()",
+      "id": "backend_dbjs_getAccount"
     },
     {
       "label": "setupAccount()",
@@ -1961,9 +1961,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_dbjs_setupAccount",
       "community": 3,
-      "norm_label": "setupaccount()"
+      "norm_label": "setupaccount()",
+      "id": "backend_dbjs_setupAccount"
     },
     {
       "label": "resetAccount()",
@@ -1974,9 +1974,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_dbjs_resetAccount",
       "community": 3,
-      "norm_label": "resetaccount()"
+      "norm_label": "resetaccount()",
+      "id": "backend_dbjs_resetAccount"
     },
     {
       "label": "getTrades()",
@@ -1987,9 +1987,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "backend_dbjs_getTrades",
-      "community": 26,
-      "norm_label": "gettrades()"
+      "community": 30,
+      "norm_label": "gettrades()",
+      "id": "backend_dbjs_getTrades"
     },
     {
       "label": "Bybit Futures API v5",
@@ -2000,9 +2000,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "ext_bybitapi",
-      "community": 4,
-      "norm_label": "bybit futures api v5"
+      "community": 5,
+      "norm_label": "bybit futures api v5",
+      "id": "ext_bybitapi"
     },
     {
       "label": "Fear & Greed Index API (alternative.me)",
@@ -2013,9 +2013,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "ext_feargreedapi",
       "community": 0,
-      "norm_label": "fear & greed index api (alternative.me)"
+      "norm_label": "fear & greed index api (alternative.me)",
+      "id": "ext_feargreedapi"
     },
     {
       "label": "lightweight-charts 4.1.1",
@@ -2026,9 +2026,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "ext_lightweightcharts",
       "community": 3,
-      "norm_label": "lightweight-charts 4.1.1"
+      "norm_label": "lightweight-charts 4.1.1",
+      "id": "ext_lightweightcharts"
     },
     {
       "label": "Agent Council Design (Leader + 3 sub-agents)",
@@ -2039,9 +2039,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "concept_agentcouncil",
-      "community": 4,
-      "norm_label": "agent council design (leader + 3 sub-agents)"
+      "community": 5,
+      "norm_label": "agent council design (leader + 3 sub-agents)",
+      "id": "concept_agentcouncil"
     },
     {
       "label": "News Hunter Sub-Agent",
@@ -2052,9 +2052,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "concept_newsHunter",
-      "community": 4,
-      "norm_label": "news hunter sub-agent"
+      "community": 5,
+      "norm_label": "news hunter sub-agent",
+      "id": "concept_newsHunter"
     },
     {
       "label": "Pattern Validator Sub-Agent",
@@ -2065,9 +2065,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "concept_patternValidator",
-      "community": 4,
-      "norm_label": "pattern validator sub-agent"
+      "community": 5,
+      "norm_label": "pattern validator sub-agent",
+      "id": "concept_patternValidator"
     },
     {
       "label": "Devil's Advocate Sub-Agent",
@@ -2078,9 +2078,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "concept_devilsAdvocate",
-      "community": 4,
-      "norm_label": "devil's advocate sub-agent"
+      "community": 5,
+      "norm_label": "devil's advocate sub-agent",
+      "id": "concept_devilsAdvocate"
     },
     {
       "label": "In-Progress Candle False Positive Bug Fix",
@@ -2091,9 +2091,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "concept_inProgressCandleBug",
-      "community": 4,
-      "norm_label": "in-progress candle false positive bug fix"
+      "community": 5,
+      "norm_label": "in-progress candle false positive bug fix",
+      "id": "concept_inProgressCandleBug"
     },
     {
       "label": "Stop Integrity Gap \u00e2\u20ac\u201d price-checker polling vs OHLC",
@@ -2104,9 +2104,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "concept_stopIntegrityGap",
-      "community": 4,
-      "norm_label": "stop integrity gap a\u20ac\u201d price-checker polling vs ohlc"
+      "community": 5,
+      "norm_label": "stop integrity gap a\u20ac\u201d price-checker polling vs ohlc",
+      "id": "concept_stopIntegrityGap"
     },
     {
       "label": "min_score Bump Recommendation (80 -> 88+)",
@@ -2117,9 +2117,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "concept_minScoreBump",
       "community": 3,
-      "norm_label": "min_score bump recommendation (80 -> 88+)"
+      "norm_label": "min_score bump recommendation (80 -> 88+)",
+      "id": "concept_minScoreBump"
     },
     {
       "label": "TF_INTERVAL_MS Constant (in-progress candle drop)",
@@ -2130,9 +2130,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "concept_TF_INTERVAL_MS",
-      "community": 4,
-      "norm_label": "tf_interval_ms constant (in-progress candle drop)"
+      "community": 5,
+      "norm_label": "tf_interval_ms constant (in-progress candle drop)",
+      "id": "concept_TF_INTERVAL_MS"
     },
     {
       "label": "Exit Strategy 33/33/34 (M1/M2/M3 partial close)",
@@ -2143,9 +2143,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "concept_exitStrategy",
-      "community": 4,
-      "norm_label": "exit strategy 33/33/34 (m1/m2/m3 partial close)"
+      "community": 5,
+      "norm_label": "exit strategy 33/33/34 (m1/m2/m3 partial close)",
+      "id": "concept_exitStrategy"
     },
     {
       "label": "Backtest System (removed, replaced by live history)",
@@ -2156,9 +2156,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "concept_backtest_removed",
       "community": 3,
-      "norm_label": "backtest system (removed, replaced by live history)"
+      "norm_label": "backtest system (removed, replaced by live history)",
+      "id": "concept_backtest_removed"
     },
     {
       "label": "Conflu\u00c3\u00aancia Multi-Categoria Bonus",
@@ -2169,9 +2169,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "concept_confluenceMultiCategory",
       "community": 0,
-      "norm_label": "confluaancia multi-categoria bonus"
+      "norm_label": "confluaancia multi-categoria bonus",
+      "id": "concept_confluenceMultiCategory"
     },
     {
       "label": "CORS Proxy Fallback Chain",
@@ -2182,9 +2182,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "concept_corsProxyChain",
       "community": 0,
-      "norm_label": "cors proxy fallback chain"
+      "norm_label": "cors proxy fallback chain",
+      "id": "concept_corsProxyChain"
     },
     {
       "label": "MAX_STOP_RISK_MULTIPLIER=50 Cap",
@@ -2195,9 +2195,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "concept_maxStopRisk",
       "community": 3,
-      "norm_label": "max_stop_risk_multiplier=50 cap"
+      "norm_label": "max_stop_risk_multiplier=50 cap",
+      "id": "concept_maxStopRisk"
     },
     {
       "label": "Macro BTC EMA200 Filter (fail-open)",
@@ -2208,9 +2208,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "concept_macroFilter",
       "community": 3,
-      "norm_label": "macro btc ema200 filter (fail-open)"
+      "norm_label": "macro btc ema200 filter (fail-open)",
+      "id": "concept_macroFilter"
     },
     {
       "label": "NV1/NV2/NV3 Confidence Level Badge",
@@ -2221,9 +2221,745 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "concept_NVbadge",
       "community": 0,
-      "norm_label": "nv1/nv2/nv3 confidence level badge"
+      "norm_label": "nv1/nv2/nv3 confidence level badge",
+      "id": "concept_NVbadge"
+    },
+    {
+      "label": "run-leader.ps1",
+      "file_type": "code",
+      "source_file": "run-leader.ps1",
+      "source_location": "L1",
+      "id": "run_leader_ps1",
+      "community": 2,
+      "norm_label": "run-leader.ps1"
+    },
+    {
+      "label": "Log()",
+      "file_type": "code",
+      "source_file": "run-leader.ps1",
+      "source_location": "L8",
+      "id": "run_leader_log",
+      "community": 2,
+      "norm_label": "log()"
+    },
+    {
+      "label": "insertReflection()",
+      "file_type": "code",
+      "source_file": "backend\\db.js",
+      "source_location": "L246",
+      "id": "db_insertreflection",
+      "community": 2,
+      "norm_label": "insertreflection()"
+    },
+    {
+      "label": "getRecentReflections()",
+      "file_type": "code",
+      "source_file": "backend\\db.js",
+      "source_location": "L254",
+      "id": "db_getrecentreflections",
+      "community": 2,
+      "norm_label": "getrecentreflections()"
+    },
+    {
+      "label": "fetchRecentPriceWindow()",
+      "file_type": "code",
+      "source_file": "backend\\price-checker.js",
+      "source_location": "L38",
+      "id": "price_checker_fetchrecentpricewindow",
+      "community": 2,
+      "norm_label": "fetchrecentpricewindow()"
+    },
+    {
+      "label": "stop-validator.js",
+      "file_type": "code",
+      "source_file": "backend\\stop-validator.js",
+      "source_location": "L1",
+      "id": "backend_stop_validator_js",
+      "community": 18,
+      "norm_label": "stop-validator.js"
+    },
+    {
+      "label": "isStopTighter()",
+      "file_type": "code",
+      "source_file": "backend\\stop-validator.js",
+      "source_location": "L10",
+      "id": "stop_validator_isstoptighter",
+      "community": 18,
+      "norm_label": "isstoptighter()"
+    },
+    {
+      "label": "reflections.js",
+      "file_type": "code",
+      "source_file": "backend\\routes\\reflections.js",
+      "source_location": "L1",
+      "id": "backend_routes_reflections_js",
+      "community": 31,
+      "norm_label": "reflections.js"
+    },
+    {
+      "label": "_runOnce()",
+      "file_type": "code",
+      "source_file": "backend\\routes\\scan.js",
+      "source_location": "L8",
+      "id": "scan_runonce",
+      "community": 6,
+      "norm_label": "_runonce()"
+    },
+    {
+      "label": "makeKlineRowAt()",
+      "file_type": "code",
+      "source_file": "tests\\api.test.js",
+      "source_location": "L268",
+      "id": "api_test_makeklinerowat",
+      "community": 7,
+      "norm_label": "makeklinerowat()"
+    },
+    {
+      "label": "stop-validator.test.js",
+      "file_type": "code",
+      "source_file": "tests\\stop-validator.test.js",
+      "source_location": "L1",
+      "id": "tests_stop_validator_test_js",
+      "community": 32,
+      "norm_label": "stop-validator.test.js"
+    },
+    {
+      "label": "CLAUDE.md \u2014 Crypto Scanner",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "claude_md_crypto_scanner",
+      "community": 33,
+      "norm_label": "claude.md \u2014 crypto scanner"
+    },
+    {
+      "label": ".claude/agents/leader.md \u2014 Leader Agent Prompt",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "line 32",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "claude_md_leader_md",
+      "community": 4,
+      "norm_label": ".claude/agents/leader.md \u2014 leader agent prompt"
+    },
+    {
+      "label": ".claude/agents/news-hunter.md \u2014 News Hunter Sub-agent",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "line 33",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "claude_md_news_hunter_md",
+      "community": 4,
+      "norm_label": ".claude/agents/news-hunter.md \u2014 news hunter sub-agent"
+    },
+    {
+      "label": ".claude/agents/pattern-validator.md \u2014 Pattern Validator Sub-agent",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "line 34",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "claude_md_pattern_validator_md",
+      "community": 4,
+      "norm_label": ".claude/agents/pattern-validator.md \u2014 pattern validator sub-agent"
+    },
+    {
+      "label": "Agent Council \u2014 Multi-agent Pipeline",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "line 132",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "claude_md_agent_council",
+      "community": 4,
+      "norm_label": "agent council \u2014 multi-agent pipeline"
+    },
+    {
+      "label": "trade_reflections SQLite Table",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "line 111",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "claude_md_trade_reflections_table",
+      "community": 34,
+      "norm_label": "trade_reflections sqlite table"
+    },
+    {
+      "label": "scan_log SQLite Table",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "line 111",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "claude_md_scan_log_table",
+      "community": 35,
+      "norm_label": "scan_log sqlite table"
+    },
+    {
+      "label": "Exit Strategy 33/33/34",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "line 105",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "claude_md_exit_strategy",
+      "community": 36,
+      "norm_label": "exit strategy 33/33/34"
+    },
+    {
+      "label": "_computeScore \u2014 Scoring Engine",
+      "file_type": "code",
+      "source_file": "CLAUDE.md",
+      "source_location": "line 74",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "claude_md_compute_score",
+      "community": 19,
+      "norm_label": "_computescore \u2014 scoring engine"
+    },
+    {
+      "label": "runRealAnalysis() \u2014 Frontend Data Flow",
+      "file_type": "code",
+      "source_file": "CLAUDE.md",
+      "source_location": "line 67",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "claude_md_run_real_analysis",
+      "community": 19,
+      "norm_label": "runrealanalysis() \u2014 frontend data flow"
+    },
+    {
+      "label": "BTC EMA200 4h Macro Filter",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "line 102",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_btc_ema200_macro_filter",
+      "community": 37,
+      "norm_label": "btc ema200 4h macro filter"
+    },
+    {
+      "label": "MAX_STOP_RISK_MULTIPLIER (50x cap)",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "line 103",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_max_stop_risk_multiplier",
+      "community": 38,
+      "norm_label": "max_stop_risk_multiplier (50x cap)"
+    },
+    {
+      "label": "min_score Default = 85",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "line 101",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_min_score_85",
+      "community": 39,
+      "norm_label": "min_score default = 85"
+    },
+    {
+      "label": "isStopTighter \u2014 Direction-aware Stop Validation",
+      "file_type": "code",
+      "source_file": "CLAUDE.md",
+      "source_location": "line 167",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_is_stop_tighter",
+      "community": 20,
+      "norm_label": "isstoptighter \u2014 direction-aware stop validation"
+    },
+    {
+      "label": "Agent Council Next Steps Document",
+      "file_type": "document",
+      "source_file": "docs/agent-council-next-steps.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-04-27",
+      "author": null,
+      "contributor": null,
+      "id": "council_next_steps",
+      "community": 4,
+      "norm_label": "agent council next steps document"
+    },
+    {
+      "label": "News Hunter Sub-agent (Council)",
+      "file_type": "document",
+      "source_file": "docs/agent-council-next-steps.md",
+      "source_location": "line 88",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "council_news_hunter",
+      "community": 4,
+      "norm_label": "news hunter sub-agent (council)"
+    },
+    {
+      "label": "Pattern Validator Sub-agent (Council)",
+      "file_type": "document",
+      "source_file": "docs/agent-council-next-steps.md",
+      "source_location": "line 90",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "council_pattern_validator",
+      "community": 4,
+      "norm_label": "pattern validator sub-agent (council)"
+    },
+    {
+      "label": "Devil s Advocate Sub-agent (Council)",
+      "file_type": "document",
+      "source_file": "docs/agent-council-next-steps.md",
+      "source_location": "line 107",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "council_devils_advocate",
+      "community": 4,
+      "norm_label": "devil s advocate sub-agent (council)"
+    },
+    {
+      "label": "Leader (Synthesis Role)",
+      "file_type": "document",
+      "source_file": "docs/agent-council-next-steps.md",
+      "source_location": "line 108",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "council_leader_synthesis",
+      "community": 40,
+      "norm_label": "leader (synthesis role)"
+    },
+    {
+      "label": "Stop Integrity Gap Finding (price-checker)",
+      "file_type": "document",
+      "source_file": "docs/agent-council-next-steps.md",
+      "source_location": "line 17",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "council_stop_integrity_gap",
+      "community": 41,
+      "norm_label": "stop integrity gap finding (price-checker)"
+    },
+    {
+      "label": "In-progress Candle Drop Fix",
+      "file_type": "document",
+      "source_file": "docs/agent-council-next-steps.md",
+      "source_location": "line 44",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "council_inprogress_candle_fix",
+      "community": 4,
+      "norm_label": "in-progress candle drop fix"
+    },
+    {
+      "label": "Leader Agent Implementation Plan (2026-04-29)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-04-29-leader-agent.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-04-29",
+      "author": null,
+      "contributor": null,
+      "id": "plan_leader_2026_04_29",
+      "community": 12,
+      "norm_label": "leader agent implementation plan (2026-04-29)"
+    },
+    {
+      "label": "Task 1: trade_reflections Table + Helpers",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-04-29-leader-agent.md",
+      "source_location": "line 45",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_leader_task1_reflections",
+      "community": 42,
+      "norm_label": "task 1: trade_reflections table + helpers"
+    },
+    {
+      "label": "Task 2: candidates_json Column in scan_log",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-04-29-leader-agent.md",
+      "source_location": "line 149",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_leader_task2_candidates_json",
+      "community": 43,
+      "norm_label": "task 2: candidates_json column in scan_log"
+    },
+    {
+      "label": "Task 3: Reflections Route + Server Registration",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-04-29-leader-agent.md",
+      "source_location": "line 219",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_leader_task3_reflections_route",
+      "community": 44,
+      "norm_label": "task 3: reflections route + server registration"
+    },
+    {
+      "label": "Task 4: isStopTighter Helper + Tests",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-04-29-leader-agent.md",
+      "source_location": "line 358",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_leader_task4_stop_validator",
+      "community": 20,
+      "norm_label": "task 4: isstoptighter helper + tests"
+    },
+    {
+      "label": "Task 5: POST /api/trades/:id/tighten-stop Route",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-04-29-leader-agent.md",
+      "source_location": "line 479",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_leader_task5_tighten_route",
+      "community": 45,
+      "norm_label": "task 5: post /api/trades/:id/tighten-stop route"
+    },
+    {
+      "label": "Task 6: runScan() Returns Candidates Without Opening",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-04-29-leader-agent.md",
+      "source_location": "line 596",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_leader_task6_runscan",
+      "community": 46,
+      "norm_label": "task 6: runscan() returns candidates without opening"
+    },
+    {
+      "label": "Task 7: POST /api/scan/preview Route",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-04-29-leader-agent.md",
+      "source_location": "line 737",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_leader_task7_preview_route",
+      "community": 47,
+      "norm_label": "task 7: post /api/scan/preview route"
+    },
+    {
+      "label": "Task 8: POST /api/trades/open Route",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-04-29-leader-agent.md",
+      "source_location": "line 825",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_leader_task8_open_route",
+      "community": 48,
+      "norm_label": "task 8: post /api/trades/open route"
+    },
+    {
+      "label": "Task 10: .claude/agents/leader.md Prompt",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-04-29-leader-agent.md",
+      "source_location": "line 994",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_leader_task10_leader_prompt",
+      "community": 4,
+      "norm_label": "task 10: .claude/agents/leader.md prompt"
+    },
+    {
+      "label": "Leader Full Autonomy Plan (2026-05-02)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-02-leader-autonomy.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-05-02",
+      "author": null,
+      "contributor": null,
+      "id": "plan_autonomy_2026_05_02",
+      "community": 4,
+      "norm_label": "leader full autonomy plan (2026-05-02)"
+    },
+    {
+      "label": "Autonomy Task 2: EXIT Autonomous Execution",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-02-leader-autonomy.md",
+      "source_location": "line 49",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_autonomy_task2_exit",
+      "community": 4,
+      "norm_label": "autonomy task 2: exit autonomous execution"
+    },
+    {
+      "label": "Autonomy Task 3: Structured Justification Blocks",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-02-leader-autonomy.md",
+      "source_location": "line 108",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_autonomy_task3_justification",
+      "community": 4,
+      "norm_label": "autonomy task 3: structured justification blocks"
+    },
+    {
+      "label": "Autonomy Task 4: Remove Prohibitive Guardrails",
+      "file_type": "document",
+      "source_file": "docs/superpowers/plans/2026-05-02-leader-autonomy.md",
+      "source_location": "line 168",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "plan_autonomy_task4_guardrails",
+      "community": 4,
+      "norm_label": "autonomy task 4: remove prohibitive guardrails"
+    },
+    {
+      "label": "Leader Agent Design Spec (2026-04-29)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-04-29-leader-agent-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-04-29",
+      "author": null,
+      "contributor": null,
+      "id": "spec_leader_2026_04_29",
+      "community": 12,
+      "norm_label": "leader agent design spec (2026-04-29)"
+    },
+    {
+      "label": "Leader ADR Decisions Table",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-04-29-leader-agent-design.md",
+      "source_location": "line 19",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "spec_leader_adr_decisions",
+      "community": 12,
+      "norm_label": "leader adr decisions table"
+    },
+    {
+      "label": "Leader Review Data Flow Diagram",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-04-29-leader-agent-design.md",
+      "source_location": "line 70",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "spec_leader_flow_diagram",
+      "community": 49,
+      "norm_label": "leader review data flow diagram"
+    },
+    {
+      "label": "Leader Acceptance Criteria",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-04-29-leader-agent-design.md",
+      "source_location": "line 381",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "spec_leader_acceptance_criteria",
+      "community": 50,
+      "norm_label": "leader acceptance criteria"
+    },
+    {
+      "label": "Leader Risks and Mitigations Table",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-04-29-leader-agent-design.md",
+      "source_location": "line 403",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "spec_leader_risks",
+      "community": 51,
+      "norm_label": "leader risks and mitigations table"
+    },
+    {
+      "label": "Leader Full Autonomy Design Spec (2026-05-02)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-05-02-leader-autonomy-design.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-05-02",
+      "author": null,
+      "contributor": null,
+      "id": "spec_autonomy_2026_05_02",
+      "community": 4,
+      "norm_label": "leader full autonomy design spec (2026-05-02)"
+    },
+    {
+      "label": "EXIT Justification Block Format",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-05-02-leader-autonomy-design.md",
+      "source_location": "line 33",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "spec_autonomy_exit_block",
+      "community": 52,
+      "norm_label": "exit justification block format"
+    },
+    {
+      "label": "TIGHTEN Justification Block Format",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-05-02-leader-autonomy-design.md",
+      "source_location": "line 44",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "spec_autonomy_tighten_block",
+      "community": 53,
+      "norm_label": "tighten justification block format"
+    },
+    {
+      "label": "HOLD Justification Block Format",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-05-02-leader-autonomy-design.md",
+      "source_location": "line 53",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "spec_autonomy_hold_block",
+      "community": 54,
+      "norm_label": "hold justification block format"
+    },
+    {
+      "label": "Autonomy Success Criteria",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-05-02-leader-autonomy-design.md",
+      "source_location": "line 76",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "spec_autonomy_success_criteria",
+      "community": 55,
+      "norm_label": "autonomy success criteria"
+    },
+    {
+      "label": "Leader Review 3-Phase Flow",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-04-29-leader-agent-design.md",
+      "source_location": "line 70",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_leader_review_flow",
+      "community": 12,
+      "norm_label": "leader review 3-phase flow"
+    },
+    {
+      "label": "Approval Aggregation Rule",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-04-29-leader-agent-design.md",
+      "source_location": "line 163",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_aggregation_rule",
+      "community": 56,
+      "norm_label": "approval aggregation rule"
+    },
+    {
+      "label": "Reflection Cursor (last_reflection_at)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-04-29-leader-agent-design.md",
+      "source_location": "line 374",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_reflection_cursor",
+      "community": 57,
+      "norm_label": "reflection cursor (last_reflection_at)"
+    },
+    {
+      "label": "Sequential Gate (pattern-validator first)",
+      "file_type": "document",
+      "source_file": "docs/superpowers/specs/2026-04-29-leader-agent-design.md",
+      "source_location": "line 26",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "concept_sequential_gate",
+      "community": 12,
+      "norm_label": "sequential gate (pattern-validator first)"
     }
   ],
   "links": [
@@ -2235,9 +2971,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_getmtfweight",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_getmtfweight",
-      "confidence_score": 1.0
+      "target": "painel_core_getmtfweight"
     },
     {
       "relation": "contains",
@@ -2247,9 +2983,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calcema",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calcema",
-      "confidence_score": 1.0
+      "target": "painel_core_calcema"
     },
     {
       "relation": "contains",
@@ -2259,9 +2995,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calcrsi",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calcrsi",
-      "confidence_score": 1.0
+      "target": "painel_core_calcrsi"
     },
     {
       "relation": "contains",
@@ -2271,9 +3007,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calcmacd",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calcmacd",
-      "confidence_score": 1.0
+      "target": "painel_core_calcmacd"
     },
     {
       "relation": "contains",
@@ -2283,9 +3019,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calcbollinger",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calcbollinger",
-      "confidence_score": 1.0
+      "target": "painel_core_calcbollinger"
     },
     {
       "relation": "contains",
@@ -2295,9 +3031,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calcatr",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calcatr",
-      "confidence_score": 1.0
+      "target": "painel_core_calcatr"
     },
     {
       "relation": "contains",
@@ -2307,9 +3043,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calcadx",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calcadx",
-      "confidence_score": 1.0
+      "target": "painel_core_calcadx"
     },
     {
       "relation": "contains",
@@ -2319,9 +3055,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_avgvol",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_avgvol",
-      "confidence_score": 1.0
+      "target": "painel_core_avgvol"
     },
     {
       "relation": "contains",
@@ -2331,9 +3067,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_findlevels",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_findlevels",
-      "confidence_score": 1.0
+      "target": "painel_core_findlevels"
     },
     {
       "relation": "contains",
@@ -2343,9 +3079,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calcvwap",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calcvwap",
-      "confidence_score": 1.0
+      "target": "painel_core_calcvwap"
     },
     {
       "relation": "contains",
@@ -2355,9 +3091,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calcanchoredvwap",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calcanchoredvwap",
-      "confidence_score": 1.0
+      "target": "painel_core_calcanchoredvwap"
     },
     {
       "relation": "contains",
@@ -2367,9 +3103,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calcvolumeprofile",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calcvolumeprofile",
-      "confidence_score": 1.0
+      "target": "painel_core_calcvolumeprofile"
     },
     {
       "relation": "contains",
@@ -2379,9 +3115,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calcichimoku",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calcichimoku",
-      "confidence_score": 1.0
+      "target": "painel_core_calcichimoku"
     },
     {
       "relation": "contains",
@@ -2391,9 +3127,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calcobvtrend",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calcobvtrend",
-      "confidence_score": 1.0
+      "target": "painel_core_calcobvtrend"
     },
     {
       "relation": "contains",
@@ -2403,9 +3139,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calccvd",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calccvd",
-      "confidence_score": 1.0
+      "target": "painel_core_calccvd"
     },
     {
       "relation": "contains",
@@ -2415,9 +3151,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calcsqueezemomentum",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calcsqueezemomentum",
-      "confidence_score": 1.0
+      "target": "painel_core_calcsqueezemomentum"
     },
     {
       "relation": "contains",
@@ -2427,9 +3163,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calcstochrsi",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calcstochrsi",
-      "confidence_score": 1.0
+      "target": "painel_core_calcstochrsi"
     },
     {
       "relation": "contains",
@@ -2439,9 +3175,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_detectcandlepatterns",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_detectcandlepatterns",
-      "confidence_score": 1.0
+      "target": "painel_core_detectcandlepatterns"
     },
     {
       "relation": "contains",
@@ -2451,9 +3187,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_detectdivergences",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_detectdivergences",
-      "confidence_score": 1.0
+      "target": "painel_core_detectdivergences"
     },
     {
       "relation": "contains",
@@ -2463,9 +3199,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_detectemacross",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_detectemacross",
-      "confidence_score": 1.0
+      "target": "painel_core_detectemacross"
     },
     {
       "relation": "contains",
@@ -2475,9 +3211,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_detectmarketstructure",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_detectmarketstructure",
-      "confidence_score": 1.0
+      "target": "painel_core_detectmarketstructure"
     },
     {
       "relation": "contains",
@@ -2487,9 +3223,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_detectboschoch",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_detectboschoch",
-      "confidence_score": 1.0
+      "target": "painel_core_detectboschoch"
     },
     {
       "relation": "contains",
@@ -2499,9 +3235,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_detectorderblocks",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_detectorderblocks",
-      "confidence_score": 1.0
+      "target": "painel_core_detectorderblocks"
     },
     {
       "relation": "contains",
@@ -2511,9 +3247,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_detecttrendlinebreak",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_detecttrendlinebreak",
-      "confidence_score": 1.0
+      "target": "painel_core_detecttrendlinebreak"
     },
     {
       "relation": "contains",
@@ -2523,9 +3259,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_detecttriangle",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_detecttriangle",
-      "confidence_score": 1.0
+      "target": "painel_core_detecttriangle"
     },
     {
       "relation": "contains",
@@ -2535,9 +3271,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_detectdoubletopbottom",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_detectdoubletopbottom",
-      "confidence_score": 1.0
+      "target": "painel_core_detectdoubletopbottom"
     },
     {
       "relation": "contains",
@@ -2547,9 +3283,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calcliqprice",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calcliqprice",
-      "confidence_score": 1.0
+      "target": "painel_core_calcliqprice"
     },
     {
       "relation": "contains",
@@ -2559,9 +3295,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_capreturn",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_capreturn",
-      "confidence_score": 1.0
+      "target": "painel_core_capreturn"
     },
     {
       "relation": "contains",
@@ -2571,9 +3307,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_getfibset",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_getfibset",
-      "confidence_score": 1.0
+      "target": "painel_core_getfibset"
     },
     {
       "relation": "contains",
@@ -2583,9 +3319,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calcmetas",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calcmetas",
-      "confidence_score": 1.0
+      "target": "painel_core_calcmetas"
     },
     {
       "relation": "contains",
@@ -2595,9 +3331,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_buildjournalentry",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_buildjournalentry",
-      "confidence_score": 1.0
+      "target": "painel_core_buildjournalentry"
     },
     {
       "relation": "contains",
@@ -2607,9 +3343,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_isduplicateentry",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_isduplicateentry",
-      "confidence_score": 1.0
+      "target": "painel_core_isduplicateentry"
     },
     {
       "relation": "contains",
@@ -2619,9 +3355,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_computejournalstats",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_computejournalstats",
-      "confidence_score": 1.0
+      "target": "painel_core_computejournalstats"
     },
     {
       "relation": "contains",
@@ -2631,9 +3367,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_fetchjson",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_fetchjson",
-      "confidence_score": 1.0
+      "target": "painel_core_fetchjson"
     },
     {
       "relation": "contains",
@@ -2643,9 +3379,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_fetchwithfallback",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_fetchwithfallback",
-      "confidence_score": 1.0
+      "target": "painel_core_fetchwithfallback"
     },
     {
       "relation": "contains",
@@ -2655,9 +3391,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_fetchcandles",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_fetchcandles",
-      "confidence_score": 1.0
+      "target": "painel_core_fetchcandles"
     },
     {
       "relation": "contains",
@@ -2667,9 +3403,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_calctechindicators",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "contains",
@@ -2679,9 +3415,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_computescore",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_computescore",
-      "confidence_score": 1.0
+      "target": "painel_core_computescore"
     },
     {
       "relation": "contains",
@@ -2691,9 +3427,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_analyzecandles",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_analyzecandles",
-      "confidence_score": 1.0
+      "target": "painel_core_analyzecandles"
     },
     {
       "relation": "contains",
@@ -2703,9 +3439,9 @@
       "weight": 1.0,
       "_src": "painel_core_js",
       "_tgt": "painel_core_applymtfscoring",
+      "confidence_score": 1.0,
       "source": "painel_core_js",
-      "target": "painel_core_applymtfscoring",
-      "confidence_score": 1.0
+      "target": "painel_core_applymtfscoring"
     },
     {
       "relation": "calls",
@@ -2715,9 +3451,9 @@
       "weight": 1.0,
       "_src": "painel_core_calcmacd",
       "_tgt": "painel_core_calcema",
+      "confidence_score": 1.0,
       "source": "painel_core_calcema",
-      "target": "painel_core_calcmacd",
-      "confidence_score": 1.0
+      "target": "painel_core_calcmacd"
     },
     {
       "relation": "calls",
@@ -2727,9 +3463,9 @@
       "weight": 1.0,
       "_src": "painel_core_calcobvtrend",
       "_tgt": "painel_core_calcema",
+      "confidence_score": 1.0,
       "source": "painel_core_calcema",
-      "target": "painel_core_calcobvtrend",
-      "confidence_score": 1.0
+      "target": "painel_core_calcobvtrend"
     },
     {
       "relation": "calls",
@@ -2739,9 +3475,9 @@
       "weight": 1.0,
       "_src": "painel_core_calcsqueezemomentum",
       "_tgt": "painel_core_calcema",
+      "confidence_score": 1.0,
       "source": "painel_core_calcema",
-      "target": "painel_core_calcsqueezemomentum",
-      "confidence_score": 1.0
+      "target": "painel_core_calcsqueezemomentum"
     },
     {
       "relation": "calls",
@@ -2751,9 +3487,9 @@
       "weight": 1.0,
       "_src": "painel_core_detectemacross",
       "_tgt": "painel_core_calcema",
+      "confidence_score": 1.0,
       "source": "painel_core_calcema",
-      "target": "painel_core_detectemacross",
-      "confidence_score": 1.0
+      "target": "painel_core_detectemacross"
     },
     {
       "relation": "calls",
@@ -2763,9 +3499,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_calcema",
+      "confidence_score": 1.0,
       "source": "painel_core_calcema",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -2799,9 +3535,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_calcrsi",
+      "confidence_score": 1.0,
       "source": "painel_core_calcrsi",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -2811,9 +3547,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_calcmacd",
+      "confidence_score": 1.0,
       "source": "painel_core_calcmacd",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -2823,9 +3559,9 @@
       "weight": 1.0,
       "_src": "painel_core_calcsqueezemomentum",
       "_tgt": "painel_core_calcbollinger",
+      "confidence_score": 1.0,
       "source": "painel_core_calcbollinger",
-      "target": "painel_core_calcsqueezemomentum",
-      "confidence_score": 1.0
+      "target": "painel_core_calcsqueezemomentum"
     },
     {
       "relation": "calls",
@@ -2835,9 +3571,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_calcbollinger",
+      "confidence_score": 1.0,
       "source": "painel_core_calcbollinger",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -2847,9 +3583,9 @@
       "weight": 1.0,
       "_src": "painel_core_calcsqueezemomentum",
       "_tgt": "painel_core_calcatr",
+      "confidence_score": 1.0,
       "source": "painel_core_calcatr",
-      "target": "painel_core_calcsqueezemomentum",
-      "confidence_score": 1.0
+      "target": "painel_core_calcsqueezemomentum"
     },
     {
       "relation": "calls",
@@ -2859,9 +3595,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_calcatr",
+      "confidence_score": 1.0,
       "source": "painel_core_calcatr",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -2871,9 +3607,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_calcadx",
+      "confidence_score": 1.0,
       "source": "painel_core_calcadx",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -2883,9 +3619,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_avgvol",
+      "confidence_score": 1.0,
       "source": "painel_core_avgvol",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -2895,9 +3631,9 @@
       "weight": 1.0,
       "_src": "painel_core_detectmarketstructure",
       "_tgt": "painel_core_findlevels",
+      "confidence_score": 1.0,
       "source": "painel_core_findlevels",
-      "target": "painel_core_detectmarketstructure",
-      "confidence_score": 1.0
+      "target": "painel_core_detectmarketstructure"
     },
     {
       "relation": "calls",
@@ -2907,9 +3643,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_findlevels",
+      "confidence_score": 1.0,
       "source": "painel_core_findlevels",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -2919,9 +3655,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_calcvwap",
+      "confidence_score": 1.0,
       "source": "painel_core_calcvwap",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -2931,9 +3667,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_calcanchoredvwap",
+      "confidence_score": 1.0,
       "source": "painel_core_calcanchoredvwap",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -2943,9 +3679,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_calcvolumeprofile",
+      "confidence_score": 1.0,
       "source": "painel_core_calcvolumeprofile",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -2955,9 +3691,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_calcichimoku",
+      "confidence_score": 1.0,
       "source": "painel_core_calcichimoku",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -2967,9 +3703,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_calcobvtrend",
+      "confidence_score": 1.0,
       "source": "painel_core_calcobvtrend",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -2979,9 +3715,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_calccvd",
+      "confidence_score": 1.0,
       "source": "painel_core_calccvd",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -2991,9 +3727,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_calcsqueezemomentum",
+      "confidence_score": 1.0,
       "source": "painel_core_calcsqueezemomentum",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -3003,9 +3739,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_calcstochrsi",
+      "confidence_score": 1.0,
       "source": "painel_core_calcstochrsi",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -3015,9 +3751,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_detectcandlepatterns",
+      "confidence_score": 1.0,
       "source": "painel_core_detectcandlepatterns",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -3027,9 +3763,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_detectdivergences",
+      "confidence_score": 1.0,
       "source": "painel_core_detectdivergences",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -3039,9 +3775,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_detectemacross",
+      "confidence_score": 1.0,
       "source": "painel_core_detectemacross",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -3051,9 +3787,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_detectmarketstructure",
+      "confidence_score": 1.0,
       "source": "painel_core_detectmarketstructure",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -3063,9 +3799,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_detectboschoch",
+      "confidence_score": 1.0,
       "source": "painel_core_detectboschoch",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -3075,9 +3811,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_detectorderblocks",
+      "confidence_score": 1.0,
       "source": "painel_core_detectorderblocks",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -3087,9 +3823,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_detecttrendlinebreak",
+      "confidence_score": 1.0,
       "source": "painel_core_detecttrendlinebreak",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -3099,9 +3835,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_detecttriangle",
+      "confidence_score": 1.0,
       "source": "painel_core_detecttriangle",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -3111,9 +3847,9 @@
       "weight": 1.0,
       "_src": "painel_core_calctechindicators",
       "_tgt": "painel_core_detectdoubletopbottom",
+      "confidence_score": 1.0,
       "source": "painel_core_detectdoubletopbottom",
-      "target": "painel_core_calctechindicators",
-      "confidence_score": 1.0
+      "target": "painel_core_calctechindicators"
     },
     {
       "relation": "calls",
@@ -3123,9 +3859,9 @@
       "weight": 1.0,
       "_src": "painel_core_analyzecandles",
       "_tgt": "painel_core_calcliqprice",
+      "confidence_score": 1.0,
       "source": "painel_core_calcliqprice",
-      "target": "painel_core_analyzecandles",
-      "confidence_score": 1.0
+      "target": "painel_core_analyzecandles"
     },
     {
       "relation": "calls",
@@ -3135,9 +3871,9 @@
       "weight": 1.0,
       "_src": "painel_core_analyzecandles",
       "_tgt": "painel_core_capreturn",
+      "confidence_score": 1.0,
       "source": "painel_core_capreturn",
-      "target": "painel_core_analyzecandles",
-      "confidence_score": 1.0
+      "target": "painel_core_analyzecandles"
     },
     {
       "relation": "calls",
@@ -3147,9 +3883,9 @@
       "weight": 1.0,
       "_src": "painel_core_calcmetas",
       "_tgt": "painel_core_getfibset",
+      "confidence_score": 1.0,
       "source": "painel_core_getfibset",
-      "target": "painel_core_calcmetas",
-      "confidence_score": 1.0
+      "target": "painel_core_calcmetas"
     },
     {
       "relation": "calls",
@@ -3159,9 +3895,9 @@
       "weight": 1.0,
       "_src": "painel_core_analyzecandles",
       "_tgt": "painel_core_calcmetas",
+      "confidence_score": 1.0,
       "source": "painel_core_calcmetas",
-      "target": "painel_core_analyzecandles",
-      "confidence_score": 1.0
+      "target": "painel_core_analyzecandles"
     },
     {
       "relation": "calls",
@@ -3183,9 +3919,9 @@
       "weight": 1.0,
       "_src": "painel_core_fetchwithfallback",
       "_tgt": "painel_core_fetchjson",
+      "confidence_score": 1.0,
       "source": "painel_core_fetchjson",
-      "target": "painel_core_fetchwithfallback",
-      "confidence_score": 1.0
+      "target": "painel_core_fetchwithfallback"
     },
     {
       "relation": "calls",
@@ -3195,9 +3931,9 @@
       "weight": 1.0,
       "_src": "painel_core_fetchcandles",
       "_tgt": "painel_core_fetchwithfallback",
+      "confidence_score": 1.0,
       "source": "painel_core_fetchwithfallback",
-      "target": "painel_core_fetchcandles",
-      "confidence_score": 1.0
+      "target": "painel_core_fetchcandles"
     },
     {
       "relation": "calls",
@@ -3279,9 +4015,9 @@
       "weight": 1.0,
       "_src": "painel_core_analyzecandles",
       "_tgt": "painel_core_calctechindicators",
+      "confidence_score": 1.0,
       "source": "painel_core_calctechindicators",
-      "target": "painel_core_analyzecandles",
-      "confidence_score": 1.0
+      "target": "painel_core_analyzecandles"
     },
     {
       "relation": "calls",
@@ -3291,9 +4027,9 @@
       "weight": 1.0,
       "_src": "painel_core_analyzecandles",
       "_tgt": "painel_core_computescore",
+      "confidence_score": 1.0,
       "source": "painel_core_computescore",
-      "target": "painel_core_analyzecandles",
-      "confidence_score": 1.0
+      "target": "painel_core_analyzecandles"
     },
     {
       "relation": "calls",
@@ -3339,9 +4075,9 @@
       "weight": 1.0,
       "_src": "backend_db_js",
       "_tgt": "db_getdb",
+      "confidence_score": 1.0,
       "source": "backend_db_js",
-      "target": "db_getdb",
-      "confidence_score": 1.0
+      "target": "db_getdb"
     },
     {
       "relation": "contains",
@@ -3351,164 +4087,188 @@
       "weight": 1.0,
       "_src": "backend_db_js",
       "_tgt": "db_initschema",
+      "confidence_score": 1.0,
       "source": "backend_db_js",
-      "target": "db_initschema",
-      "confidence_score": 1.0
+      "target": "db_initschema"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L104",
+      "source_location": "L120",
       "weight": 1.0,
       "_src": "backend_db_js",
       "_tgt": "db_getaccount",
+      "confidence_score": 1.0,
       "source": "backend_db_js",
-      "target": "db_getaccount",
-      "confidence_score": 1.0
+      "target": "db_getaccount"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L108",
+      "source_location": "L124",
       "weight": 1.0,
       "_src": "backend_db_js",
       "_tgt": "db_updateaccount",
+      "confidence_score": 1.0,
       "source": "backend_db_js",
-      "target": "db_updateaccount",
-      "confidence_score": 1.0
+      "target": "db_updateaccount"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L116",
+      "source_location": "L132",
       "weight": 1.0,
       "_src": "backend_db_js",
       "_tgt": "db_setupaccount",
+      "confidence_score": 1.0,
       "source": "backend_db_js",
-      "target": "db_setupaccount",
-      "confidence_score": 1.0
+      "target": "db_setupaccount"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L128",
+      "source_location": "L144",
       "weight": 1.0,
       "_src": "backend_db_js",
       "_tgt": "db_resetaccount",
+      "confidence_score": 1.0,
       "source": "backend_db_js",
-      "target": "db_resetaccount",
-      "confidence_score": 1.0
+      "target": "db_resetaccount"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L142",
+      "source_location": "L158",
       "weight": 1.0,
       "_src": "backend_db_js",
       "_tgt": "db_gettrade",
+      "confidence_score": 1.0,
       "source": "backend_db_js",
-      "target": "db_gettrade",
-      "confidence_score": 1.0
+      "target": "db_gettrade"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L146",
+      "source_location": "L162",
       "weight": 1.0,
       "_src": "backend_db_js",
       "_tgt": "db_getactivetrades",
+      "confidence_score": 1.0,
       "source": "backend_db_js",
-      "target": "db_getactivetrades",
-      "confidence_score": 1.0
+      "target": "db_getactivetrades"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L152",
+      "source_location": "L168",
       "weight": 1.0,
       "_src": "backend_db_js",
       "_tgt": "db_getactivecoins",
+      "confidence_score": 1.0,
       "source": "backend_db_js",
-      "target": "db_getactivecoins",
-      "confidence_score": 1.0
+      "target": "db_getactivecoins"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L159",
+      "source_location": "L175",
       "weight": 1.0,
       "_src": "backend_db_js",
       "_tgt": "db_countactivepositions",
+      "confidence_score": 1.0,
       "source": "backend_db_js",
-      "target": "db_countactivepositions",
-      "confidence_score": 1.0
+      "target": "db_countactivepositions"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L166",
+      "source_location": "L182",
       "weight": 1.0,
       "_src": "backend_db_js",
       "_tgt": "db_gettrades",
+      "confidence_score": 1.0,
       "source": "backend_db_js",
-      "target": "db_gettrades",
-      "confidence_score": 1.0
+      "target": "db_gettrades"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L177",
+      "source_location": "L193",
       "weight": 1.0,
       "_src": "backend_db_js",
       "_tgt": "db_inserttrade",
+      "confidence_score": 1.0,
       "source": "backend_db_js",
-      "target": "db_inserttrade",
-      "confidence_score": 1.0
+      "target": "db_inserttrade"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L191",
+      "source_location": "L207",
       "weight": 1.0,
       "_src": "backend_db_js",
       "_tgt": "db_updatetrade",
+      "confidence_score": 1.0,
       "source": "backend_db_js",
-      "target": "db_updatetrade",
-      "confidence_score": 1.0
+      "target": "db_updatetrade"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L199",
+      "source_location": "L215",
       "weight": 1.0,
       "_src": "backend_db_js",
       "_tgt": "db_insertscanlog",
+      "confidence_score": 1.0,
       "source": "backend_db_js",
-      "target": "db_insertscanlog",
+      "target": "db_insertscanlog"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend\\db.js",
+      "source_location": "L224",
+      "weight": 1.0,
+      "_src": "backend_db_js",
+      "_tgt": "db_getstats",
+      "confidence_score": 1.0,
+      "source": "backend_db_js",
+      "target": "db_getstats"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend\\db.js",
+      "source_location": "L246",
+      "weight": 1.0,
+      "_src": "backend_db_js",
+      "_tgt": "db_insertreflection",
+      "source": "backend_db_js",
+      "target": "db_insertreflection",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L208",
+      "source_location": "L254",
       "weight": 1.0,
       "_src": "backend_db_js",
-      "_tgt": "db_getstats",
+      "_tgt": "db_getrecentreflections",
       "source": "backend_db_js",
-      "target": "db_getstats",
+      "target": "db_getrecentreflections",
       "confidence_score": 1.0
     },
     {
@@ -3519,129 +4279,117 @@
       "weight": 1.0,
       "_src": "db_getdb",
       "_tgt": "db_initschema",
+      "confidence_score": 1.0,
       "source": "db_getdb",
-      "target": "db_initschema",
-      "confidence_score": 1.0
+      "target": "db_initschema"
     },
     {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L105",
+      "source_location": "L121",
       "weight": 1.0,
       "_src": "db_getaccount",
       "_tgt": "db_getdb",
+      "confidence_score": 1.0,
       "source": "db_getdb",
-      "target": "db_getaccount",
-      "confidence_score": 1.0
+      "target": "db_getaccount"
     },
     {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L112",
+      "source_location": "L128",
       "weight": 1.0,
       "_src": "db_updateaccount",
       "_tgt": "db_getdb",
+      "confidence_score": 1.0,
       "source": "db_getdb",
-      "target": "db_updateaccount",
-      "confidence_score": 1.0
+      "target": "db_updateaccount"
     },
     {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L118",
+      "source_location": "L134",
       "weight": 1.0,
       "_src": "db_setupaccount",
       "_tgt": "db_getdb",
+      "confidence_score": 1.0,
       "source": "db_getdb",
-      "target": "db_setupaccount",
-      "confidence_score": 1.0
+      "target": "db_setupaccount"
     },
     {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L130",
+      "source_location": "L146",
       "weight": 1.0,
       "_src": "db_resetaccount",
       "_tgt": "db_getdb",
+      "confidence_score": 1.0,
       "source": "db_getdb",
-      "target": "db_resetaccount",
-      "confidence_score": 1.0
+      "target": "db_resetaccount"
     },
     {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L143",
+      "source_location": "L159",
       "weight": 1.0,
       "_src": "db_gettrade",
       "_tgt": "db_getdb",
+      "confidence_score": 1.0,
       "source": "db_getdb",
-      "target": "db_gettrade",
-      "confidence_score": 1.0
+      "target": "db_gettrade"
     },
     {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L147",
+      "source_location": "L163",
       "weight": 1.0,
       "_src": "db_getactivetrades",
       "_tgt": "db_getdb",
+      "confidence_score": 1.0,
       "source": "db_getdb",
-      "target": "db_getactivetrades",
-      "confidence_score": 1.0
+      "target": "db_getactivetrades"
     },
     {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L153",
+      "source_location": "L169",
       "weight": 1.0,
       "_src": "db_getactivecoins",
       "_tgt": "db_getdb",
+      "confidence_score": 1.0,
       "source": "db_getdb",
-      "target": "db_getactivecoins",
-      "confidence_score": 1.0
+      "target": "db_getactivecoins"
     },
     {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L160",
+      "source_location": "L176",
       "weight": 1.0,
       "_src": "db_countactivepositions",
       "_tgt": "db_getdb",
+      "confidence_score": 1.0,
       "source": "db_getdb",
-      "target": "db_countactivepositions",
-      "confidence_score": 1.0
+      "target": "db_countactivepositions"
     },
     {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L168",
+      "source_location": "L184",
       "weight": 1.0,
       "_src": "db_gettrades",
       "_tgt": "db_getdb",
+      "confidence_score": 1.0,
       "source": "db_getdb",
-      "target": "db_gettrades",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "backend\\db.js",
-      "source_location": "L178",
-      "weight": 1.0,
-      "_src": "db_inserttrade",
-      "_tgt": "db_getdb",
-      "source": "db_getdb",
-      "target": "db_inserttrade",
-      "confidence_score": 1.0
+      "target": "db_gettrades"
     },
     {
       "relation": "calls",
@@ -3649,59 +4397,83 @@
       "source_file": "backend\\db.js",
       "source_location": "L194",
       "weight": 1.0,
-      "_src": "db_updatetrade",
+      "_src": "db_inserttrade",
       "_tgt": "db_getdb",
+      "confidence_score": 1.0,
       "source": "db_getdb",
-      "target": "db_updatetrade",
-      "confidence_score": 1.0
+      "target": "db_inserttrade"
     },
     {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L200",
+      "source_location": "L210",
+      "weight": 1.0,
+      "_src": "db_updatetrade",
+      "_tgt": "db_getdb",
+      "confidence_score": 1.0,
+      "source": "db_getdb",
+      "target": "db_updatetrade"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "backend\\db.js",
+      "source_location": "L216",
       "weight": 1.0,
       "_src": "db_insertscanlog",
       "_tgt": "db_getdb",
+      "confidence_score": 1.0,
       "source": "db_getdb",
-      "target": "db_insertscanlog",
-      "confidence_score": 1.0
+      "target": "db_insertscanlog"
     },
     {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L209",
+      "source_location": "L225",
       "weight": 1.0,
       "_src": "db_getstats",
       "_tgt": "db_getdb",
+      "confidence_score": 1.0,
       "source": "db_getdb",
-      "target": "db_getstats",
+      "target": "db_getstats"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "backend\\db.js",
+      "source_location": "L247",
+      "weight": 1.0,
+      "_src": "db_insertreflection",
+      "_tgt": "db_getdb",
+      "source": "db_getdb",
+      "target": "db_insertreflection",
       "confidence_score": 1.0
     },
     {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend\\db.js",
-      "source_location": "L113",
+      "source_location": "L255",
       "weight": 1.0,
-      "_src": "db_updateaccount",
-      "_tgt": "db_getaccount",
-      "source": "db_getaccount",
-      "target": "db_updateaccount",
+      "_src": "db_getrecentreflections",
+      "_tgt": "db_getdb",
+      "source": "db_getdb",
+      "target": "db_getrecentreflections",
       "confidence_score": 1.0
     },
     {
       "relation": "calls",
-      "confidence": "EXTRACTED",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
       "source_file": "backend\\db.js",
-      "source_location": "L124",
+      "source_location": "L105",
       "weight": 1.0,
-      "_src": "db_setupaccount",
-      "_tgt": "db_getaccount",
-      "source": "db_getaccount",
-      "target": "db_setupaccount",
-      "confidence_score": 1.0
+      "_src": "db_initschema",
+      "_tgt": "run_leader_log",
+      "source": "db_initschema",
+      "target": "run_leader_log"
     },
     {
       "relation": "calls",
@@ -3709,11 +4481,35 @@
       "source_file": "backend\\db.js",
       "source_location": "L129",
       "weight": 1.0,
+      "_src": "db_updateaccount",
+      "_tgt": "db_getaccount",
+      "confidence_score": 1.0,
+      "source": "db_getaccount",
+      "target": "db_updateaccount"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "backend\\db.js",
+      "source_location": "L140",
+      "weight": 1.0,
+      "_src": "db_setupaccount",
+      "_tgt": "db_getaccount",
+      "confidence_score": 1.0,
+      "source": "db_getaccount",
+      "target": "db_setupaccount"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "backend\\db.js",
+      "source_location": "L145",
+      "weight": 1.0,
       "_src": "db_resetaccount",
       "_tgt": "db_getaccount",
+      "confidence_score": 1.0,
       "source": "db_getaccount",
-      "target": "db_resetaccount",
-      "confidence_score": 1.0
+      "target": "db_resetaccount"
     },
     {
       "relation": "calls",
@@ -3744,7 +4540,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "backend\\price-checker.js",
-      "source_location": "L116",
+      "source_location": "L178",
       "weight": 1.0,
       "_src": "price_checker_expiretrade",
       "_tgt": "db_getaccount",
@@ -3756,7 +4552,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "backend\\scanner.js",
-      "source_location": "L113",
+      "source_location": "L109",
       "weight": 1.0,
       "_src": "scanner_runscan",
       "_tgt": "db_getaccount",
@@ -3792,7 +4588,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "backend\\price-checker.js",
-      "source_location": "L118",
+      "source_location": "L180",
       "weight": 1.0,
       "_src": "price_checker_expiretrade",
       "_tgt": "db_updateaccount",
@@ -3804,7 +4600,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "backend\\price-checker.js",
-      "source_location": "L46",
+      "source_location": "L82",
       "weight": 1.0,
       "_src": "price_checker_checkactivetrades",
       "_tgt": "db_getactivetrades",
@@ -3816,7 +4612,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "backend\\scanner.js",
-      "source_location": "L116",
+      "source_location": "L112",
       "weight": 1.0,
       "_src": "scanner_runscan",
       "_tgt": "db_getactivecoins",
@@ -3864,7 +4660,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "backend\\price-checker.js",
-      "source_location": "L72",
+      "source_location": "L116",
       "weight": 1.0,
       "_src": "price_checker_checkactivetrades",
       "_tgt": "db_updatetrade",
@@ -3876,7 +4672,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "backend\\price-checker.js",
-      "source_location": "L108",
+      "source_location": "L170",
       "weight": 1.0,
       "_src": "price_checker_expiretrade",
       "_tgt": "db_updatetrade",
@@ -3888,7 +4684,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "backend\\scanner.js",
-      "source_location": "L209",
+      "source_location": "L197",
       "weight": 1.0,
       "_src": "scanner_runscan",
       "_tgt": "db_insertscanlog",
@@ -3903,9 +4699,9 @@
       "weight": 1.0,
       "_src": "backend_paper_trader_js",
       "_tgt": "paper_trader_openposition",
+      "confidence_score": 1.0,
       "source": "backend_paper_trader_js",
-      "target": "paper_trader_openposition",
-      "confidence_score": 1.0
+      "target": "paper_trader_openposition"
     },
     {
       "relation": "contains",
@@ -3915,9 +4711,9 @@
       "weight": 1.0,
       "_src": "backend_paper_trader_js",
       "_tgt": "paper_trader_processpriceupdate",
+      "confidence_score": 1.0,
       "source": "backend_paper_trader_js",
-      "target": "paper_trader_processpriceupdate",
-      "confidence_score": 1.0
+      "target": "paper_trader_processpriceupdate"
     },
     {
       "relation": "contains",
@@ -3927,9 +4723,9 @@
       "weight": 1.0,
       "_src": "backend_paper_trader_js",
       "_tgt": "paper_trader_stopstatus",
+      "confidence_score": 1.0,
       "source": "backend_paper_trader_js",
-      "target": "paper_trader_stopstatus",
-      "confidence_score": 1.0
+      "target": "paper_trader_stopstatus"
     },
     {
       "relation": "contains",
@@ -3939,9 +4735,9 @@
       "weight": 1.0,
       "_src": "backend_paper_trader_js",
       "_tgt": "paper_trader_alreadyclosedfraction",
+      "confidence_score": 1.0,
       "source": "backend_paper_trader_js",
-      "target": "paper_trader_alreadyclosedfraction",
-      "confidence_score": 1.0
+      "target": "paper_trader_alreadyclosedfraction"
     },
     {
       "relation": "contains",
@@ -3951,9 +4747,9 @@
       "weight": 1.0,
       "_src": "backend_paper_trader_js",
       "_tgt": "paper_trader_closepartial",
+      "confidence_score": 1.0,
       "source": "backend_paper_trader_js",
-      "target": "paper_trader_closepartial",
-      "confidence_score": 1.0
+      "target": "paper_trader_closepartial"
     },
     {
       "relation": "contains",
@@ -3963,9 +4759,9 @@
       "weight": 1.0,
       "_src": "backend_paper_trader_js",
       "_tgt": "paper_trader_closemanualat",
+      "confidence_score": 1.0,
       "source": "backend_paper_trader_js",
-      "target": "paper_trader_closemanualat",
-      "confidence_score": 1.0
+      "target": "paper_trader_closemanualat"
     },
     {
       "relation": "calls",
@@ -3981,15 +4777,27 @@
     },
     {
       "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend\\paper-trader.js",
+      "source_location": "L66",
+      "weight": 1.0,
+      "_src": "paper_trader_openposition",
+      "_tgt": "run_leader_log",
+      "source": "paper_trader_openposition",
+      "target": "run_leader_log"
+    },
+    {
+      "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend\\paper-trader.js",
       "source_location": "L134",
       "weight": 1.0,
       "_src": "paper_trader_processpriceupdate",
       "_tgt": "paper_trader_alreadyclosedfraction",
+      "confidence_score": 1.0,
       "source": "paper_trader_processpriceupdate",
-      "target": "paper_trader_alreadyclosedfraction",
-      "confidence_score": 1.0
+      "target": "paper_trader_alreadyclosedfraction"
     },
     {
       "relation": "calls",
@@ -3999,9 +4807,9 @@
       "weight": 1.0,
       "_src": "paper_trader_processpriceupdate",
       "_tgt": "paper_trader_closepartial",
+      "confidence_score": 1.0,
       "source": "paper_trader_processpriceupdate",
-      "target": "paper_trader_closepartial",
-      "confidence_score": 1.0
+      "target": "paper_trader_closepartial"
     },
     {
       "relation": "calls",
@@ -4011,16 +4819,16 @@
       "weight": 1.0,
       "_src": "paper_trader_processpriceupdate",
       "_tgt": "paper_trader_stopstatus",
+      "confidence_score": 1.0,
       "source": "paper_trader_processpriceupdate",
-      "target": "paper_trader_stopstatus",
-      "confidence_score": 1.0
+      "target": "paper_trader_stopstatus"
     },
     {
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "backend\\price-checker.js",
-      "source_location": "L74",
+      "source_location": "L117",
       "weight": 1.0,
       "_src": "price_checker_checkactivetrades",
       "_tgt": "paper_trader_processpriceupdate",
@@ -4035,9 +4843,9 @@
       "weight": 1.0,
       "_src": "paper_trader_closemanualat",
       "_tgt": "paper_trader_alreadyclosedfraction",
+      "confidence_score": 1.0,
       "source": "paper_trader_alreadyclosedfraction",
-      "target": "paper_trader_closemanualat",
-      "confidence_score": 1.0
+      "target": "paper_trader_closemanualat"
     },
     {
       "relation": "calls",
@@ -4047,9 +4855,21 @@
       "weight": 1.0,
       "_src": "paper_trader_closemanualat",
       "_tgt": "paper_trader_closepartial",
+      "confidence_score": 1.0,
       "source": "paper_trader_closepartial",
-      "target": "paper_trader_closemanualat",
-      "confidence_score": 1.0
+      "target": "paper_trader_closemanualat"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend\\paper-trader.js",
+      "source_location": "L226",
+      "weight": 1.0,
+      "_src": "paper_trader_closepartial",
+      "_tgt": "run_leader_log",
+      "source": "paper_trader_closepartial",
+      "target": "run_leader_log"
     },
     {
       "relation": "contains",
@@ -4059,92 +4879,68 @@
       "weight": 1.0,
       "_src": "backend_price_checker_js",
       "_tgt": "price_checker_fetchcurrentprice",
+      "confidence_score": 1.0,
       "source": "backend_price_checker_js",
-      "target": "price_checker_fetchcurrentprice",
-      "confidence_score": 1.0
+      "target": "price_checker_fetchcurrentprice"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\price-checker.js",
-      "source_location": "L36",
+      "source_location": "L72",
       "weight": 1.0,
       "_src": "backend_price_checker_js",
       "_tgt": "price_checker_isexpired",
+      "confidence_score": 1.0,
       "source": "backend_price_checker_js",
-      "target": "price_checker_isexpired",
-      "confidence_score": 1.0
+      "target": "price_checker_isexpired"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\price-checker.js",
-      "source_location": "L45",
+      "source_location": "L81",
       "weight": 1.0,
       "_src": "backend_price_checker_js",
       "_tgt": "price_checker_checkactivetrades",
+      "confidence_score": 1.0,
       "source": "backend_price_checker_js",
-      "target": "price_checker_checkactivetrades",
-      "confidence_score": 1.0
+      "target": "price_checker_checkactivetrades"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\price-checker.js",
-      "source_location": "L89",
+      "source_location": "L151",
       "weight": 1.0,
       "_src": "backend_price_checker_js",
       "_tgt": "price_checker_expiretrade",
+      "confidence_score": 1.0,
       "source": "backend_price_checker_js",
-      "target": "price_checker_expiretrade",
-      "confidence_score": 1.0
+      "target": "price_checker_expiretrade"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\price-checker.js",
-      "source_location": "L123",
+      "source_location": "L185",
       "weight": 1.0,
       "_src": "backend_price_checker_js",
       "_tgt": "price_checker_alreadyclosedfraction",
+      "confidence_score": 1.0,
       "source": "backend_price_checker_js",
-      "target": "price_checker_alreadyclosedfraction",
-      "confidence_score": 1.0
+      "target": "price_checker_alreadyclosedfraction"
     },
     {
-      "relation": "calls",
+      "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\price-checker.js",
-      "source_location": "L55",
+      "source_location": "L38",
       "weight": 1.0,
-      "_src": "price_checker_checkactivetrades",
-      "_tgt": "price_checker_fetchcurrentprice",
-      "source": "price_checker_fetchcurrentprice",
-      "target": "price_checker_checkactivetrades",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "backend\\price-checker.js",
-      "source_location": "L54",
-      "weight": 1.0,
-      "_src": "price_checker_checkactivetrades",
-      "_tgt": "price_checker_isexpired",
-      "source": "price_checker_isexpired",
-      "target": "price_checker_checkactivetrades",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "backend\\price-checker.js",
-      "source_location": "L62",
-      "weight": 1.0,
-      "_src": "price_checker_checkactivetrades",
-      "_tgt": "price_checker_expiretrade",
-      "source": "price_checker_checkactivetrades",
-      "target": "price_checker_expiretrade",
+      "_src": "backend_price_checker_js",
+      "_tgt": "price_checker_fetchrecentpricewindow",
+      "source": "backend_price_checker_js",
+      "target": "price_checker_fetchrecentpricewindow",
       "confidence_score": 1.0
     },
     {
@@ -4153,95 +4949,191 @@
       "source_file": "backend\\price-checker.js",
       "source_location": "L91",
       "weight": 1.0,
+      "_src": "price_checker_checkactivetrades",
+      "_tgt": "price_checker_fetchcurrentprice",
+      "confidence_score": 1.0,
+      "source": "price_checker_fetchcurrentprice",
+      "target": "price_checker_checkactivetrades"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "backend\\price-checker.js",
+      "source_location": "L90",
+      "weight": 1.0,
+      "_src": "price_checker_checkactivetrades",
+      "_tgt": "price_checker_isexpired",
+      "confidence_score": 1.0,
+      "source": "price_checker_isexpired",
+      "target": "price_checker_checkactivetrades"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "backend\\price-checker.js",
+      "source_location": "L98",
+      "weight": 1.0,
+      "_src": "price_checker_checkactivetrades",
+      "_tgt": "price_checker_expiretrade",
+      "confidence_score": 1.0,
+      "source": "price_checker_checkactivetrades",
+      "target": "price_checker_expiretrade"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend\\price-checker.js",
+      "source_location": "L85",
+      "weight": 1.0,
+      "_src": "price_checker_checkactivetrades",
+      "_tgt": "run_leader_log",
+      "source": "price_checker_checkactivetrades",
+      "target": "run_leader_log"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "backend\\price-checker.js",
+      "source_location": "L108",
+      "weight": 1.0,
+      "_src": "price_checker_checkactivetrades",
+      "_tgt": "price_checker_fetchrecentpricewindow",
+      "source": "price_checker_checkactivetrades",
+      "target": "price_checker_fetchrecentpricewindow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "backend\\price-checker.js",
+      "source_location": "L153",
+      "weight": 1.0,
       "_src": "price_checker_expiretrade",
       "_tgt": "price_checker_alreadyclosedfraction",
+      "confidence_score": 1.0,
       "source": "price_checker_expiretrade",
-      "target": "price_checker_alreadyclosedfraction",
-      "confidence_score": 1.0
+      "target": "price_checker_alreadyclosedfraction"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend\\price-checker.js",
+      "source_location": "L182",
+      "weight": 1.0,
+      "_src": "price_checker_expiretrade",
+      "_tgt": "run_leader_log",
+      "source": "price_checker_expiretrade",
+      "target": "run_leader_log"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\scanner.js",
-      "source_location": "L53",
+      "source_location": "L49",
       "weight": 1.0,
       "_src": "backend_scanner_js",
       "_tgt": "scanner_fetchmacrobtctrend",
+      "confidence_score": 1.0,
       "source": "backend_scanner_js",
-      "target": "scanner_fetchmacrobtctrend",
-      "confidence_score": 1.0
+      "target": "scanner_fetchmacrobtctrend"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\scanner.js",
-      "source_location": "L72",
+      "source_location": "L68",
       "weight": 1.0,
       "_src": "backend_scanner_js",
       "_tgt": "scanner_fetchfeargreed",
+      "confidence_score": 1.0,
       "source": "backend_scanner_js",
-      "target": "scanner_fetchfeargreed",
-      "confidence_score": 1.0
+      "target": "scanner_fetchfeargreed"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\scanner.js",
-      "source_location": "L80",
+      "source_location": "L76",
       "weight": 1.0,
       "_src": "backend_scanner_js",
       "_tgt": "scanner_fetchfundingrate",
+      "confidence_score": 1.0,
       "source": "backend_scanner_js",
-      "target": "scanner_fetchfundingrate",
-      "confidence_score": 1.0
+      "target": "scanner_fetchfundingrate"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\scanner.js",
-      "source_location": "L89",
+      "source_location": "L85",
       "weight": 1.0,
       "_src": "backend_scanner_js",
       "_tgt": "scanner_fetchopeninterest",
+      "confidence_score": 1.0,
       "source": "backend_scanner_js",
-      "target": "scanner_fetchopeninterest",
-      "confidence_score": 1.0
+      "target": "scanner_fetchopeninterest"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\scanner.js",
-      "source_location": "L111",
+      "source_location": "L107",
       "weight": 1.0,
       "_src": "backend_scanner_js",
       "_tgt": "scanner_runscan",
+      "confidence_score": 1.0,
       "source": "backend_scanner_js",
-      "target": "scanner_runscan",
-      "confidence_score": 1.0
+      "target": "scanner_runscan"
     },
     {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend\\scanner.js",
-      "source_location": "L120",
+      "source_location": "L116",
       "weight": 1.0,
       "_src": "scanner_runscan",
       "_tgt": "scanner_fetchmacrobtctrend",
+      "confidence_score": 1.0,
       "source": "scanner_fetchmacrobtctrend",
-      "target": "scanner_runscan",
-      "confidence_score": 1.0
+      "target": "scanner_runscan"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend\\scanner.js",
+      "source_location": "L58",
+      "weight": 1.0,
+      "_src": "scanner_fetchmacrobtctrend",
+      "_tgt": "run_leader_log",
+      "source": "scanner_fetchmacrobtctrend",
+      "target": "run_leader_log"
     },
     {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend\\scanner.js",
-      "source_location": "L119",
+      "source_location": "L115",
       "weight": 1.0,
       "_src": "scanner_runscan",
       "_tgt": "scanner_fetchfeargreed",
+      "confidence_score": 1.0,
       "source": "scanner_fetchfeargreed",
-      "target": "scanner_runscan",
-      "confidence_score": 1.0
+      "target": "scanner_runscan"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "backend\\scanner.js",
+      "source_location": "L135",
+      "weight": 1.0,
+      "_src": "scanner_runscan",
+      "_tgt": "scanner_fetchfundingrate",
+      "confidence_score": 1.0,
+      "source": "scanner_fetchfundingrate",
+      "target": "scanner_runscan"
     },
     {
       "relation": "calls",
@@ -4250,34 +5142,58 @@
       "source_location": "L139",
       "weight": 1.0,
       "_src": "scanner_runscan",
-      "_tgt": "scanner_fetchfundingrate",
-      "source": "scanner_fetchfundingrate",
-      "target": "scanner_runscan",
-      "confidence_score": 1.0
+      "_tgt": "scanner_fetchopeninterest",
+      "confidence_score": 1.0,
+      "source": "scanner_fetchopeninterest",
+      "target": "scanner_runscan"
     },
     {
       "relation": "calls",
-      "confidence": "EXTRACTED",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
       "source_file": "backend\\scanner.js",
-      "source_location": "L143",
+      "source_location": "L181",
       "weight": 1.0,
       "_src": "scanner_runscan",
-      "_tgt": "scanner_fetchopeninterest",
-      "source": "scanner_fetchopeninterest",
-      "target": "scanner_runscan",
+      "_tgt": "run_leader_log",
+      "source": "scanner_runscan",
+      "target": "run_leader_log"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "backend\\routes\\scan.js",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_src": "scan_runonce",
+      "_tgt": "scanner_runscan",
+      "source": "scanner_runscan",
+      "target": "scan_runonce"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend\\routes\\scan.js",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_src": "backend_routes_scan_js",
+      "_tgt": "scan_runonce",
+      "source": "backend_routes_scan_js",
+      "target": "scan_runonce",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend\\routes\\trades.js",
-      "source_location": "L24",
+      "source_location": "L25",
       "weight": 1.0,
       "_src": "backend_routes_trades_js",
       "_tgt": "trades_fp",
+      "confidence_score": 1.0,
       "source": "backend_routes_trades_js",
-      "target": "trades_fp",
-      "confidence_score": 1.0
+      "target": "trades_fp"
     },
     {
       "relation": "contains",
@@ -4287,9 +5203,9 @@
       "weight": 1.0,
       "_src": "tests_api_test_js",
       "_tgt": "api_test_makefetchok",
+      "confidence_score": 1.0,
       "source": "tests_api_test_js",
-      "target": "api_test_makefetchok",
-      "confidence_score": 1.0
+      "target": "api_test_makefetchok"
     },
     {
       "relation": "contains",
@@ -4299,9 +5215,9 @@
       "weight": 1.0,
       "_src": "tests_api_test_js",
       "_tgt": "api_test_makefetcherror",
+      "confidence_score": 1.0,
       "source": "tests_api_test_js",
-      "target": "api_test_makefetcherror",
-      "confidence_score": 1.0
+      "target": "api_test_makefetcherror"
     },
     {
       "relation": "contains",
@@ -4311,9 +5227,9 @@
       "weight": 1.0,
       "_src": "tests_api_test_js",
       "_tgt": "api_test_makefetchnetworkerror",
+      "confidence_score": 1.0,
       "source": "tests_api_test_js",
-      "target": "api_test_makefetchnetworkerror",
-      "confidence_score": 1.0
+      "target": "api_test_makefetchnetworkerror"
     },
     {
       "relation": "contains",
@@ -4323,9 +5239,9 @@
       "weight": 1.0,
       "_src": "tests_api_test_js",
       "_tgt": "api_test_makebybitresponse",
+      "confidence_score": 1.0,
       "source": "tests_api_test_js",
-      "target": "api_test_makebybitresponse",
-      "confidence_score": 1.0
+      "target": "api_test_makebybitresponse"
     },
     {
       "relation": "contains",
@@ -4335,8 +5251,20 @@
       "weight": 1.0,
       "_src": "tests_api_test_js",
       "_tgt": "api_test_makeklinerow",
+      "confidence_score": 1.0,
       "source": "tests_api_test_js",
-      "target": "api_test_makeklinerow",
+      "target": "api_test_makeklinerow"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests\\api.test.js",
+      "source_location": "L268",
+      "weight": 1.0,
+      "_src": "tests_api_test_js",
+      "_tgt": "api_test_makeklinerowat",
+      "source": "tests_api_test_js",
+      "target": "api_test_makeklinerowat",
       "confidence_score": 1.0
     },
     {
@@ -4347,9 +5275,9 @@
       "weight": 1.0,
       "_src": "tests_indicators_test_js",
       "_tgt": "indicators_test_makeswingcandles",
+      "confidence_score": 1.0,
       "source": "tests_indicators_test_js",
-      "target": "indicators_test_makeswingcandles",
-      "confidence_score": 1.0
+      "target": "indicators_test_makeswingcandles"
     },
     {
       "relation": "contains",
@@ -4359,9 +5287,9 @@
       "weight": 1.0,
       "_src": "tests_integration_test_js",
       "_tgt": "integration_test_getresult",
+      "confidence_score": 1.0,
       "source": "tests_integration_test_js",
-      "target": "integration_test_getresult",
-      "confidence_score": 1.0
+      "target": "integration_test_getresult"
     },
     {
       "relation": "calls",
@@ -4383,9 +5311,9 @@
       "weight": 1.0,
       "_src": "tests_journal_test_js",
       "_tgt": "journal_test_makemocksetup",
+      "confidence_score": 1.0,
       "source": "tests_journal_test_js",
-      "target": "journal_test_makemocksetup",
-      "confidence_score": 1.0
+      "target": "journal_test_makemocksetup"
     },
     {
       "relation": "contains",
@@ -4395,9 +5323,9 @@
       "weight": 1.0,
       "_src": "tests_mtf_test_js",
       "_tgt": "mtf_test_makesetup",
+      "confidence_score": 1.0,
       "source": "tests_mtf_test_js",
-      "target": "mtf_test_makesetup",
-      "confidence_score": 1.0
+      "target": "mtf_test_makesetup"
     },
     {
       "relation": "contains",
@@ -4407,9 +5335,9 @@
       "weight": 1.0,
       "_src": "tests_patterns_test_js",
       "_tgt": "patterns_test_candle",
+      "confidence_score": 1.0,
       "source": "tests_patterns_test_js",
-      "target": "patterns_test_candle",
-      "confidence_score": 1.0
+      "target": "patterns_test_candle"
     },
     {
       "relation": "contains",
@@ -4419,9 +5347,9 @@
       "weight": 1.0,
       "_src": "tests_patterns_test_js",
       "_tgt": "patterns_test_withcontext",
+      "confidence_score": 1.0,
       "source": "tests_patterns_test_js",
-      "target": "patterns_test_withcontext",
-      "confidence_score": 1.0
+      "target": "patterns_test_withcontext"
     },
     {
       "relation": "contains",
@@ -4431,9 +5359,9 @@
       "weight": 1.0,
       "_src": "tests_patterns_test_js",
       "_tgt": "patterns_test_makecandles",
+      "confidence_score": 1.0,
       "source": "tests_patterns_test_js",
-      "target": "patterns_test_makecandles",
-      "confidence_score": 1.0
+      "target": "patterns_test_makecandles"
     },
     {
       "relation": "contains",
@@ -4443,9 +5371,9 @@
       "weight": 1.0,
       "_src": "tests_patterns_test_js",
       "_tgt": "patterns_test_makebear",
+      "confidence_score": 1.0,
       "source": "tests_patterns_test_js",
-      "target": "patterns_test_makebear",
-      "confidence_score": 1.0
+      "target": "patterns_test_makebear"
     },
     {
       "relation": "contains",
@@ -4455,9 +5383,9 @@
       "weight": 1.0,
       "_src": "tests_patterns_test_js",
       "_tgt": "patterns_test_makeorderblockcandles",
+      "confidence_score": 1.0,
       "source": "tests_patterns_test_js",
-      "target": "patterns_test_makeorderblockcandles",
-      "confidence_score": 1.0
+      "target": "patterns_test_makeorderblockcandles"
     },
     {
       "relation": "calls",
@@ -4467,9 +5395,9 @@
       "weight": 1.0,
       "_src": "patterns_test_withcontext",
       "_tgt": "patterns_test_candle",
+      "confidence_score": 1.0,
       "source": "patterns_test_candle",
-      "target": "patterns_test_withcontext",
-      "confidence_score": 1.0
+      "target": "patterns_test_withcontext"
     },
     {
       "relation": "calls",
@@ -4479,9 +5407,9 @@
       "weight": 1.0,
       "_src": "patterns_test_makebear",
       "_tgt": "patterns_test_candle",
+      "confidence_score": 1.0,
       "source": "patterns_test_candle",
-      "target": "patterns_test_makebear",
-      "confidence_score": 1.0
+      "target": "patterns_test_makebear"
     },
     {
       "relation": "contains",
@@ -4491,9 +5419,9 @@
       "weight": 1.0,
       "_src": "tests_scanner_filters_test_js",
       "_tgt": "scanner_filters_test_isrisktoohigh",
+      "confidence_score": 1.0,
       "source": "tests_scanner_filters_test_js",
-      "target": "scanner_filters_test_isrisktoohigh",
-      "confidence_score": 1.0
+      "target": "scanner_filters_test_isrisktoohigh"
     },
     {
       "relation": "contains",
@@ -4503,9 +5431,9 @@
       "weight": 1.0,
       "_src": "tests_scanner_filters_test_js",
       "_tgt": "scanner_filters_test_detecttrend",
+      "confidence_score": 1.0,
       "source": "tests_scanner_filters_test_js",
-      "target": "scanner_filters_test_detecttrend",
-      "confidence_score": 1.0
+      "target": "scanner_filters_test_detecttrend"
     },
     {
       "relation": "contains",
@@ -4515,9 +5443,9 @@
       "weight": 1.0,
       "_src": "tests_scanner_filters_test_js",
       "_tgt": "scanner_filters_test_maketrendingup",
+      "confidence_score": 1.0,
       "source": "tests_scanner_filters_test_js",
-      "target": "scanner_filters_test_maketrendingup",
-      "confidence_score": 1.0
+      "target": "scanner_filters_test_maketrendingup"
     },
     {
       "relation": "contains",
@@ -4527,9 +5455,9 @@
       "weight": 1.0,
       "_src": "tests_scanner_filters_test_js",
       "_tgt": "scanner_filters_test_maketrendingdown",
+      "confidence_score": 1.0,
       "source": "tests_scanner_filters_test_js",
-      "target": "scanner_filters_test_maketrendingdown",
-      "confidence_score": 1.0
+      "target": "scanner_filters_test_maketrendingdown"
     },
     {
       "relation": "contains",
@@ -4539,9 +5467,9 @@
       "weight": 1.0,
       "_src": "tests_scoring_test_js",
       "_tgt": "scoring_test_makeind",
+      "confidence_score": 1.0,
       "source": "tests_scoring_test_js",
-      "target": "scoring_test_makeind",
-      "confidence_score": 1.0
+      "target": "scoring_test_makeind"
     },
     {
       "relation": "contains",
@@ -4551,9 +5479,9 @@
       "weight": 1.0,
       "_src": "tests_fixtures_candles_js",
       "_tgt": "candles_maketrendingcandles",
+      "confidence_score": 1.0,
       "source": "tests_fixtures_candles_js",
-      "target": "candles_maketrendingcandles",
-      "confidence_score": 1.0
+      "target": "candles_maketrendingcandles"
     },
     {
       "relation": "contains",
@@ -4563,9 +5491,9 @@
       "weight": 1.0,
       "_src": "tests_fixtures_candles_js",
       "_tgt": "candles_makeflatcandles",
+      "confidence_score": 1.0,
       "source": "tests_fixtures_candles_js",
-      "target": "candles_makeflatcandles",
-      "confidence_score": 1.0
+      "target": "candles_makeflatcandles"
     },
     {
       "relation": "contains",
@@ -4575,9 +5503,9 @@
       "weight": 1.0,
       "_src": "tests_fixtures_candles_js",
       "_tgt": "candles_makedowntrendcandles",
+      "confidence_score": 1.0,
       "source": "tests_fixtures_candles_js",
-      "target": "candles_makedowntrendcandles",
-      "confidence_score": 1.0
+      "target": "candles_makedowntrendcandles"
     },
     {
       "relation": "contains",
@@ -4587,9 +5515,9 @@
       "weight": 1.0,
       "_src": "tests_fixtures_candles_js",
       "_tgt": "candles_makepatterncandles",
+      "confidence_score": 1.0,
       "source": "tests_fixtures_candles_js",
-      "target": "candles_makepatterncandles",
-      "confidence_score": 1.0
+      "target": "candles_makepatterncandles"
     },
     {
       "relation": "references",
@@ -5862,6 +6790,306 @@
       "_tgt": "concept_TF_INTERVAL_MS",
       "source": "concept_inProgressCandleBug",
       "target": "concept_TF_INTERVAL_MS"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "run-leader.ps1",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_src": "run_leader_ps1",
+      "_tgt": "run_leader_log",
+      "source": "run_leader_ps1",
+      "target": "run_leader_log",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend\\stop-validator.js",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_src": "backend_stop_validator_js",
+      "_tgt": "stop_validator_isstoptighter",
+      "source": "backend_stop_validator_js",
+      "target": "stop_validator_isstoptighter",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CLAUDE.md",
+      "source_location": "line 136",
+      "weight": 1.0,
+      "_src": "claude_md_agent_council",
+      "_tgt": "claude_md_leader_md",
+      "source": "claude_md_leader_md",
+      "target": "claude_md_agent_council"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CLAUDE.md",
+      "source_location": "line 136",
+      "weight": 1.0,
+      "_src": "claude_md_leader_md",
+      "_tgt": "claude_md_news_hunter_md",
+      "source": "claude_md_leader_md",
+      "target": "claude_md_news_hunter_md"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CLAUDE.md",
+      "source_location": "line 136",
+      "weight": 1.0,
+      "_src": "claude_md_leader_md",
+      "_tgt": "claude_md_pattern_validator_md",
+      "source": "claude_md_leader_md",
+      "target": "claude_md_pattern_validator_md"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-04-29-leader-agent.md",
+      "source_location": "line 994",
+      "weight": 1.0,
+      "_src": "plan_leader_task10_leader_prompt",
+      "_tgt": "claude_md_leader_md",
+      "source": "claude_md_leader_md",
+      "target": "plan_leader_task10_leader_prompt"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-05-02-leader-autonomy.md",
+      "source_location": "line 49",
+      "weight": 1.0,
+      "_src": "plan_autonomy_task2_exit",
+      "_tgt": "claude_md_leader_md",
+      "source": "claude_md_leader_md",
+      "target": "plan_autonomy_task2_exit"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-05-02-leader-autonomy.md",
+      "source_location": "line 108",
+      "weight": 1.0,
+      "_src": "plan_autonomy_task3_justification",
+      "_tgt": "claude_md_leader_md",
+      "source": "claude_md_leader_md",
+      "target": "plan_autonomy_task3_justification"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-05-02-leader-autonomy.md",
+      "source_location": "line 168",
+      "weight": 1.0,
+      "_src": "plan_autonomy_task4_guardrails",
+      "_tgt": "claude_md_leader_md",
+      "source": "claude_md_leader_md",
+      "target": "plan_autonomy_task4_guardrails"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/specs/2026-05-02-leader-autonomy-design.md",
+      "source_location": "line 6",
+      "weight": 1.0,
+      "_src": "spec_autonomy_2026_05_02",
+      "_tgt": "claude_md_leader_md",
+      "source": "claude_md_leader_md",
+      "target": "spec_autonomy_2026_05_02"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CLAUDE.md",
+      "source_location": "line 138",
+      "weight": 1.0,
+      "_src": "claude_md_agent_council",
+      "_tgt": "claude_md_news_hunter_md",
+      "source": "claude_md_news_hunter_md",
+      "target": "claude_md_agent_council"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "weight": 0.95,
+      "_src": "claude_md_news_hunter_md",
+      "_tgt": "council_news_hunter",
+      "source": "claude_md_news_hunter_md",
+      "target": "council_news_hunter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CLAUDE.md",
+      "source_location": "line 137",
+      "weight": 1.0,
+      "_src": "claude_md_agent_council",
+      "_tgt": "claude_md_pattern_validator_md",
+      "source": "claude_md_pattern_validator_md",
+      "target": "claude_md_agent_council"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "CLAUDE.md",
+      "source_location": null,
+      "weight": 0.95,
+      "_src": "claude_md_pattern_validator_md",
+      "_tgt": "council_pattern_validator",
+      "source": "claude_md_pattern_validator_md",
+      "target": "council_pattern_validator"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CLAUDE.md",
+      "source_location": "line 67",
+      "weight": 1.0,
+      "_src": "claude_md_run_real_analysis",
+      "_tgt": "claude_md_compute_score",
+      "source": "claude_md_compute_score",
+      "target": "claude_md_run_real_analysis"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-04-29-leader-agent.md",
+      "source_location": "line 358",
+      "weight": 1.0,
+      "_src": "plan_leader_task4_stop_validator",
+      "_tgt": "concept_is_stop_tighter",
+      "source": "concept_is_stop_tighter",
+      "target": "plan_leader_task4_stop_validator"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/agent-council-next-steps.md",
+      "source_location": "line 88",
+      "weight": 1.0,
+      "_src": "council_next_steps",
+      "_tgt": "council_news_hunter",
+      "source": "council_next_steps",
+      "target": "council_news_hunter"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/agent-council-next-steps.md",
+      "source_location": "line 90",
+      "weight": 1.0,
+      "_src": "council_next_steps",
+      "_tgt": "council_pattern_validator",
+      "source": "council_next_steps",
+      "target": "council_pattern_validator"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/agent-council-next-steps.md",
+      "source_location": "line 107",
+      "weight": 1.0,
+      "_src": "council_next_steps",
+      "_tgt": "council_devils_advocate",
+      "source": "council_next_steps",
+      "target": "council_devils_advocate"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/agent-council-next-steps.md",
+      "source_location": "line 44",
+      "weight": 1.0,
+      "_src": "council_next_steps",
+      "_tgt": "council_inprogress_candle_fix",
+      "source": "council_next_steps",
+      "target": "council_inprogress_candle_fix"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-04-29-leader-agent.md",
+      "source_location": "line 13",
+      "weight": 1.0,
+      "_src": "plan_leader_2026_04_29",
+      "_tgt": "spec_leader_2026_04_29",
+      "source": "plan_leader_2026_04_29",
+      "target": "spec_leader_2026_04_29"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/plans/2026-05-02-leader-autonomy.md",
+      "source_location": "line 1",
+      "weight": 1.0,
+      "_src": "plan_autonomy_2026_05_02",
+      "_tgt": "spec_autonomy_2026_05_02",
+      "source": "plan_autonomy_2026_05_02",
+      "target": "spec_autonomy_2026_05_02"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/specs/2026-04-29-leader-agent-design.md",
+      "source_location": "line 19",
+      "weight": 1.0,
+      "_src": "spec_leader_2026_04_29",
+      "_tgt": "spec_leader_adr_decisions",
+      "source": "spec_leader_2026_04_29",
+      "target": "spec_leader_adr_decisions"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/specs/2026-04-29-leader-agent-design.md",
+      "source_location": "line 70",
+      "weight": 1.0,
+      "_src": "spec_leader_2026_04_29",
+      "_tgt": "concept_leader_review_flow",
+      "source": "spec_leader_2026_04_29",
+      "target": "concept_leader_review_flow"
+    },
+    {
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/superpowers/specs/2026-04-29-leader-agent-design.md",
+      "source_location": "line 26",
+      "weight": 1.0,
+      "_src": "spec_leader_2026_04_29",
+      "_tgt": "concept_sequential_gate",
+      "source": "spec_leader_2026_04_29",
+      "target": "concept_sequential_gate"
     }
   ],
   "hyperedges": []

@@ -2,7 +2,7 @@
 source_file: "backend\price-checker.js"
 type: "code"
 community: "Backend Trading System"
-location: "L36"
+location: "L72"
 tags:
   - graphify/code
   - graphify/EXTRACTED

@@ -33,7 +33,7 @@ SORT file.name ASC
 ```
 
 ## Connections to other communities
-- 2 edges to [[_COMMUNITY_Account & Database Layer]]
+- 2 edges to [[_COMMUNITY_Account & Position Management]]
 - 1 edge to [[_COMMUNITY_Frontend Analysis Engine]]
 
 ## Top bridge nodes

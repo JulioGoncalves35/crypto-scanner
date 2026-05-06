@@ -12,6 +12,7 @@ tags:
 # openPosition()
 
 ## Connections
+- [[Log()]] - `calls` [INFERRED]
 - [[countActivePositions()]] - `calls` [INFERRED]
 - [[getAccount()]] - `calls` [INFERRED]
 - [[insertTrade()]] - `calls` [INFERRED]

@@ -1,0 +1,17 @@
+---
+source_file: "docs/superpowers/plans/2026-05-02-leader-autonomy.md"
+type: "document"
+community: "Agent Council Design"
+location: "line 108"
+tags:
+  - graphify/document
+  - graphify/EXTRACTED
+  - community/Agent_Council_Design
+---
+
+# Autonomy Task 3: Structured Justification Blocks
+
+## Connections
+- [[.claudeagentsleader.md — Leader Agent Prompt]] - `implements` [EXTRACTED]
+
+#graphify/document #graphify/EXTRACTED #community/Agent_Council_Design

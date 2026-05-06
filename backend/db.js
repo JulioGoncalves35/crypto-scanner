@@ -84,10 +84,18 @@ function initSchema() {
   `);
 
   // Migration: add analysis_json column if not present (existing DBs)
-  try { db.exec('ALTER TABLE trades ADD COLUMN analysis_json TEXT'); } catch (_) {}
+  const tradeCols = db.prepare('PRAGMA table_info(trades)').all().map(c => c.name);
+  if (!tradeCols.includes('analysis_json')) {
+    db.exec('ALTER TABLE trades ADD COLUMN analysis_json TEXT');
+    console.log('[db] migration: added trades.analysis_json');
+  }
 
   // Migration: add candidates_json column to scan_log if not present
-  try { db.exec('ALTER TABLE scan_log ADD COLUMN candidates_json TEXT'); } catch (_) {}
+  const scanCols = db.prepare('PRAGMA table_info(scan_log)').all().map(c => c.name);
+  if (!scanCols.includes('candidates_json')) {
+    db.exec('ALTER TABLE scan_log ADD COLUMN candidates_json TEXT');
+    console.log('[db] migration: added scan_log.candidates_json');
+  }
 
   // Migration: bump max_positions default from 5 to 10 for existing accounts
   try {
