@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { getTrades, getActiveTrades, getTrade, getStats, updateTrade } from '../db.js';
 import { closeManualAt, openPosition } from '../paper-trader.js';
 import { isStopTighter } from '../stop-validator.js';
+import { fetchCurrentPrice } from '../price-checker.js';
 
 const router = Router();
 
@@ -97,14 +98,7 @@ router.post('/:id/close', async (req, res) => {
   if (!['active', 'm1', 'm2'].includes(trade.status))
     return res.status(400).json({ error: 'Trade já encerrado' });
 
-  let price;
-  try {
-    const tickerUrl = `https://api.bybit.com/v5/market/tickers?category=linear&symbol=${encodeURIComponent(trade.coin)}`;
-    const resp = await fetch(tickerUrl);
-    const json = await resp.json();
-    price = parseFloat(json?.result?.list?.[0]?.lastPrice);
-  } catch (_) {}
-
+  const price = await fetchCurrentPrice(trade.coin);
   if (!price || isNaN(price))
     return res.status(502).json({ error: 'Falha ao obter preço atual da Bybit' });
 

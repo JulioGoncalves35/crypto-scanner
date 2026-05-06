@@ -97,6 +97,23 @@ function initSchema() {
     console.log('[db] migration: added scan_log.candidates_json');
   }
 
+  // Migration: add coins column to paper_account if not present
+  const accCols = db.prepare('PRAGMA table_info(paper_account)').all().map(c => c.name);
+  if (!accCols.includes('coins')) {
+    db.exec('ALTER TABLE paper_account ADD COLUMN coins TEXT');
+    // Seed existing account with default 41-coin list
+    const defaultCoins = JSON.stringify([
+      'BTC','ETH','SOL','BNB','XRP','ADA','AVAX',
+      'DOGE','DOT','LINK','POL','LTC','ATOM','UNI',
+      'INJ','ARB','WLD','SEI','TIA','SUI','APT',
+      'OP','IMX','JUP','ONDO','STRK','BLUR','MANTA',
+      'ORDI','BOME','WIF','ENA','ETHFI','PENDLE',
+      '1000PEPE','HBAR','NEAR','RENDER','TRX','FIL','HYPE',
+    ]);
+    db.prepare('UPDATE paper_account SET coins = ? WHERE id = 1').run(defaultCoins);
+    console.log('[db] migration: added paper_account.coins (seeded 41 coins)');
+  }
+
   // Migration: bump max_positions default from 5 to 10 for existing accounts
   try {
     const acc = db.prepare('SELECT max_positions FROM paper_account WHERE id = 1').get();
@@ -105,21 +122,45 @@ function initSchema() {
     }
   } catch (_) {}
 
-  // Migration: bump min_score from 70 to 85 for existing accounts still on old default
+  // Migration: bump min_score to 85 for any account below threshold
   try {
     const acc = db.prepare('SELECT min_score FROM paper_account WHERE id = 1').get();
-    if (acc && acc.min_score === 70) {
+    if (acc && acc.min_score < 85) {
+      const old = acc.min_score;
       db.prepare('UPDATE paper_account SET min_score = 85 WHERE id = 1').run();
-      console.log('[db] migrated min_score 70 → 85');
+      console.log(`[db] migrated min_score ${old} → 85`);
     }
   } catch (_) {}
 
   // Seed default account row if not present
   const existing = db.prepare('SELECT id FROM paper_account WHERE id = 1').get();
   if (!existing) {
+    const defaultCoins = JSON.stringify([
+      'BTC','ETH','SOL','BNB','XRP','ADA','AVAX',
+      'DOGE','DOT','LINK','POL','LTC','ATOM','UNI',
+      'INJ','ARB','WLD','SEI','TIA','SUI','APT',
+      'OP','IMX','JUP','ONDO','STRK','BLUR','MANTA',
+      'ORDI','BOME','WIF','ENA','ETHFI','PENDLE',
+      '1000PEPE','HBAR','NEAR','RENDER','TRX','FIL','HYPE',
+    ]);
     db.prepare(
-      'INSERT INTO paper_account (id, initial_capital, current_capital, updated_at) VALUES (?, ?, ?, ?)'
-    ).run(1, 1000, 1000, new Date().toISOString());
+      'INSERT INTO paper_account (id, initial_capital, current_capital, coins, updated_at) VALUES (?, ?, ?, ?, ?)'
+    ).run(1, 1000, 1000, defaultCoins, new Date().toISOString());
+  }
+}
+
+// ─── Transaction helper ──────────────────────────────────────────────────────
+
+export function runInTransaction(fn) {
+  const database = getDb();
+  database.exec('BEGIN IMMEDIATE');
+  try {
+    const result = fn();
+    database.exec('COMMIT');
+    return result;
+  } catch (e) {
+    database.exec('ROLLBACK');
+    throw e;
   }
 }
 
@@ -127,6 +168,14 @@ function initSchema() {
 
 export function getAccount() {
   return getDb().prepare('SELECT * FROM paper_account WHERE id = 1').get();
+}
+
+export function getScanCoins() {
+  const acc = getDb().prepare('SELECT coins FROM paper_account WHERE id = 1').get();
+  if (acc?.coins) {
+    try { return JSON.parse(acc.coins); } catch (_) {}
+  }
+  return null;
 }
 
 export function updateAccount(fields) {

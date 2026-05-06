@@ -14,12 +14,13 @@ import {
   insertTrade,
   updateTrade,
   updateAccount,
+  runInTransaction,
 } from './db.js';
 
 // Fraction of position closed at each target
-const CLOSE_AT_M1 = 0.33;
-const CLOSE_AT_M2 = 0.33;
-const CLOSE_AT_M3 = 0.34;
+export const CLOSE_AT_M1 = 0.33;
+export const CLOSE_AT_M2 = 0.33;
+export const CLOSE_AT_M3 = 0.34;
 
 // Risk cap: reject trade if stop_pct × leverage exceeds this threshold.
 // This ensures no single stop-out wipes more than 50% of allocated capital.
@@ -34,13 +35,11 @@ const MAX_STOP_RISK_MULTIPLIER = 50;
  */
 export async function openPosition(setup) {
   const account = getAccount();
-  const { current_capital, alloc_pct, max_positions, leverage } = account;
+  const { alloc_pct, max_positions, leverage } = account;
 
-  // Check limits
-  if (countActivePositions() >= max_positions) return null;
-
-  const capital_allocated = parseFloat(((alloc_pct / 100) * current_capital).toFixed(2));
-  if (capital_allocated <= 0 || current_capital < capital_allocated) return null;
+  // Pre-flight checks outside transaction (fast path for common rejections)
+  const capital_allocated = parseFloat(((alloc_pct / 100) * account.current_capital).toFixed(2));
+  if (capital_allocated <= 0 || account.current_capital < capital_allocated) return null;
 
   const id = `${Date.now()}-${setup.coin}-${setup.timeframe}`;
   const now = new Date().toISOString();
@@ -106,10 +105,18 @@ export async function openPosition(setup) {
     }),
   };
 
-  insertTrade(trade);
+  // Atomic check + insert: re-verify limits inside transaction to prevent race conditions
+  let inserted = false;
+  runInTransaction(() => {
+    const fresh = getAccount();
+    if (countActivePositions() >= max_positions) return;
+    if (fresh.current_capital < capital_allocated) return;
+    insertTrade(trade);
+    updateAccount({ current_capital: parseFloat((fresh.current_capital - capital_allocated).toFixed(2)) });
+    inserted = true;
+  });
 
-  // Debit capital from account
-  updateAccount({ current_capital: parseFloat((current_capital - capital_allocated).toFixed(2)) });
+  if (!inserted) return null;
 
   console.log(`[paper-trader] opened ${trade.direction.toUpperCase()} ${trade.coin} @ ${entry} | score=${setup.score} | alloc=$${capital_allocated}`);
   return trade;

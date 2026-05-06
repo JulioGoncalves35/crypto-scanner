@@ -16,6 +16,7 @@ import {
 import {
   getAccount,
   getActiveCoins,
+  getScanCoins,
   insertScanLog,
 } from './db.js';
 
@@ -111,6 +112,7 @@ export async function runScan() {
 
   const activeCoins = getActiveCoins();
   const tfs = TIMEFRAMES_BY_MODE.both; // ['5m','15m','30m','1h','4h','1D']
+  const scanCoins = getScanCoins() || DEFAULT_COINS;
 
   const fg = await fetchFearGreed();
   const macroTrend = await fetchMacroBtcTrend();
@@ -119,7 +121,7 @@ export async function runScan() {
   let skippedActive = 0;
   const errors = [];
 
-  for (const coin of DEFAULT_COINS) {
+  for (const coin of scanCoins) {
     const symbol = coin === '1000PEPE' ? '1000PEPE' : coin; // fetchCandles adds USDT
 
     // Skip if this coin already has an active trade

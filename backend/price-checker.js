@@ -5,8 +5,8 @@
  */
 
 import { fetchWithFallback, ROUND_TRIP_FEE } from '../painel-core.js';
-import { getActiveTrades, updateTrade, getAccount, updateAccount } from './db.js';
-import { processPriceUpdate } from './paper-trader.js';
+import { getActiveTrades, getTrade, updateTrade, getAccount, updateAccount } from './db.js';
+import { processPriceUpdate, CLOSE_AT_M1, CLOSE_AT_M2 } from './paper-trader.js';
 
 // Horizon expiry in hours per timeframe
 const HORIZON_HOURS = {
@@ -20,7 +20,7 @@ const HORIZON_HOURS = {
 
 // ─── Fetch current price ──────────────────────────────────────────────────────
 
-async function fetchCurrentPrice(coin) {
+export async function fetchCurrentPrice(coin) {
   try {
     const url = `https://api.bybit.com/v5/market/tickers?category=linear&symbol=${coin}`;
     const j = await fetchWithFallback(url, null);
@@ -130,12 +130,30 @@ export async function checkActiveTrades() {
       const stopResult = processPriceUpdate(trade, adverseWick);
       if (stopResult && (stopResult.status === 'stop' || stopResult.status === 'stopped_at_entry')) {
         console.log(`[price-checker] ${trade.coin} → ${stopResult.status} via wick @ $${adverseWick} (lastPrice=$${window.lastPrice})`);
+        // Telemetry: flag when a winning target was also reachable in the same window
+        const nextTarget = trade.status === 'active' ? 'm1'
+          : trade.status === 'm1' ? 'm2'
+          : trade.status === 'm2' ? 'm3'
+          : null;
+        if (nextTarget) {
+          const targetPrice = trade[nextTarget];
+          const wouldHit = isBuy ? favorableWick >= targetPrice : favorableWick <= targetPrice;
+          if (wouldHit) console.warn(`[price-checker] ${trade.coin} stop+target collision: ${nextTarget} @ $${targetPrice} also reachable (favorable=$${favorableWick}) — stop wins`);
+        }
         continue;
       }
 
-      const targetResult = processPriceUpdate(trade, favorableWick);
-      if (targetResult) {
-        console.log(`[price-checker] ${trade.coin} → ${targetResult.status} via wick @ $${favorableWick} (lastPrice=$${window.lastPrice})`);
+      // Cascade: a single wick may traverse multiple targets (active→m1→m2→m3).
+      // Re-fetch and re-process until no further target is hit or status is terminal.
+      let current = trade;
+      for (let i = 0; i < 3; i++) {
+        const targetResult = processPriceUpdate(current, favorableWick);
+        if (!targetResult) break;
+        console.log(`[price-checker] ${current.coin} → ${targetResult.status} via wick @ $${favorableWick} (lastPrice=$${window.lastPrice})`);
+        const terminal = ['stop', 'stopped_at_entry', 'm3', 'expired', 'manual'];
+        if (terminal.includes(targetResult.status)) break;
+        current = getTrade(trade.id);
+        if (!current) break;
       }
     } catch (err) {
       console.error(`[price-checker] error checking ${trade.coin}: ${err.message}`);
@@ -181,7 +199,7 @@ async function expireTrade(trade, closePrice) {
 
 function _alreadyClosedFraction(status) {
   if (status === 'active') return 0;
-  if (status === 'm1')     return 0.33;
-  if (status === 'm2')     return 0.66;
+  if (status === 'm1')     return CLOSE_AT_M1;
+  if (status === 'm2')     return CLOSE_AT_M1 + CLOSE_AT_M2;
   return 0;
 }
