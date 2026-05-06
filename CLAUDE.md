@@ -31,6 +31,16 @@ crypto-scanner/
 │       ├── news-hunter.md
 │       ├── pattern-validator.md
 │       └── leader.md
+├── backtest/            ← Walk-forward backtest em Python (independente do Node)
+│   ├── run.py           ← Entry point: `python run.py [--quick] [--coins ...] [--tfs ...]`
+│   ├── quick_test.py    ← Teste rápido: BTC+ETH+SOL 1h, 2 meses
+│   ├── requirements.txt ← vectorbt, ccxt, pandas, numpy
+│   └── src/
+│       ├── fetcher.py   ← Download + cache CSV via ccxt (Bybit)
+│       ├── indicators.py ← Port fiel do painel-core.js (Python)
+│       ├── scorer.py    ← Port de _computeScore + analyzeCandles (Python)
+│       ├── engine.py    ← Walk-forward engine (train 180d / val 60d / step 60d)
+│       └── report.py    ← CSV de trades + summary go/no-go
 └── tests/               ← Vitest test suite (354 tests)
 ```
 
@@ -185,6 +195,9 @@ Roda em `http://localhost:3001`. Cron de **15min** escaneia todos os 41 coins �
 - **`fetchCurrentPrice` em `price-checker.js`:** exportada e usada pelo manual close route. Já tem proxy fallback + timeout — não substituir por `fetch` direto.
 - **`getScanCoins()` em `db.js`:** retorna a lista de coins do campo `paper_account.coins` (JSON). Retorna `null` se não houver dado — scanner usa `DEFAULT_COINS` como fallback. Atualizar via `updateAccount({ coins: JSON.stringify([...]) })`.
 - **Volume Profile scoring — mutually exclusive:** desde 2026-05-06 só um branch dispara por candle (VA abaixo/acima tem prioridade, depois POC). Não restaurar os dois `if` independentes — causava cancelamento net ±1 quando price estava fora da Value Area.
+- **Backtest — gap conhecido vs scanner ao vivo:** `backtest/src/indicators.py` não porta BOS/CHoCH (±12/22), Order Block (±14) e Trendline Break (±10). Scores do backtest são sistematicamente menores — resultados conservadores, não otimistas. Ao portar esses indicadores, documentar aqui.
+- **Backtest — cache CSV:** `backtest/data/<COIN>_<TF>.csv`. Re-runs fazem append incremental. Se um CSV estiver corrompido, deletar e re-baixar. Não usar parquet sem instalar pyarrow (`pip install pyarrow`).
+- **Backtest — Unicode no Windows:** PowerShell/cmd.exe em cp1252 quebra em `→`, `≥`, `≤`, `—`. Todos os prints do backtest usam ASCII puro. Se adicionar prints novos, evitar esses caracteres.
 
 ---
 
@@ -199,9 +212,18 @@ npm run server
 
 # Tests
 npx vitest run
+
+# Backtest (Python — requer Python 3.14+, vectorbt, ccxt, pandas, numpy)
+cd backtest
+python run.py --quick              # BTC+ETH+SOL, 15m+1h, 1 ano (~5-10 min)
+python run.py                      # 41 coins, 4 TFs, 3 anos (~1-2h)
+python run.py --fetch-only         # só baixa dados, sem rodar backtest
+python run.py --coins BTC ETH --tfs 1h  # subset
 ```
 
 **Git:** sempre adicionar `painel-core.js painel.html` juntos quando o motor mudar.
+
+**Backtest:** `backtest/data/` e `backtest/results/` são gitignored. Cache em CSV por coin/tf (`BTC_1h.csv`). Re-runs atualizam só candles novos.
 
 ---
 

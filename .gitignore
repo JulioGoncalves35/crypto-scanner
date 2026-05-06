@@ -1,2 +1,6 @@
 node_modules/
 data/
+backtest/data/
+backtest/results/
+__pycache__/
+*.pyc

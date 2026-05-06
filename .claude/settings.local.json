@@ -41,7 +41,9 @@
       "Bash(time /t)",
       "Bash(where.exe claude *)",
       "Bash(claude --version)",
-      "Bash(Read *)"
+      "Bash(Read *)",
+      "Bash(py --version)",
+      "Bash(uv *)"
     ]
   }
 }
