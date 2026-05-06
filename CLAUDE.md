@@ -165,7 +165,7 @@ Roda em `http://localhost:3001`. Cron de **15min** escaneia todos os 41 coins �
 - **`paper-trader` appenda USDT:** `openPosition` faz `coin.replace(/USDT$/i,'') + USDT`. Passar `"XRPUSDT"` gera `"XRPUSDTUSDT"`. Sempre passar símbolo base (`"XRP"`, `"1000PEPE"`).
 - **Gate do Leader é obrigatório:** nunca chamar `/api/trades/open` sem ambos os sub-agentes completados com sucesso.
 - **Tighten-stop direction-aware:** BUY: novo stop precisa ser maior; SELL: menor. Igualdade = false. Usa `isStopTighter` de `backend/stop-validator.js`.
-- **min_score padrão = 85:** `db.js` migra automaticamente contas com `min_score = 70` para 85 na inicialização. Contas com outros valores não são tocadas.
+- **min_score padrão = 85:** `db.js` migra automaticamente contas com `min_score < 85` para 85 na inicialização (desde 2026-05-06 — antes pegava apenas `=== 70`).
 - **`_calcTechIndicators` recebe `tf`:** terceiro parâmetro obrigatório desde 2026-05-05. Qualquer novo call site deve passar o timeframe — usado para `FIND_LEVELS_LB` (lookback TF-aware: 5m=100, 15m=80, 30m/1h=60, 4h/1D=50).
 - **`calcRSI` — primeiro RSI válido em `p`:** seed de Wilder emite no índice `p` (não `p+1`). `rsi[p-1]` é sempre `null`; `rsi[p]` é o primeiro valor real.
 - **`calcOBVTrend` — guard de tamanho:** retorna `'neutral'` quando `emaOBV.length < 5` (janela insuficiente para slope confiável). Não usar `?? emaOBV[0]` — fallback para `null` causa comparações silenciosamente erradas.
@@ -177,9 +177,14 @@ Roda em `http://localhost:3001`. Cron de **15min** escaneia todos os 41 coins �
 - **Ichimoku requer ≥78 candles:** retorna null silenciosamente com menos.
 - **calcAnchoredVWAP retorna null sem swings:** dados monotônicos não têm swing points.
 - **Confluência não aplica em score=0:** guard `if (score !== 0)` é intencional.
-- **Price-checker — cascading de targets:** m1→m2→m3 em uma única janela fica para o próximo poll (limitação do `processPriceUpdate`).
+- **Price-checker — cascading de targets:** desde 2026-05-06 o loop em `price-checker.js` re-processa o trade (até 3×) quando um target é batido na mesma janela, permitindo active→m1→m2→m3 sem esperar o próximo poll.
 - **Reflexões são append-only:** não há endpoint de update/delete em `trade_reflections`. FK em `trade_id` — reflexões com trade inexistente são rejeitadas.
 - **Symbol mismatches:** Bybit usa `1000PEPEUSDT`, `1000BONKUSDT` etc. Verificar na API ao adicionar coins.
+- **`scoreDir` snapshot (Volume/ADX/OI):** em `_computeScore`, os bônus de Volume, ADX e OI usam `const scoreDir = score >= 0 ? 1 : -1` calculado **antes** dos três bônus. Não revert para `score >= 0 ? N : -N` inline — isso reintroduz order-dependency entre os indicadores.
+- **`runInTransaction(fn)` em `db.js`:** helper para operações atômicas via `BEGIN IMMEDIATE`. Usar em qualquer read-check-write crítico (ex: `openPosition`). `fn` deve ser síncrono.
+- **`fetchCurrentPrice` em `price-checker.js`:** exportada e usada pelo manual close route. Já tem proxy fallback + timeout — não substituir por `fetch` direto.
+- **`getScanCoins()` em `db.js`:** retorna a lista de coins do campo `paper_account.coins` (JSON). Retorna `null` se não houver dado — scanner usa `DEFAULT_COINS` como fallback. Atualizar via `updateAccount({ coins: JSON.stringify([...]) })`.
+- **Volume Profile scoring — mutually exclusive:** desde 2026-05-06 só um branch dispara por candle (VA abaixo/acima tem prioridade, depois POC). Não restaurar os dois `if` independentes — causava cancelamento net ±1 quando price estava fora da Value Area.
 
 ---
 
