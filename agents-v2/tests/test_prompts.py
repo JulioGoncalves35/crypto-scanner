@@ -27,3 +27,45 @@ def test_news_prompt_demands_verification_section():
     assert "VERIFIED" in sys
     assert "MEDIUM" in sys
     assert "UNVERIFIED" in sys
+
+
+from src.prompts.bull import build as build_bull
+from src.prompts.bear import build as build_bear
+from src.prompts.trader import build as build_trader
+from src.prompts.risk_reviewer import build as build_risk
+from src.schemas import (
+    TechnicalOutput, SentimentOutput, NewsOutput, ResearcherOutput,
+)
+
+T = TechnicalOutput(regime="trending_up", confluences=["ADX>25"], red_flags=[],
+                    confidence_0_100=78, tf_alignment="aligned")
+S = SentimentOutput(crowd_bias="neutral", funding_signal="neutral",
+                    sentiment_score=10, contrarian_alert=False, notes="ok")
+N = NewsOutput(news_bias="neutral", catalyst_window_hours=None, hard_block=False)
+
+def test_bull_prompt_includes_other_agents():
+    sys, user = build_bull(C, T, S, N)
+    assert "trending_up" in user
+    assert "ADX>25" in user
+    assert "JSON" in sys
+
+def test_bear_prompt_demands_invalidation():
+    sys, _ = build_bear(C, T, S, N)
+    assert "invalidat" in sys.lower()
+
+def test_trader_prompt_includes_researchers():
+    bull = ResearcherOutput(side="bull", thesis="t", evidence=["e1"],
+                            counter_to_other_side="c", expected_rr=2.5)
+    bear = ResearcherOutput(side="bear", thesis="t", evidence=["e1"],
+                            counter_to_other_side="c", expected_rr=1.0)
+    sys, user = build_trader(C, T, S, N, bull, bear)
+    assert "OPEN" in sys and "SKIP" in sys
+    assert "expected_rr" in user or "2.5" in user
+
+def test_risk_prompt_lists_action_options():
+    trade = {"id": "bk-1", "coin": "BTC", "direction": "buy",
+             "entry": 70000, "current_stop": 69500, "m1": 71200,
+             "status": "active", "score": 88}
+    sys, user = build_risk(trade, current_price=70450)
+    assert "HOLD" in sys and "EXIT" in sys and "TIGHTEN_STOP" in sys
+    assert "70450" in user
