@@ -4,3 +4,7 @@ backtest/data/
 backtest/results/
 __pycache__/
 *.pyc
+agents-v2/.env
+agents-v2/__pycache__/
+agents-v2/**/__pycache__/
+agents-v2/.pytest_cache/
