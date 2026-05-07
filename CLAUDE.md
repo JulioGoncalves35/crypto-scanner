@@ -149,6 +149,45 @@ Roda em `http://localhost:3001`. Cron de **15min** escaneia todos os 41 coins �
 
 ---
 
+## Agents v0.2 — Free Council (Python)
+
+**Localização:** `agents-v2/` (dir Python isolado, não toca no Council Claude v0.1).
+
+**Stack:** LangGraph + Gemini 2.5 Flash/Pro (Google AI Studio free) + Groq Llama 3.3 70B + OpenRouter DeepSeek R1.
+
+**6 agentes + 1 reviewer:**
+- `technical` (Gemini Flash) — re-interpreta indicadores do scanner
+- `sentiment` (Gemini Flash) — F&G, funding, OI; flags de crowded trade
+- `news`      (Gemini Flash) — Verification Section obrigatória; pode hard-block
+- `bull`      (Groq Llama 70B) — case pró-trade
+- `bear`      (Groq Llama 70B) — sempre roda, case anti-trade
+- `trader`    (Gemini Pro) — decisão final OPEN/SKIP/OPEN_REDUCED + payload pronto
+- `risk_reviewer` (OpenRouter DeepSeek R1) — cron horário, HOLD/EXIT/TIGHTEN_STOP
+
+**Guardrails determinísticos no `trader.py` (antes do LLM):**
+- timeframe ∈ {5m, 30m} → SKIP
+- news.hard_block → SKIP
+- bear.expected_rr > bull.expected_rr → SKIP
+- technical.tf_alignment == "conflicting" → SKIP
+
+**Tabela nova:** `agent_decisions` (em `data/scanner.db`). Migration espelhada em `backend/db.js`.
+
+**Como rodar:**
+```bash
+cd agents-v2 && python run_council.py --dry-run
+cd agents-v2 && python run_risk_review.py --dry-run
+cd agents-v2 && python run_backtest_replay.py --since 2026-04-15
+```
+
+**Pitfalls:**
+- Free tier Gemini usa prompts para treinamento. Não enviar dados sensíveis.
+- `OpenPayload.coin` strip USDT automático (espelha pitfall do paper-trader).
+- Gemini Pro tem ~50 RPD; reservar para o `trader` final apenas.
+- LangGraph parallel branching pode requerer simplificação para sequencial em versões antigas.
+- Node names do graph não podem colidir com chaves do TypedDict State; em `graph.py` usamos `analyst_*`/`researcher_*`/`decision_trader` como nomes de nó.
+
+---
+
 ## Important Constraints
 
 1. **Single-file** — todo código em `painel.html`. Não dividir em arquivos separados.
