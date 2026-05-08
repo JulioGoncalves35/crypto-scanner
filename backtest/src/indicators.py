@@ -615,6 +615,82 @@ def detect_divergences(candles: list[dict], rsi_arr: list[Optional[float]]) -> l
 
 
 # ─────────────────────────────────────────
+# BOS / CHoCH (Break of Structure / Change of Character)
+# ─────────────────────────────────────────
+
+def _find_swing_highs(candles: list[dict], margin: int = 2) -> list[dict]:
+    """Returns list of {i, price} for local maxima (+-margin bars)."""
+    result = []
+    n = len(candles)
+    for i in range(margin, n - margin):
+        h = candles[i]["high"]
+        if all(h > candles[j]["high"] for j in range(i - margin, i + margin + 1) if j != i):
+            result.append({"i": i, "price": h})
+    return result
+
+
+def _find_swing_lows(candles: list[dict], margin: int = 2) -> list[dict]:
+    """Returns list of {i, price} for local minima (+-margin bars)."""
+    result = []
+    n = len(candles)
+    for i in range(margin, n - margin):
+        lo = candles[i]["low"]
+        if all(lo < candles[j]["low"] for j in range(i - margin, i + margin + 1) if j != i):
+            result.append({"i": i, "price": lo})
+    return result
+
+
+def detect_bos_choch(candles: list[dict], lookback: int = 60) -> Optional[dict]:
+    """
+    Detects Break of Structure (BOS +-12) and Change of Character (CHoCH +-22).
+    Mirrors detectBOSCHoCH from painel-core.js exactly, including the prevClose
+    cross check (price must have crossed the level, not just be beyond it).
+    """
+    total = len(candles)
+    if total < 10:
+        return None
+
+    n = min(lookback, total)
+    recent = candles[-n:]
+    sl_len = len(recent)
+
+    highs = _find_swing_highs(recent)
+    lows  = _find_swing_lows(recent)
+
+    if len(highs) < 2 or len(lows) < 2:
+        return None
+
+    last_close = candles[-1]["close"]
+    prev_close = candles[-2]["close"] if total >= 2 else last_close
+
+    last_high = highs[-1]["price"]
+    prev_high = highs[-2]["price"]
+    last_low  = lows[-1]["price"]
+    prev_low  = lows[-2]["price"]
+
+    uptrend   = last_high > prev_high and last_low > prev_low
+    downtrend = last_high < prev_high and last_low < prev_low
+
+    # BOS Altista: uptrend, price crosses above last swing high (continuation)
+    if uptrend and prev_close < last_high and last_close > last_high:
+        return {"type": "bos_bullish", "score": 12, "name": "BOS Altista"}
+
+    # BOS Baixista: downtrend, price crosses below last swing low (continuation)
+    if downtrend and prev_close > last_low and last_close < last_low:
+        return {"type": "bos_bearish", "score": -12, "name": "BOS Baixista"}
+
+    # CHoCH Altista: downtrend, price crosses above last swing high (reversal)
+    if downtrend and prev_close < last_high and last_close > last_high:
+        return {"type": "choch_bullish", "score": 22, "name": "CHoCH Altista"}
+
+    # CHoCH Baixista: uptrend, price crosses below last swing low (reversal)
+    if uptrend and prev_close > last_low and last_close < last_low:
+        return {"type": "choch_bearish", "score": -22, "name": "CHoCH Baixista"}
+
+    return None
+
+
+# ─────────────────────────────────────────
 # FIND_LEVELS_LB — TF-aware lookback (mirrors painel-core.js)
 # ─────────────────────────────────────────
 
@@ -725,12 +801,12 @@ def calc_tech_indicators(candles: list[dict], tf: str) -> dict:
         "anchored_vwap": anchored_vwap,
         "squeeze": squeeze,
         "ichimoku": ichimoku,
-        # Not ported for v1 (known gap — affects BOS/CHoCH ±12/22, OB ±14, trendline ±10):
+        # Not ported for v1 (known gap — OB +-14, trendline +-10):
         "ema_cross": None,
         "mkt_struct": None,
         "triangle": None,
         "dbl_pattern": None,
-        "bos_choch": None,
+        "bos_choch": detect_bos_choch(candles, lookback=lb),
         "order_block": None,
         "trendline_break": None,
     }
