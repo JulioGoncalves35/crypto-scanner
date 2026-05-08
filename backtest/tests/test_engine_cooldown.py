@@ -8,7 +8,7 @@ from engine import run_validation_window
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
-def _make_df(n: int, trend: str = "down") -> pd.DataFrame:
+def _make_df(n: int) -> pd.DataFrame:
     """Synthetic OHLCV DataFrame that reliably generates SELL signals (score>=85).
     Uses a steady downtrend: price drops 0.3% each candle, high volume,
     indicators pre-tuned to generate high bearish scores.

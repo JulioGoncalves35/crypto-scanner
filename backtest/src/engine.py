@@ -263,6 +263,7 @@ def run_validation_window(
                 continue
             df = data[key]
             df = df[df["timestamp"] < int(val_end.timestamp() * 1000)].copy()
+            df = df.reset_index(drop=True)
             if len(df) < WINDOW + 10:
                 continue
 
