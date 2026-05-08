@@ -234,7 +234,9 @@ cd agents-v2 && python run_backtest_replay.py --since 2026-04-15
 - **`fetchCurrentPrice` em `price-checker.js`:** exportada e usada pelo manual close route. Já tem proxy fallback + timeout — não substituir por `fetch` direto.
 - **`getScanCoins()` em `db.js`:** retorna a lista de coins do campo `paper_account.coins` (JSON). Retorna `null` se não houver dado — scanner usa `DEFAULT_COINS` como fallback. Atualizar via `updateAccount({ coins: JSON.stringify([...]) })`.
 - **Volume Profile scoring — mutually exclusive:** desde 2026-05-06 só um branch dispara por candle (VA abaixo/acima tem prioridade, depois POC). Não restaurar os dois `if` independentes — causava cancelamento net ±1 quando price estava fora da Value Area.
-- **Backtest — gap conhecido vs scanner ao vivo:** `backtest/src/indicators.py` não porta BOS/CHoCH (±12/22), Order Block (±14) e Trendline Break (±10). Scores do backtest são sistematicamente menores — resultados conservadores, não otimistas. Ao portar esses indicadores, documentar aqui.
+- **Backtest — paridade com scanner ao vivo:** desde 2026-05-07 `backtest/src/indicators.py` porta BOS/CHoCH (±12/22), Order Block (±14) e Trendline Break (±10). Scoring gap com o JS está fechado.
+- **Backtest — cooldown engine:** engine usa `last_close_idx` por `(coin, tf)` — sem trades sobrepostos. Baseline bugado gerava 297k trades; correto gera ~700 no quick mode (3 janelas).
+- **Backtest — regime filter BTC 4h:** `--btc-regime-filter` busca BTC 4h separadamente (cache em `BTC_4h.csv`) quando não está no dataset principal. Antes sempre fail-open por falta do par `("BTC", "4h")`.
 - **Backtest — cache CSV:** `backtest/data/<COIN>_<TF>.csv`. Re-runs fazem append incremental. Se um CSV estiver corrompido, deletar e re-baixar. Não usar parquet sem instalar pyarrow (`pip install pyarrow`).
 - **Backtest — Unicode no Windows:** PowerShell/cmd.exe em cp1252 quebra em `→`, `≥`, `≤`, `—`. Todos os prints do backtest usam ASCII puro. Se adicionar prints novos, evitar esses caracteres.
 
@@ -252,12 +254,13 @@ npm run server
 # Tests
 npx vitest run
 
-# Backtest (Python — requer Python 3.14+, vectorbt, ccxt, pandas, numpy)
+# Backtest (Python — requer Python 3.14+, ccxt, pandas, numpy)
 cd backtest
-python run.py --quick              # BTC+ETH+SOL, 15m+1h, 1 ano (~5-10 min)
-python run.py                      # 41 coins, 4 TFs, 3 anos (~1-2h)
-python run.py --fetch-only         # só baixa dados, sem rodar backtest
-python run.py --coins BTC ETH --tfs 1h  # subset
+python run.py --quick --btc-regime-filter              # sanity check rapido (~5-10 min)
+python run.py --btc-regime-filter --label regime_fix   # full 41 coins, 4 TFs, 3 anos (~1-2h)
+python run.py --fetch-only                             # so baixa dados, sem rodar backtest
+python run.py --coins BTC ETH --tfs 1h --btc-regime-filter  # subset
+python -m pytest tests/ -v                             # 15 testes (engine + indicators)
 ```
 
 **Git:** sempre adicionar `painel-core.js painel.html` juntos quando o motor mudar.
