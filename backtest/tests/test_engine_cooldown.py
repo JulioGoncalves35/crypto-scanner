@@ -94,3 +94,56 @@ def test_no_overlapping_trades():
             f"trade {i} ts={t_now['signal_ts']} held={t_now['candles_held']}, "
             f"trade {i+1} ts={t_next['signal_ts']} (min={min_next_ts})"
         )
+
+
+def test_btc_bear_regime_blocks_longs():
+    """When BTC is below its 4h EMA200, no LONG trades should be opened."""
+    from unittest.mock import patch
+
+    n = 700
+    data = _make_data(n)
+
+    # Add BTC 4h data in a deep downtrend so EMA200 is always above price
+    rows_4h = []
+    base = 60000.0  # starts very high
+    for i in range(300):
+        close = base * (1 - 0.005 * i)   # -0.5%/bar -> price far below EMA200 after warmup
+        open_ = close * 1.002
+        ts    = 1_650_000_000_000 + i * 14_400_000  # 4h candles
+        rows_4h.append({"timestamp": ts, "open": open_, "high": open_ * 1.001,
+                         "low": close * 0.999, "close": close, "volume": 1000.0})
+    data[("BTC", "4h")] = pd.DataFrame(rows_4h)
+
+    df    = data[("BTC", "5m")]
+    val_s, val_e = _val_window(df)
+
+    # Fake signal returns a BUY (LONG) -- the regime filter should block all of them
+    fake_long_signal = {
+        "direction": "buy",
+        "score": 90,
+        "raw_score": 90,
+        "price": 19000.0,
+        "stop": 18800.0,
+        "stop_pct": 0.0105,
+        "m1": 19323.42,
+        "m2": 19524.42,
+        "m3": 19847.84,
+        "atr": 100.0,
+        "adx": 28.0,
+        "rsi": 45.0,
+    }
+
+    with patch("engine.analyze_candles", return_value=fake_long_signal):
+        trades, _ = run_validation_window(
+            data,
+            coins=["BTC"],
+            timeframes=["5m"],
+            val_start=val_s,
+            val_end=val_e,
+            min_score=85,
+            max_future_candles=200,
+            btc_regime_filter=True,
+        )
+
+    long_trades = [t for t in trades if t["direction"] == "buy"]
+    assert len(long_trades) == 0, f"Expected 0 LONGs in bear regime, got {len(long_trades)}"

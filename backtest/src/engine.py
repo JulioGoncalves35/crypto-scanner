@@ -44,6 +44,30 @@ WINDOW = 300  # trailing candles fed to analyze_candles
 TF_HOURS = {"5m": 1/12, "15m": 0.25, "30m": 0.5, "1h": 1.0, "4h": 4.0, "1D": 24.0}
 
 
+def _build_btc_regime(data: dict, tf: str = "4h") -> pd.Series:
+    """
+    Returns pd.Series[str] indexed by timestamp (ms int).
+    Values: 'bull' (BTC close > EMA200) | 'bear' | empty Series if no BTC 4h data.
+    """
+    key = ("BTC", tf)
+    if key not in data:
+        return pd.Series(dtype=str)
+    df = data[key].copy().sort_values("timestamp").reset_index(drop=True)
+    df["ema200"] = df["close"].ewm(span=200, adjust=False).mean()
+    df["regime"] = (df["close"] > df["ema200"]).map({True: "bull", False: "bear"})
+    return df.set_index("timestamp")["regime"]
+
+
+def _regime_at(regime_series: pd.Series, ts: int) -> str:
+    """Lookup BTC regime at or before the given timestamp. Returns 'unknown' if no data."""
+    if regime_series.empty:
+        return "unknown"
+    idx = regime_series.index.searchsorted(ts, side="right") - 1
+    if idx < 0:
+        return "unknown"
+    return regime_series.iloc[idx]
+
+
 def _candles_from_df(df: pd.DataFrame) -> list[dict]:
     return df[["open", "high", "low", "close", "volume"]].to_dict("records")
 
@@ -249,12 +273,14 @@ def run_validation_window(
     min_score: int = 85,
     max_future_candles: int = 200,
     verbose: bool = False,
+    btc_regime_filter: bool = False,
 ) -> tuple[list[dict], dict]:
     """
     Run backtest on one validation window.
     Signals from val_start to val_end; each signal looks forward up to max_future_candles.
     """
     all_trades = []
+    btc_regime = _build_btc_regime(data) if btc_regime_filter else pd.Series(dtype=str)
 
     for coin in coins:
         for tf in timeframes:
@@ -301,6 +327,15 @@ def run_validation_window(
                 if signal is None:
                     continue
 
+                # BTC regime filter: block contra-trend entries
+                if btc_regime_filter:
+                    ts     = int(df.iloc[idx]["timestamp"])
+                    regime = _regime_at(btc_regime, ts)
+                    if signal["direction"] == "buy"  and regime == "bear":
+                        continue
+                    if signal["direction"] == "sell" and regime == "bull":
+                        continue
+
                 # Future candles for trade simulation (up to max_future_candles)
                 future_df = df.iloc[idx + 1: idx + 1 + max_future_candles]
                 if future_df.empty:
@@ -332,6 +367,7 @@ def run_walk_forward(
     data_start: str = "2022-01-01",
     min_score: int = 85,
     verbose: bool = True,
+    btc_regime_filter: bool = False,
 ) -> dict:
     """
     Walk-forward backtest.
@@ -360,6 +396,7 @@ def run_walk_forward(
             val_start, val_end,
             min_score=min_score,
             verbose=verbose,
+            btc_regime_filter=btc_regime_filter,
         )
         windows.append({"window": window_n, "start": str(val_start.date()), "end": str(val_end.date()), "stats": stats, "trades": trades})
         all_trades.extend(trades)

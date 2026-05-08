@@ -35,6 +35,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--label", default="backtest", help="Label prefix for output files")
     p.add_argument("--quick", action="store_true", help="Quick mode: BTC+ETH+SOL, 15m+1h, 1 year")
     p.add_argument("--quiet", action="store_true", help="Reduce verbosity")
+    p.add_argument("--btc-regime-filter", action="store_true",
+                   help="Block LONGs in BTC bear (EMA200 4h) and SHORTs in bull")
     return p.parse_args()
 
 
@@ -84,6 +86,7 @@ def main() -> None:
         data_start=since,
         min_score=args.min_score,
         verbose=verbose,
+        btc_regime_filter=args.btc_regime_filter,
     )
 
     # ── Step 3: Save results ────────────────────────────────────────────────
