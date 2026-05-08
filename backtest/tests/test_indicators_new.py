@@ -2,7 +2,7 @@
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from indicators import detect_bos_choch
+from indicators import detect_bos_choch, detect_order_blocks
 
 
 def _candle(open_, high, low, close, volume=1000.0):
@@ -208,3 +208,75 @@ def test_bos_choch_bos_bearish():
     assert result is not None, "Expected BOS bearish signal"
     assert result["type"] == "bos_bearish", f"Expected bos_bearish, got {result['type']}"
     assert result["score"] == -12
+
+
+# -- Order Block tests ---------------------------------------------------------
+
+def _bullish_ob_in_zone() -> list[dict]:
+    """
+    Bullish OB: explicit swing high at 107 (index 12), bearish OB candle (index 15)
+    as last bearish candle before the break above 107. Price retests the OB zone.
+    """
+    candles = _flat_candles(10, 100.0)
+    candles += [
+        _candle(100, 102,  99, 101),  # 10
+        _candle(101, 103, 100, 102),  # 11
+        _candle(102, 107, 101, 106),  # 12 - SWING HIGH (high=107, confirmed by 2 lower-high bars each side)
+        _candle(106, 105, 101, 103),  # 13 - after swing high
+        _candle(103, 104,  99, 100),  # 14 - after swing high
+        _candle(100, 101,  96,  97),  # 15 - bearish OB candidate (last bear before break)
+        _candle(97,   99,  96,  98),  # 16 - dip (bullish, not a new OB)
+        _candle(98,  110,  97, 109),  # 17 - break ABOVE swing high 107
+        _candle(109, 111, 108, 110),  # 18
+        _candle(110, 111, 109, 110),  # 19
+        _candle(109, 109,  97,  97.5),# 20 - price back in OB zone (96-101)
+    ]
+    return candles
+
+
+def _bearish_ob_in_zone() -> list[dict]:
+    """
+    Bearish OB: explicit swing low at 93 (index 12), bullish OB candle (index 15)
+    as last bullish candle before the break below 93. Price retests the OB zone.
+    """
+    candles = _flat_candles(10, 100.0)
+    candles += [
+        _candle(100, 101,  98,  99),  # 10
+        _candle(99,  100,  97,  98),  # 11
+        _candle(98,   99,  93,  94),  # 12 - SWING LOW (low=93, confirmed by 2 higher-low bars each side)
+        _candle(94,   97,  94,  96),  # 13 - after swing low
+        _candle(96,   98,  95,  97),  # 14 - after swing low
+        _candle(97,  103,  96, 102),  # 15 - bullish OB candidate (last bull before break)
+        _candle(102, 104, 101, 103),  # 16 - continuation
+        _candle(103, 104,  90,  91),  # 17 - break BELOW swing low 93
+        _candle(91,   93,  89,  90),  # 18
+        _candle(90,   91,  89,  90),  # 19
+        _candle(91,  103,  90, 101.5),# 20 - price back in OB zone (~96-104)
+    ]
+    return candles
+
+
+def test_order_block_bullish_in_zone():
+    """Bullish OB: last bearish candle before break up, price retesting zone -> +14."""
+    candles = _bullish_ob_in_zone()
+    result = detect_order_blocks(candles, lookback=len(candles))
+    assert result is not None, "Expected bullish OB signal"
+    assert result["type"] == "bullish_ob"
+    assert result["score"] == 14
+    assert result["price_in_zone"] is True
+
+
+def test_order_block_bearish_in_zone():
+    """Bearish OB: last bullish candle before break down, price retesting zone -> -14."""
+    candles = _bearish_ob_in_zone()
+    result = detect_order_blocks(candles, lookback=len(candles))
+    assert result is not None, "Expected bearish OB signal"
+    assert result["type"] == "bearish_ob"
+    assert result["score"] == -14
+    assert result["price_in_zone"] is True
+
+
+def test_order_block_no_signal_flat():
+    """No swing structure -> no OB."""
+    result = detect_order_blocks(_flat_candles(40), lookback=40)
+    assert result is None

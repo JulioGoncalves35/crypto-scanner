@@ -689,6 +689,72 @@ def detect_bos_choch(candles: list[dict], lookback: int = 60) -> Optional[dict]:
     return None
 
 
+def detect_order_blocks(candles: list[dict], lookback: int = 100) -> Optional[dict]:
+    """
+    Detects Order Block zones (+-14 when price retesting).
+    Mirrors detectOrderBlocks from painel-core.js.
+    Score only applied when price_in_zone is True (price within +-1% of OB zone).
+    """
+    n = min(lookback, len(candles))
+    if n < 10:
+        return None
+    recent = candles[-n:]
+
+    highs = _find_swing_highs(recent)
+    lows  = _find_swing_lows(recent)
+    price = recent[-1]["close"]
+
+    # Bullish OB: find first break above last swing high, then last bearish candle before it
+    if highs:
+        last_high = highs[-1]
+        break_i = next(
+            (i for i in range(last_high["i"] + 1, len(recent))
+             if recent[i]["close"] > last_high["price"]),
+            None,
+        )
+        if break_i is not None:
+            ob_i = next(
+                (i for i in range(break_i - 1, max(last_high["i"] - 1, -1), -1)
+                 if recent[i]["close"] < recent[i]["open"]),
+                None,
+            )
+            if ob_i is not None:
+                ob_high = recent[ob_i]["high"]
+                ob_low  = recent[ob_i]["low"]
+                if ob_low * 0.99 <= price <= ob_high * 1.01:
+                    return {
+                        "type": "bullish_ob", "score": 14,
+                        "ob_high": ob_high, "ob_low": ob_low,
+                        "price_in_zone": True,
+                    }
+
+    # Bearish OB: find first break below last swing low, then last bullish candle before it
+    if lows:
+        last_low = lows[-1]
+        break_i = next(
+            (i for i in range(last_low["i"] + 1, len(recent))
+             if recent[i]["close"] < last_low["price"]),
+            None,
+        )
+        if break_i is not None:
+            ob_i = next(
+                (i for i in range(break_i - 1, max(last_low["i"] - 1, -1), -1)
+                 if recent[i]["close"] > recent[i]["open"]),
+                None,
+            )
+            if ob_i is not None:
+                ob_high = recent[ob_i]["high"]
+                ob_low  = recent[ob_i]["low"]
+                if ob_low * 0.99 <= price <= ob_high * 1.01:
+                    return {
+                        "type": "bearish_ob", "score": -14,
+                        "ob_high": ob_high, "ob_low": ob_low,
+                        "price_in_zone": True,
+                    }
+
+    return None
+
+
 # ─────────────────────────────────────────
 # FIND_LEVELS_LB — TF-aware lookback (mirrors painel-core.js)
 # ─────────────────────────────────────────
@@ -800,12 +866,12 @@ def calc_tech_indicators(candles: list[dict], tf: str) -> dict:
         "anchored_vwap": anchored_vwap,
         "squeeze": squeeze,
         "ichimoku": ichimoku,
-        # Not ported for v1 (known gap — OB +-14, trendline +-10):
+        # Not ported for v1 (known gap — trendline +-10):
         "ema_cross": None,
         "mkt_struct": None,
         "triangle": None,
         "dbl_pattern": None,
         "bos_choch": detect_bos_choch(candles, lookback=lb),
-        "order_block": None,
+        "order_block": detect_order_blocks(candles, lookback=lb),
         "trendline_break": None,
     }
