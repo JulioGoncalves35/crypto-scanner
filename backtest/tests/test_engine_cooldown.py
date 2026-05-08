@@ -56,7 +56,7 @@ def test_no_overlapping_trades():
         timeframes=["5m"],
         val_start=val_s,
         val_end=val_e,
-        min_score=85,
+        min_score=0,
         max_future_candles=200,
     )
 
