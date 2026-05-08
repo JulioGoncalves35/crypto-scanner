@@ -46,31 +46,48 @@ def _val_window(df: pd.DataFrame):
 
 def test_no_overlapping_trades():
     """After a trade opens, engine must not generate another until the first closes."""
+    from unittest.mock import patch
+
     data  = _make_data(700)
     df    = data[("BTC", "5m")]
     val_s, val_e = _val_window(df)
 
-    trades, _ = run_validation_window(
-        data,
-        coins=["BTC"],
-        timeframes=["5m"],
-        val_start=val_s,
-        val_end=val_e,
-        min_score=0,
-        max_future_candles=200,
-    )
+    # Fake signal returned by analyze_candles so the engine cooldown is exercised.
+    # candles_held=10 means the engine must skip the next 10 candle indices.
+    fake_signal = {
+        "direction": "sell",
+        "score": 90,
+        "raw_score": -90,
+        "price": 19000.0,
+        "stop": 19200.0,
+        "stop_pct": 0.0105,
+        "m1": 18694.58,
+        "m2": 18501.42,
+        "m3": 18194.16,
+        "atr": 100.0,
+        "adx": 28.0,
+        "rsi": 38.0,
+    }
 
-    if len(trades) < 2:
-        return  # no overlap possible with <2 trades — pass vacuously
+    with patch("engine.analyze_candles", return_value=fake_signal):
+        trades, _ = run_validation_window(
+            data,
+            coins=["BTC"],
+            timeframes=["5m"],
+            val_start=val_s,
+            val_end=val_e,
+            min_score=85,
+            max_future_candles=200,
+        )
 
-    # Sort trades by signal timestamp
+    assert len(trades) >= 2, f"Expected >= 2 trades with mocked signal, got {len(trades)}"
+
     sorted_trades = sorted(trades, key=lambda t: t["signal_ts"])
 
     for i in range(len(sorted_trades) - 1):
         t_now  = sorted_trades[i]
         t_next = sorted_trades[i + 1]
         candle_ms = 300_000  # 5m in milliseconds
-        # next trade's signal must be >= current trade's signal + candles_held
         min_next_ts = t_now["signal_ts"] + t_now["candles_held"] * candle_ms
         assert t_next["signal_ts"] >= min_next_ts, (
             f"Trade {i+1} overlaps trade {i}: "
