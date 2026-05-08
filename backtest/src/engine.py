@@ -23,6 +23,7 @@ import pandas as pd
 import numpy as np
 from typing import Optional
 from scorer import analyze_candles
+from indicators import calc_ema
 
 # ─── Cost model ─────────────────────────────────────────────────────────────
 BYBIT_TAKER     = 0.00055   # 0.055%
@@ -47,14 +48,27 @@ TF_HOURS = {"5m": 1/12, "15m": 0.25, "30m": 0.5, "1h": 1.0, "4h": 4.0, "1D": 24.
 def _build_btc_regime(data: dict, tf: str = "4h") -> pd.Series:
     """
     Returns pd.Series[str] indexed by timestamp (ms int).
-    Values: 'bull' (BTC close > EMA200) | 'bear' | empty Series if no BTC 4h data.
+    Values: 'bull' (BTC close > EMA200) | 'bear' | 'unknown' (warmup or no data).
+    Uses SMA-seeded EMA matching indicators.py calc_ema, not pandas ewm.
+    Fail-open: missing data or warmup period -> 'unknown' (passes filter).
     """
     key = ("BTC", tf)
     if key not in data:
+        print(f"[regime] WARNING: ('BTC', '{tf}') not in data — regime filter disabled (fail-open)")
         return pd.Series(dtype=str)
     df = data[key].copy().sort_values("timestamp").reset_index(drop=True)
-    df["ema200"] = df["close"].ewm(span=200, adjust=False).mean()
-    df["regime"] = (df["close"] > df["ema200"]).map({True: "bull", False: "bear"})
+    closes = df["close"].tolist()
+    ema200_vals = calc_ema(closes, 200)  # first 199 are None; SMA-seeded
+    df["ema200"] = ema200_vals
+    regimes = []
+    for i, row in df.iterrows():
+        if row["ema200"] is None:
+            regimes.append("unknown")
+        elif row["close"] > row["ema200"]:
+            regimes.append("bull")
+        else:
+            regimes.append("bear")
+    df["regime"] = regimes
     return df.set_index("timestamp")["regime"]
 
 

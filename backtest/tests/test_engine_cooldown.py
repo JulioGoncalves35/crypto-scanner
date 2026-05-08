@@ -147,3 +147,61 @@ def test_btc_bear_regime_blocks_longs():
 
     long_trades = [t for t in trades if t["direction"] == "buy"]
     assert len(long_trades) == 0, f"Expected 0 LONGs in bear regime, got {len(long_trades)}"
+
+
+def test_btc_bull_regime_blocks_shorts():
+    """When BTC is above its 4h EMA200, no SHORT trades should be opened."""
+    from unittest.mock import patch
+
+    n = 700
+    data = _make_data(n)
+
+    # The 5m val window covers the last 100 candles of 700:
+    #   val_start_ts = 1_650_000_000_000 + 600 * 300_000 = 1_650_180_000_000
+    # We need 200+ bull-labeled 4h bars before that timestamp so EMA warmup
+    # is complete by the time the val window begins.
+    # Start 4h data 300 bars before val_start: 1_650_180_000_000 - 300*14_400_000 = 1_645_860_000_000
+    rows_4h = []
+    base_ts = 1_645_860_000_000
+    base_price = 10000.0
+    for i in range(300):
+        close = base_price * (1 + 0.005 * i)   # +0.5%/bar -> price far above EMA200 after warmup
+        open_ = close * 0.998
+        ts    = base_ts + i * 14_400_000  # 4h candles
+        rows_4h.append({"timestamp": ts, "open": open_, "high": close * 1.001,
+                         "low": open_ * 0.999, "close": close, "volume": 1000.0})
+    data[("BTC", "4h")] = pd.DataFrame(rows_4h)
+
+    df    = data[("BTC", "5m")]
+    val_s, val_e = _val_window(df)
+
+    # Fake signal returns a SELL (SHORT) — the regime filter should block all of them
+    fake_short_signal = {
+        "direction": "sell",
+        "score": 90,
+        "raw_score": -90,
+        "price": 19000.0,
+        "stop": 19200.0,
+        "stop_pct": 0.0105,
+        "m1": 18694.58,
+        "m2": 18501.42,
+        "m3": 18194.16,
+        "atr": 100.0,
+        "adx": 28.0,
+        "rsi": 62.0,
+    }
+
+    with patch("engine.analyze_candles", return_value=fake_short_signal):
+        trades, _ = run_validation_window(
+            data,
+            coins=["BTC"],
+            timeframes=["5m"],
+            val_start=val_s,
+            val_end=val_e,
+            min_score=85,
+            max_future_candles=200,
+            btc_regime_filter=True,
+        )
+
+    short_trades = [t for t in trades if t["direction"] == "sell"]
+    assert len(short_trades) == 0, f"Expected 0 SHORTs in bull regime, got {len(short_trades)}"
