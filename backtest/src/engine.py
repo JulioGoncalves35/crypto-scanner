@@ -23,6 +23,7 @@ import pandas as pd
 import numpy as np
 from typing import Optional
 from scorer import analyze_candles
+from indicators import calc_ema
 
 # ─── Cost model ─────────────────────────────────────────────────────────────
 BYBIT_TAKER     = 0.00055   # 0.055%
@@ -42,6 +43,43 @@ WINDOW = 300  # trailing candles fed to analyze_candles
 
 # ─── Timeframe to hours ──────────────────────────────────────────────────────
 TF_HOURS = {"5m": 1/12, "15m": 0.25, "30m": 0.5, "1h": 1.0, "4h": 4.0, "1D": 24.0}
+
+
+def _build_btc_regime(data: dict, tf: str = "4h") -> pd.Series:
+    """
+    Returns pd.Series[str] indexed by timestamp (ms int).
+    Values: 'bull' (BTC close > EMA200) | 'bear' | 'unknown' (warmup or no data).
+    Uses SMA-seeded EMA matching indicators.py calc_ema, not pandas ewm.
+    Fail-open: missing data or warmup period -> 'unknown' (passes filter).
+    """
+    key = ("BTC", tf)
+    if key not in data:
+        print(f"[regime] WARNING: ('BTC', '{tf}') not in data — regime filter disabled (fail-open)")
+        return pd.Series(dtype=str)
+    df = data[key].copy().sort_values("timestamp").reset_index(drop=True)
+    closes = df["close"].tolist()
+    ema200_vals = calc_ema(closes, 200)  # first 199 are None; SMA-seeded
+    df["ema200"] = ema200_vals
+    regimes = []
+    for i, row in df.iterrows():
+        if row["ema200"] is None:
+            regimes.append("unknown")
+        elif row["close"] > row["ema200"]:
+            regimes.append("bull")
+        else:
+            regimes.append("bear")
+    df["regime"] = regimes
+    return df.set_index("timestamp")["regime"]
+
+
+def _regime_at(regime_series: pd.Series, ts: int) -> str:
+    """Lookup BTC regime at or before the given timestamp. Returns 'unknown' if no data."""
+    if regime_series.empty:
+        return "unknown"
+    idx = regime_series.index.searchsorted(ts, side="right") - 1
+    if idx < 0:
+        return "unknown"
+    return regime_series.iloc[idx]
 
 
 def _candles_from_df(df: pd.DataFrame) -> list[dict]:
@@ -249,12 +287,14 @@ def run_validation_window(
     min_score: int = 85,
     max_future_candles: int = 200,
     verbose: bool = False,
+    btc_regime_filter: bool = False,
 ) -> tuple[list[dict], dict]:
     """
     Run backtest on one validation window.
     Signals from val_start to val_end; each signal looks forward up to max_future_candles.
     """
     all_trades = []
+    btc_regime = _build_btc_regime(data) if btc_regime_filter else pd.Series(dtype=str)
 
     for coin in coins:
         for tf in timeframes:
@@ -263,10 +303,10 @@ def run_validation_window(
                 continue
             df = data[key]
             df = df[df["timestamp"] < int(val_end.timestamp() * 1000)].copy()
+            df = df.reset_index(drop=True)
             if len(df) < WINDOW + 10:
                 continue
 
-            # Find first index in validation window
             val_start_ms = int(val_start.timestamp() * 1000)
             val_end_ms   = int(val_end.timestamp() * 1000)
             val_mask = (df["timestamp"] >= val_start_ms) & (df["timestamp"] < val_end_ms)
@@ -275,16 +315,11 @@ def run_validation_window(
             if not val_indices:
                 continue
 
-            open_trade = None  # one trade per coin/tf at a time
+            last_close_idx = -1  # index after which new signals are allowed
 
             for idx in val_indices:
-                # Close any open trade if stop/target was already hit
-                if open_trade is not None and open_trade["closed"]:
-                    all_trades.append(open_trade["result"])
-                    open_trade = None
-
-                if open_trade is not None:
-                    continue  # still in a trade, skip signaling
+                if idx <= last_close_idx:
+                    continue  # still inside a running trade
 
                 # Build trailing candle window
                 window_start = max(0, idx - WINDOW)
@@ -306,6 +341,15 @@ def run_validation_window(
                 if signal is None:
                     continue
 
+                # BTC regime filter: block contra-trend entries
+                if btc_regime_filter:
+                    ts     = int(df.iloc[idx]["timestamp"])
+                    regime = _regime_at(btc_regime, ts)
+                    if signal["direction"] == "buy"  and regime == "bear":
+                        continue
+                    if signal["direction"] == "sell" and regime == "bull":
+                        continue
+
                 # Future candles for trade simulation (up to max_future_candles)
                 future_df = df.iloc[idx + 1: idx + 1 + max_future_candles]
                 if future_df.empty:
@@ -314,14 +358,11 @@ def run_validation_window(
 
                 result = _simulate_trade(signal, future, tf)
                 result["coin"] = coin
-                result["tf"] = tf
+                result["tf"]   = tf
                 result["signal_ts"] = int(df.iloc[idx]["timestamp"])
 
-                # Mark as closed immediately (full simulation done)
-                open_trade = {"closed": True, "result": result}
-
-            if open_trade is not None and open_trade["closed"]:
-                all_trades.append(open_trade["result"])
+                all_trades.append(result)
+                last_close_idx = idx + result["candles_held"]
 
     stats = _compute_stats(all_trades)
     if verbose:
@@ -340,6 +381,7 @@ def run_walk_forward(
     data_start: str = "2022-01-01",
     min_score: int = 85,
     verbose: bool = True,
+    btc_regime_filter: bool = False,
 ) -> dict:
     """
     Walk-forward backtest.
@@ -361,13 +403,14 @@ def run_walk_forward(
         val_end   = cursor + step
         window_n += 1
         if verbose:
-            print(f"[Window {window_n}] Validation: {val_start.date()} → {val_end.date()}")
+            print(f"[Window {window_n}] Validation: {val_start.date()} -> {val_end.date()}")
 
         trades, stats = run_validation_window(
             data, coins, timeframes,
             val_start, val_end,
             min_score=min_score,
             verbose=verbose,
+            btc_regime_filter=btc_regime_filter,
         )
         windows.append({"window": window_n, "start": str(val_start.date()), "end": str(val_end.date()), "stats": stats, "trades": trades})
         all_trades.extend(trades)

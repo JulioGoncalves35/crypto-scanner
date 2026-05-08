@@ -83,6 +83,24 @@ function initSchema() {
     CREATE INDEX IF NOT EXISTS idx_reflections_trade   ON trade_reflections(trade_id);
   `);
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS agent_decisions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      scan_id INTEGER,
+      candidate_coin TEXT NOT NULL,
+      candidate_tf TEXT NOT NULL,
+      candidate_score INTEGER NOT NULL,
+      candidate_dir TEXT NOT NULL,
+      agent_outputs_json TEXT NOT NULL,
+      final_decision TEXT NOT NULL,
+      final_reason TEXT,
+      trade_id TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_decisions_scan    ON agent_decisions(scan_id);
+    CREATE INDEX IF NOT EXISTS idx_decisions_created ON agent_decisions(created_at DESC);
+  `);
+
   // Migration: add analysis_json column if not present (existing DBs)
   const tradeCols = db.prepare('PRAGMA table_info(trades)').all().map(c => c.name);
   if (!tradeCols.includes('analysis_json')) {

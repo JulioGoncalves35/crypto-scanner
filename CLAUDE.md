@@ -149,6 +149,53 @@ Roda em `http://localhost:3001`. Cron de **15min** escaneia todos os 41 coins �
 
 ---
 
+## Agents v0.2 — Free Council (Python)
+
+**Localização:** `agents-v2/` (dir Python isolado, não toca no Council Claude v0.1).
+
+**Stack (2026-05-08):** LangGraph + **Cerebras Qwen3 235B** (primary technical/sentiment, ~14.4k TPM free) + **Groq Llama 3.3 70B** (primary bull/bear, 100k TPD free) + **Mistral Large** (primary trader, ~1B tokens/mes free) + Gemini 2.5 Flash (primary news, 20 RPD) + OpenRouter Qwen3-Next (fallback geral). Cadencia alvo: **1 run a cada 2 horas** via Windows Task Scheduler (`agents-v2/scripts/run_council_scheduled.ps1`). Pre-filter no `run_council.py` descarta TFs 5m/15m/30m e candidatos com score < 88 antes do LLM.
+
+**6 agentes + 1 reviewer:**
+- `technical` (Gemini Flash) — re-interpreta indicadores do scanner
+- `sentiment` (Gemini Flash) — F&G, funding, OI; flags de crowded trade
+- `news`      (Gemini Flash) — Verification Section obrigatória; pode hard-block
+- `bull`      (Groq Llama 70B) — case pró-trade
+- `bear`      (Groq Llama 70B) — sempre roda, case anti-trade
+- `trader`    (Groq Llama 70B) — decisão final OPEN/SKIP/OPEN_REDUCED + payload pronto. Gemini Pro era primary mas free tier = 0 RPD; rerouted em 2026-05-08.
+- `risk_reviewer` (OpenRouter DeepSeek R1) — cron horário, HOLD/EXIT/TIGHTEN_STOP
+
+**Guardrails determinísticos no `trader.py` (antes do LLM):**
+- timeframe ∈ {5m, 30m} → SKIP
+- news.hard_block → SKIP
+- bear.expected_rr > bull.expected_rr → SKIP
+- technical.tf_alignment == "conflicting" → SKIP
+
+**Tabela nova:** `agent_decisions` (em `data/scanner.db`). Migration espelhada em `backend/db.js`.
+
+**Como rodar:**
+```bash
+cd agents-v2 && python run_council.py --dry-run
+cd agents-v2 && python run_risk_review.py --dry-run
+cd agents-v2 && python run_backtest_replay.py --since 2026-04-15
+```
+
+**Pitfalls:**
+- Free tier Gemini usa prompts para treinamento. Não enviar dados sensíveis.
+- **Gemini Free Tier real (2026-05): Pro = 0 RPD, Flash = 20 RPD** — comentários antigos mencionando 1500 RPD / 50 RPD estavam errados. `llm_client.ROUTES` usa Groq como primary em quase tudo; Gemini Flash só sobra como primary do `news` e fallback de `technical`/`sentiment`.
+- **OpenRouter exige `openai` SDK** — `_call_openrouter` faz `from openai import OpenAI`. Sem `pip install openai`, fallback OpenRouter falha silenciosamente com `No module named 'openai'`. `requirements.txt` lista mas dependências precisam ser instaladas (`pip install -r requirements.txt`).
+- `OpenPayload.coin` strip USDT automático (espelha pitfall do paper-trader).
+- Gemini Pro tem ~50 RPD; reservar para o `trader` final apenas.
+- LangGraph parallel branching pode requerer simplificação para sequencial em versões antigas.
+- **Analistas (technical/sentiment/news/bull/bear) sempre devolvem fallback em erro** — em vez de só appendar em `errors` (que deixava `state["technical"]` ausente e crashava bull/bear/trader com `KeyError`), cada agente devolve um objeto válido neutro/conservador. Bear fallback usa `expected_rr=999.0` para forçar SKIP no guardrail do trader. `tf_alignment` aceita `"unclear"` (Gemini ocasionalmente retorna isso).
+- **Backend devolve `stopPct` formatado** (string `"-2.62%"`, não float). `_normalize_candidate` em `agents-v2/src/backend_client.py` normaliza via helper `_pct()` antes do Pydantic — sem isso, todos os candidatos são descartados como `malformed candidate` no `run_council`. Mantém o sinal (negativo para BUY, positivo para SELL).
+- Node names do graph não podem colidir com chaves do TypedDict State; em `graph.py` usamos `analyst_*`/`researcher_*`/`decision_trader` como nomes de nó.
+- **Cadência sustentável free tier (2026-05-08):** budget alvo ~252k tokens/dia para 12 runs/dia (1×/2h) × 4 candidatos × ~5.3k tokens. Stack distribui carga entre Cerebras (technical/sentiment) + Groq (bull/bear) + Mistral (trader) — nenhum provider sozinho aguenta 24/7. Trader em Mistral Large pelo reasoning superior na síntese final. Quotas free tier mudam sem aviso → revisar trimestralmente.
+- **Pre-filter no `run_council.py`:** TFs 5m/15m/30m são descartados antes do LLM (já seriam SKIP determinístico no trader por `BANNED_TFS`). `COUNCIL_MIN_SCORE` default subiu de 80 para 88 (alinhado com WR observado: 80-84 = 9% WR, 88+ = 18% WR).
+- **Mistral SDK 2.x não é OpenAI-compatible:** `_call_mistral` em `llm_client.py` usa `from mistralai.client.sdk import Mistral` (top-level `from mistralai import Mistral` falha — `Mistral` mora em `mistralai.client.sdk` no pacote 2.4.5). Chamada é `client.chat.complete()` (sem `s`, sem `chat.completions.create`). Não confundir com OpenRouter/Cerebras que usam `from openai import OpenAI`.
+- **Cerebras model ID:** `qwen-3-235b-a22b-instruct-2507` (free tier do Cerebras Cloud em 2026-05-08 não tem Llama 3.3 70B — modelos disponíveis: `qwen-3-235b-a22b-instruct-2507`, `gpt-oss-120b`, `zai-glm-4.7`, `llama3.1-8b`). Compatível com OpenAI SDK via `base_url="https://api.cerebras.ai/v1"`. Verificar lista atual com `client.models.list()` se mudar.
+
+---
+
 ## Important Constraints
 
 1. **Single-file** — todo código em `painel.html`. Não dividir em arquivos separados.
@@ -195,7 +242,9 @@ Roda em `http://localhost:3001`. Cron de **15min** escaneia todos os 41 coins �
 - **`fetchCurrentPrice` em `price-checker.js`:** exportada e usada pelo manual close route. Já tem proxy fallback + timeout — não substituir por `fetch` direto.
 - **`getScanCoins()` em `db.js`:** retorna a lista de coins do campo `paper_account.coins` (JSON). Retorna `null` se não houver dado — scanner usa `DEFAULT_COINS` como fallback. Atualizar via `updateAccount({ coins: JSON.stringify([...]) })`.
 - **Volume Profile scoring — mutually exclusive:** desde 2026-05-06 só um branch dispara por candle (VA abaixo/acima tem prioridade, depois POC). Não restaurar os dois `if` independentes — causava cancelamento net ±1 quando price estava fora da Value Area.
-- **Backtest — gap conhecido vs scanner ao vivo:** `backtest/src/indicators.py` não porta BOS/CHoCH (±12/22), Order Block (±14) e Trendline Break (±10). Scores do backtest são sistematicamente menores — resultados conservadores, não otimistas. Ao portar esses indicadores, documentar aqui.
+- **Backtest — paridade com scanner ao vivo:** desde 2026-05-07 `backtest/src/indicators.py` porta BOS/CHoCH (±12/22), Order Block (±14) e Trendline Break (±10). Scoring gap com o JS está fechado.
+- **Backtest — cooldown engine:** engine usa `last_close_idx` por `(coin, tf)` — sem trades sobrepostos. Baseline bugado gerava 297k trades; correto gera ~700 no quick mode (3 janelas).
+- **Backtest — regime filter BTC 4h:** `--btc-regime-filter` busca BTC 4h separadamente (cache em `BTC_4h.csv`) quando não está no dataset principal. Antes sempre fail-open por falta do par `("BTC", "4h")`.
 - **Backtest — cache CSV:** `backtest/data/<COIN>_<TF>.csv`. Re-runs fazem append incremental. Se um CSV estiver corrompido, deletar e re-baixar. Não usar parquet sem instalar pyarrow (`pip install pyarrow`).
 - **Backtest — Unicode no Windows:** PowerShell/cmd.exe em cp1252 quebra em `→`, `≥`, `≤`, `—`. Todos os prints do backtest usam ASCII puro. Se adicionar prints novos, evitar esses caracteres.
 
@@ -213,12 +262,13 @@ npm run server
 # Tests
 npx vitest run
 
-# Backtest (Python — requer Python 3.14+, vectorbt, ccxt, pandas, numpy)
+# Backtest (Python — requer Python 3.14+, ccxt, pandas, numpy)
 cd backtest
-python run.py --quick              # BTC+ETH+SOL, 15m+1h, 1 ano (~5-10 min)
-python run.py                      # 41 coins, 4 TFs, 3 anos (~1-2h)
-python run.py --fetch-only         # só baixa dados, sem rodar backtest
-python run.py --coins BTC ETH --tfs 1h  # subset
+python run.py --quick --btc-regime-filter              # sanity check rapido (~5-10 min)
+python run.py --btc-regime-filter --label regime_fix   # full 41 coins, 4 TFs, 3 anos (~1-2h)
+python run.py --fetch-only                             # so baixa dados, sem rodar backtest
+python run.py --coins BTC ETH --tfs 1h --btc-regime-filter  # subset
+python -m pytest tests/ -v                             # 15 testes (engine + indicators)
 ```
 
 **Git:** sempre adicionar `painel-core.js painel.html` juntos quando o motor mudar.

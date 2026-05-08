@@ -12,12 +12,15 @@ Usage:
 """
 
 import sys
+import time
 import argparse
 from pathlib import Path
 
+import ccxt
+
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from fetcher import fetch_all, SCAN_COINS, TIMEFRAMES
+from fetcher import fetch_all, fetch_coin, SCAN_COINS, TIMEFRAMES
 from engine import run_walk_forward
 from report import save_results
 
@@ -35,6 +38,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--label", default="backtest", help="Label prefix for output files")
     p.add_argument("--quick", action="store_true", help="Quick mode: BTC+ETH+SOL, 15m+1h, 1 year")
     p.add_argument("--quiet", action="store_true", help="Reduce verbosity")
+    p.add_argument("--btc-regime-filter", action="store_true",
+                   help="Block LONGs in BTC bear (EMA200 4h) and SHORTs in bull")
     return p.parse_args()
 
 
@@ -66,6 +71,18 @@ def main() -> None:
     # ── Step 1: Download data ───────────────────────────────────────────────
     print("Downloading / updating OHLCV cache...")
     data = fetch_all(coins=coins, timeframes=tfs, since_iso=f"{since}T00:00:00Z", verbose=verbose)
+
+    # Regime filter needs BTC 4h — fetch it separately if not already in data
+    if args.btc_regime_filter and ("BTC", "4h") not in data:
+        print("Fetching BTC 4h for regime filter...")
+        exchange = ccxt.bybit({"enableRateLimit": True})
+        since_ms = exchange.parse8601(f"{since}T00:00:00Z")
+        end_ms = int(time.time() * 1000)
+        btc_4h = fetch_coin(exchange, "BTC", "4h", since_ms, end_ms, verbose=verbose)
+        if not btc_4h.empty:
+            data[("BTC", "4h")] = btc_4h
+            print(f"BTC 4h: {len(btc_4h)} candles loaded for regime filter")
+
     print(f"Data ready: {len(data)} coin/tf pairs\n")
 
     if args.fetch_only:
@@ -84,6 +101,7 @@ def main() -> None:
         data_start=since,
         min_score=args.min_score,
         verbose=verbose,
+        btc_regime_filter=args.btc_regime_filter,
     )
 
     # ── Step 3: Save results ────────────────────────────────────────────────

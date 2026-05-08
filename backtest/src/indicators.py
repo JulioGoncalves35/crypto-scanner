@@ -615,6 +615,184 @@ def detect_divergences(candles: list[dict], rsi_arr: list[Optional[float]]) -> l
 
 
 # ─────────────────────────────────────────
+# BOS / CHoCH (Break of Structure / Change of Character)
+# ─────────────────────────────────────────
+
+def _find_swing_highs(candles: list[dict], margin: int = 2) -> list[dict]:
+    """Returns list of {i, price} for local maxima (+-margin bars)."""
+    result = []
+    n = len(candles)
+    for i in range(margin, n - margin):
+        h = candles[i]["high"]
+        if all(h > candles[j]["high"] for j in range(i - margin, i + margin + 1) if j != i):
+            result.append({"i": i, "price": h})
+    return result
+
+
+def _find_swing_lows(candles: list[dict], margin: int = 2) -> list[dict]:
+    """Returns list of {i, price} for local minima (+-margin bars)."""
+    result = []
+    n = len(candles)
+    for i in range(margin, n - margin):
+        lo = candles[i]["low"]
+        if all(lo < candles[j]["low"] for j in range(i - margin, i + margin + 1) if j != i):
+            result.append({"i": i, "price": lo})
+    return result
+
+
+def detect_bos_choch(candles: list[dict], lookback: int = 60) -> Optional[dict]:
+    """
+    Detects Break of Structure (BOS +-12) and Change of Character (CHoCH +-22).
+    Mirrors detectBOSCHoCH from painel-core.js exactly, including the prevClose
+    cross check (price must have crossed the level, not just be beyond it).
+    """
+    total = len(candles)
+    n = min(lookback, total)
+    if total < lookback + 5:
+        return None
+
+    recent = candles[-n:]
+
+    highs = _find_swing_highs(recent)
+    lows  = _find_swing_lows(recent)
+
+    if len(highs) < 2 or len(lows) < 2:
+        return None
+
+    last_close = candles[-1]["close"]
+    prev_close = candles[-2]["close"] if total >= 2 else last_close
+
+    last_high = highs[-1]["price"]
+    prev_high = highs[-2]["price"]
+    last_low  = lows[-1]["price"]
+    prev_low  = lows[-2]["price"]
+
+    uptrend   = last_high > prev_high and last_low > prev_low
+    downtrend = last_high < prev_high and last_low < prev_low
+
+    # BOS Altista: uptrend, price crosses above last swing high (continuation)
+    if uptrend and prev_close < last_high and last_close > last_high:
+        return {"type": "bos_bullish", "score": 12, "name": "BOS Altista"}
+
+    # BOS Baixista: downtrend, price crosses below last swing low (continuation)
+    if downtrend and prev_close > last_low and last_close < last_low:
+        return {"type": "bos_bearish", "score": -12, "name": "BOS Baixista"}
+
+    # CHoCH Altista: downtrend, price crosses above last swing high (reversal)
+    if downtrend and prev_close < last_high and last_close > last_high:
+        return {"type": "choch_bullish", "score": 22, "name": "CHoCH Altista"}
+
+    # CHoCH Baixista: uptrend, price crosses below last swing low (reversal)
+    if uptrend and prev_close > last_low and last_close < last_low:
+        return {"type": "choch_bearish", "score": -22, "name": "CHoCH Baixista"}
+
+    return None
+
+
+def detect_trendline_break(candles: list[dict], lookback: int = 60) -> Optional[dict]:
+    """
+    Detects LTB (lower tops break, +10) and LTA (lower bottoms break, -10).
+    Mirrors detectTrendlineBreak from painel-core.js.
+    BREAK_PCT = 0.15% minimum close beyond projected trendline.
+    """
+    BREAK_PCT = 0.0015
+    n = min(lookback, len(candles))
+    if n < 10:
+        return None
+    recent = candles[-n:]
+    last_i = len(recent) - 1
+    close  = recent[-1]["close"]
+
+    # LTB: descending swing highs = bearish resistance trendline; price breaking above = bullish
+    highs = _find_swing_highs(recent)
+    if len(highs) >= 2:
+        h1, h2 = highs[-2], highs[-1]
+        if h2["price"] < h1["price"] and h2["i"] != h1["i"]:  # lower highs
+            slope     = (h2["price"] - h1["price"]) / (h2["i"] - h1["i"])
+            projected = h2["price"] + slope * (last_i - h2["i"])
+            if close > projected * (1 + BREAK_PCT):
+                return {"type": "ltb_break", "score": 10, "name": "LTB Break Altista"}
+
+    # LTA: ascending swing lows = bullish support trendline; price breaking below = bearish
+    lows = _find_swing_lows(recent)
+    if len(lows) >= 2:
+        l1, l2 = lows[-2], lows[-1]
+        if l2["price"] > l1["price"] and l2["i"] != l1["i"]:  # higher lows
+            slope     = (l2["price"] - l1["price"]) / (l2["i"] - l1["i"])
+            projected = l2["price"] + slope * (last_i - l2["i"])
+            if close < projected * (1 - BREAK_PCT):
+                return {"type": "lta_break", "score": -10, "name": "LTA Break Baixista"}
+
+    return None
+
+
+def detect_order_blocks(candles: list[dict], lookback: int = 100) -> Optional[dict]:
+    """
+    Detects Order Block zones (+-14 when price retesting).
+    Mirrors detectOrderBlocks from painel-core.js.
+    Score only applied when price_in_zone is True (price within +-1% of OB zone).
+    """
+    n = min(lookback, len(candles))
+    if n < 10:
+        return None
+    recent = candles[-n:]
+
+    highs = _find_swing_highs(recent)
+    lows  = _find_swing_lows(recent)
+    price = recent[-1]["close"]
+
+    # Bullish OB: find first break above last swing high, then last bearish candle before it
+    if highs:
+        last_high = highs[-1]
+        break_i = next(
+            (i for i in range(last_high["i"] + 1, len(recent))
+             if recent[i]["close"] > last_high["price"]),
+            None,
+        )
+        if break_i is not None:
+            ob_i = next(
+                (i for i in range(break_i - 1, max(last_high["i"] - 1, -1), -1)
+                 if recent[i]["close"] < recent[i]["open"]),
+                None,
+            )
+            if ob_i is not None:
+                ob_high = recent[ob_i]["high"]
+                ob_low  = recent[ob_i]["low"]
+                if ob_low * 0.99 <= price <= ob_high * 1.01:
+                    return {
+                        "type": "bullish_ob", "score": 14,
+                        "ob_high": ob_high, "ob_low": ob_low,
+                        "price_in_zone": True,
+                    }
+
+    # Bearish OB: find first break below last swing low, then last bullish candle before it
+    if lows:
+        last_low = lows[-1]
+        break_i = next(
+            (i for i in range(last_low["i"] + 1, len(recent))
+             if recent[i]["close"] < last_low["price"]),
+            None,
+        )
+        if break_i is not None:
+            ob_i = next(
+                (i for i in range(break_i - 1, max(last_low["i"] - 1, -1), -1)
+                 if recent[i]["close"] > recent[i]["open"]),
+                None,
+            )
+            if ob_i is not None:
+                ob_high = recent[ob_i]["high"]
+                ob_low  = recent[ob_i]["low"]
+                if ob_low * 0.99 <= price <= ob_high * 1.01:
+                    return {
+                        "type": "bearish_ob", "score": -14,
+                        "ob_high": ob_high, "ob_low": ob_low,
+                        "price_in_zone": True,
+                    }
+
+    return None
+
+
+# ─────────────────────────────────────────
 # FIND_LEVELS_LB — TF-aware lookback (mirrors painel-core.js)
 # ─────────────────────────────────────────
 
@@ -725,12 +903,12 @@ def calc_tech_indicators(candles: list[dict], tf: str) -> dict:
         "anchored_vwap": anchored_vwap,
         "squeeze": squeeze,
         "ichimoku": ichimoku,
-        # Not ported for v1 (known gap — affects BOS/CHoCH ±12/22, OB ±14, trendline ±10):
+        # Not ported for v1 (known gap — trendline +-10):
         "ema_cross": None,
         "mkt_struct": None,
         "triangle": None,
         "dbl_pattern": None,
-        "bos_choch": None,
-        "order_block": None,
-        "trendline_break": None,
+        "bos_choch": detect_bos_choch(candles, lookback=lb),
+        "order_block": detect_order_blocks(candles, lookback=lb),
+        "trendline_break": detect_trendline_break(candles, lookback=lb),
     }
