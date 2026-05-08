@@ -13,5 +13,12 @@ def run(state: dict) -> dict:
         out = NewsOutput(**raw)
         return {"news": out.model_dump()}
     except Exception as e:
-        log.error("news agent failed: %s", e)
-        return {"errors": state.get("errors", []) + [f"news: {e}"]}
+        log.error("news agent failed: %s — using fallback", e)
+        fallback = NewsOutput(
+            news_bias="neutral", catalyst_window_hours=None,
+            hard_block=False, block_reason="", items=[],
+        )
+        return {
+            "news": fallback.model_dump(),
+            "errors": [f"news: {e}"],
+        }

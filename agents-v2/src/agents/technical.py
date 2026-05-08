@@ -13,5 +13,12 @@ def run(state: dict) -> dict:
         out = TechnicalOutput(**raw)
         return {"technical": out.model_dump()}
     except Exception as e:
-        log.error("technical agent failed: %s", e)
-        return {"errors": state.get("errors", []) + [f"technical: {e}"]}
+        log.error("technical agent failed: %s — using fallback", e)
+        fallback = TechnicalOutput(
+            regime="unclear", confluences=[], red_flags=[f"agent_error: {e}"],
+            confidence_0_100=0, tf_alignment="unclear",
+        )
+        return {
+            "technical": fallback.model_dump(),
+            "errors": [f"technical: {e}"],
+        }

@@ -19,5 +19,13 @@ def run(state: dict) -> dict:
         out = ResearcherOutput(**raw)
         return {"bull": out.model_dump()}
     except Exception as e:
-        log.error("bull agent failed: %s", e)
-        return {"errors": state.get("errors", []) + [f"bull: {e}"]}
+        log.error("bull agent failed: %s — using fallback", e)
+        fallback = ResearcherOutput(
+            side="bull", thesis=f"agent_error: {e}",
+            evidence=["agent failed"], counter_to_other_side="n/a",
+            expected_rr=0.0,
+        )
+        return {
+            "bull": fallback.model_dump(),
+            "errors": [f"bull: {e}"],
+        }

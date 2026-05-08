@@ -15,14 +15,16 @@ from typing import Any
 import httpx
 
 from src.schemas import OpenPayload
+from src.db import get_latest_scan_id
 
 BASE = os.environ.get("SCANNER_BACKEND_URL", "http://localhost:3001")
 TIMEOUT = httpx.Timeout(15.0, connect=5.0)
+SCAN_TIMEOUT = httpx.Timeout(180.0, connect=5.0)
 
 
-def _client() -> httpx.Client:
+def _client(timeout: httpx.Timeout = TIMEOUT) -> httpx.Client:
     """Create a configured HTTP client."""
-    return httpx.Client(base_url=BASE, timeout=TIMEOUT)
+    return httpx.Client(base_url=BASE, timeout=timeout)
 
 
 def get_account() -> dict[str, Any]:
@@ -45,6 +47,32 @@ def get_active_trades() -> list[dict[str, Any]]:
         return r.json()
 
 
+def _normalize_candidate(c: dict) -> dict:
+    """Map backend candidate shape to Candidate schema fields."""
+    def _price(v):
+        return v["price"] if isinstance(v, dict) else v
+
+    def _pct(v):
+        if isinstance(v, str):
+            return float(v.replace("%", "").strip())
+        return v
+
+    return {
+        "coin":      c.get("coin", ""),
+        "direction": c.get("dir"),
+        "timeframe": c.get("timeframe"),
+        "score":     c.get("score", 0),
+        "entry":     c.get("entry"),
+        "stop":      c.get("stop"),
+        "m1":        _price(c.get("m1")),
+        "m2":        _price(c.get("m2")),
+        "m3":        _price(c.get("m3")),
+        "stop_pct":  _pct(c.get("stopPct")),
+        "leverage":  c.get("leverage"),
+        "signals":   [r["text"] for r in c.get("reasons", []) if isinstance(r, dict)],
+    }
+
+
 def get_latest_scan_candidates() -> tuple[int, list[dict]]:
     """Run a fresh scan and return candidates.
 
@@ -54,13 +82,17 @@ def get_latest_scan_candidates() -> tuple[int, list[dict]]:
     Returns:
         (scan_id, candidates_list)
         scan_id: -1 if scan failed
-        candidates: list of Candidate dicts
+        candidates: list of normalized Candidate dicts
     """
-    with _client() as c:
+    with _client(SCAN_TIMEOUT) as c:
         r = c.post("/api/scan/preview", json={})
         r.raise_for_status()
         data = r.json()
-        return data.get("scan_id", -1), data.get("candidates", [])
+
+    raw = data.get("candidates", [])
+    candidates = [_normalize_candidate(c) for c in raw]
+    scan_id = get_latest_scan_id()
+    return scan_id, candidates
 
 
 def open_trade(payload: OpenPayload) -> dict[str, Any]:

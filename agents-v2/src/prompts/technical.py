@@ -22,15 +22,8 @@ Output STRICTLY this JSON shape (no prose, no markdown fences):
 }"""
 
 def build(c: Candidate) -> tuple[str, str]:
-    user = f"""Candidate setup:
-- Coin: {c.coin}
-- Direction: {c.direction.upper()}
-- Timeframe: {c.timeframe}
-- Deterministic score: {c.score}/100
-- Entry: {c.entry}  Stop: {c.stop} ({c.stop_pct:.2f}%)
-- Targets: M1={c.m1}  M2={c.m2}  M3={c.m3}
-- Leverage: {c.leverage}x
-- Triggered signals: {", ".join(c.signals) if c.signals else "(none provided)"}
+    user = f"""Setup: {c.coin} {c.direction.upper()} {c.timeframe}, score={c.score}/100, stop={c.stop_pct:.2f}%
+Signals: {", ".join(c.signals) if c.signals else "(none)"}
 
 Return your JSON verdict."""
     return SYSTEM, user

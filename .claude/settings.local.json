@@ -43,7 +43,17 @@
       "Bash(claude --version)",
       "Bash(Read *)",
       "Bash(py --version)",
-      "Bash(uv *)"
+      "Bash(uv *)",
+      "Bash(powershell -Command \"Get-Content /tmp/preview.json | Select-Object -First 5\")",
+      "Bash(powershell *)",
+      "Bash(git checkout *)",
+      "Bash(Get-ChildItem agents-v2 *)",
+      "Bash(Select-Object FullName)",
+      "Bash(Select-Object -First 20)",
+      "Bash(Get-ChildItem -Path C:\\\\Users\\\\julio\\\\Documents\\\\github\\\\crypto-scanner\\\\agents-v2 -Recurse)",
+      "Bash(Select-Object -First 20 FullName)",
+      "Bash(Get-ChildItem *)",
+      "Bash(git check-ignore *)"
     ]
   }
 }

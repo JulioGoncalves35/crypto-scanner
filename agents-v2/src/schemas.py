@@ -36,7 +36,7 @@ class TechnicalOutput(BaseModel):
     confluences: list[str]
     red_flags: list[str]
     confidence_0_100: int = Field(ge=0, le=100)
-    tf_alignment: Literal["aligned", "mixed", "conflicting"]
+    tf_alignment: Literal["aligned", "mixed", "conflicting", "unclear"]
 
 
 class SentimentOutput(BaseModel):

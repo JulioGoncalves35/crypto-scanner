@@ -57,6 +57,12 @@ def insert_decision(*, scan_id, candidate_coin, candidate_tf,
               final_reason, trade_id))
         return cur.lastrowid
 
+def get_latest_scan_id() -> int:
+    """Return the id of the most recent scan_log entry, or -1 if none."""
+    with _conn() as c:
+        row = c.execute("SELECT id FROM scan_log ORDER BY id DESC LIMIT 1").fetchone()
+    return row["id"] if row else -1
+
 def get_decisions_for_scan(scan_id: int) -> list[dict[str, Any]]:
     with _conn() as c:
         rows = c.execute(

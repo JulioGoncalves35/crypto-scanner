@@ -34,23 +34,12 @@ Output STRICTLY this JSON:
 
 def build(c: Candidate, t: TechnicalOutput, s: SentimentOutput, n: NewsOutput,
           bull: ResearcherOutput, bear: ResearcherOutput):
-    user = f"""CANDIDATE
-{c.model_dump_json(indent=2)}
-
-TECHNICAL
-{t.model_dump_json(indent=2)}
-
-SENTIMENT
-{s.model_dump_json(indent=2)}
-
-NEWS
-{n.model_dump_json(indent=2)}
-
-BULL (expected_rr={bull.expected_rr})
-{bull.model_dump_json(indent=2)}
-
-BEAR (expected_rr={bear.expected_rr})
-{bear.model_dump_json(indent=2)}
+    user = f"""CAND: {c.model_dump_json()}
+TECH: {t.model_dump_json()}
+SENT: {s.model_dump_json()}
+NEWS: {n.model_dump_json()}
+BULL(rr={bull.expected_rr}): {bull.model_dump_json()}
+BEAR(rr={bear.expected_rr}): {bear.model_dump_json()}
 
 Decide. Return JSON."""
     return SYSTEM, user

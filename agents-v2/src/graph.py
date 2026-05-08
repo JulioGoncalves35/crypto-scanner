@@ -1,5 +1,6 @@
 """LangGraph orchestration for the council."""
-from typing import TypedDict, Optional
+import operator
+from typing import TypedDict, Optional, Annotated
 from langgraph.graph import StateGraph, END
 
 from src.schemas import Candidate
@@ -18,7 +19,7 @@ class State(TypedDict, total=False):
     bull: Optional[dict]
     bear: Optional[dict]
     trader: Optional[dict]
-    errors: list[str]
+    errors: Annotated[list[str], operator.add]
 
 def _join_analysts(state: State) -> State:
     """No-op join node — exists so we can fan-in cleanly before bull/bear."""

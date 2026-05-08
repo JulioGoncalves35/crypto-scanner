@@ -38,8 +38,13 @@ def main(argv: list[str]) -> int:
     scan_id, raw_candidates = get_latest_scan_candidates()
     log.info("scan_id=%s, %d raw candidates", scan_id, len(raw_candidates))
 
-    eligible = [c for c in raw_candidates if int(c.get("score", 0)) >= config.MIN_SCORE]
-    log.info("%d candidates pass min_score=%s", len(eligible), config.MIN_SCORE)
+    SHORT_TFS = {"5m", "15m", "30m"}
+    eligible = [
+        c for c in raw_candidates
+        if int(c.get("score", 0)) >= config.MIN_SCORE
+        and c.get("timeframe") not in SHORT_TFS
+    ]
+    log.info("%d candidates pass min_score=%s and tf-filter", len(eligible), config.MIN_SCORE)
 
     for c in eligible:
         try:

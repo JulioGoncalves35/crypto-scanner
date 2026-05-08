@@ -55,5 +55,13 @@ def run(state: dict) -> dict:
         out = SentimentOutput(**raw)
         return {"sentiment": out.model_dump()}
     except Exception as e:
-        log.error("sentiment agent failed: %s", e)
-        return {"errors": state.get("errors", []) + [f"sentiment: {e}"]}
+        log.error("sentiment agent failed: %s — using fallback", e)
+        fallback = SentimentOutput(
+            crowd_bias="neutral", funding_signal="unknown",
+            sentiment_score=0, contrarian_alert=False,
+            notes=f"agent_error: {e}",
+        )
+        return {
+            "sentiment": fallback.model_dump(),
+            "errors": [f"sentiment: {e}"],
+        }
