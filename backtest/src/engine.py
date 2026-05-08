@@ -266,7 +266,6 @@ def run_validation_window(
             if len(df) < WINDOW + 10:
                 continue
 
-            # Find first index in validation window
             val_start_ms = int(val_start.timestamp() * 1000)
             val_end_ms   = int(val_end.timestamp() * 1000)
             val_mask = (df["timestamp"] >= val_start_ms) & (df["timestamp"] < val_end_ms)
@@ -275,16 +274,11 @@ def run_validation_window(
             if not val_indices:
                 continue
 
-            open_trade = None  # one trade per coin/tf at a time
+            last_close_idx = -1  # index after which new signals are allowed
 
             for idx in val_indices:
-                # Close any open trade if stop/target was already hit
-                if open_trade is not None and open_trade["closed"]:
-                    all_trades.append(open_trade["result"])
-                    open_trade = None
-
-                if open_trade is not None:
-                    continue  # still in a trade, skip signaling
+                if idx <= last_close_idx:
+                    continue  # still inside a running trade
 
                 # Build trailing candle window
                 window_start = max(0, idx - WINDOW)
@@ -314,14 +308,11 @@ def run_validation_window(
 
                 result = _simulate_trade(signal, future, tf)
                 result["coin"] = coin
-                result["tf"] = tf
+                result["tf"]   = tf
                 result["signal_ts"] = int(df.iloc[idx]["timestamp"])
 
-                # Mark as closed immediately (full simulation done)
-                open_trade = {"closed": True, "result": result}
-
-            if open_trade is not None and open_trade["closed"]:
-                all_trades.append(open_trade["result"])
+                all_trades.append(result)
+                last_close_idx = idx + result["candles_held"]
 
     stats = _compute_stats(all_trades)
     if verbose:
