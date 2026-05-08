@@ -21,8 +21,11 @@ def _downtrend_then_break_up() -> list[dict]:
     two swing lows (lower lows) at indices 6 (86) and 13 (82).
     Final candle: close=108 > last swing high (103) while prev_close=89 < 103
     => CHoCH bullish.
+
+    6 flat prefix candles ensure both swing pairs fall within lookback=len(candles)-6.
     """
-    return [
+    prefix = _flat_candles(6, 100.0)
+    pattern = [
         # Wave 1 ascent -> peak
         _candle(100, 104, 99, 103),    # 0
         _candle(103, 107, 102, 106),   # 1
@@ -46,6 +49,7 @@ def _downtrend_then_break_up() -> list[dict]:
         # CHoCH bullish: close=108 > last swing high=103; prev_close=89 < 103
         _candle(89, 110,  88, 108),    # 16 - BREAKOUT
     ]
+    return prefix + pattern
 
 
 def _uptrend_then_break_down() -> list[dict]:
@@ -54,8 +58,11 @@ def _uptrend_then_break_down() -> list[dict]:
     two swing highs (higher highs) at indices 6 (108) and 14 (115).
     Final candle: close=84 < last swing low (88) while prev_close=108 > 88
     => CHoCH bearish.
+
+    6 flat prefix candles ensure both swing pairs fall within lookback=len(candles)-6.
     """
-    return [
+    prefix = _flat_candles(6, 100.0)
+    pattern = [
         # Wave 1 descent -> trough
         _candle(100, 101, 95,  96),    # 0
         _candle(96,  97,  91,  92),    # 1
@@ -79,12 +86,13 @@ def _uptrend_then_break_down() -> list[dict]:
         # CHoCH bearish: close=84 < last swing low=88; prev_close=108 > 88
         _candle(108, 109,  82,  84),   # 16 - BREAKDOWN
     ]
+    return prefix + pattern
 
 
 def test_bos_choch_choch_bullish():
     """Downtrend -> price crosses above last swing high -> CHoCH bullish (+22)."""
     candles = _downtrend_then_break_up()
-    result = detect_bos_choch(candles, lookback=len(candles))
+    result = detect_bos_choch(candles, lookback=len(candles) - 6)
     assert result is not None, "Expected CHoCH bullish signal"
     assert result["type"] == "choch_bullish", f"Expected choch_bullish, got {result['type']}"
     assert result["score"] == 22
@@ -93,7 +101,7 @@ def test_bos_choch_choch_bullish():
 def test_bos_choch_choch_bearish():
     """Uptrend -> price crosses below last swing low -> CHoCH bearish (-22)."""
     candles = _uptrend_then_break_down()
-    result = detect_bos_choch(candles, lookback=len(candles))
+    result = detect_bos_choch(candles, lookback=len(candles) - 6)
     assert result is not None, "Expected CHoCH bearish signal"
     assert result["type"] == "choch_bearish", f"Expected choch_bearish, got {result['type']}"
     assert result["score"] == -22
@@ -110,3 +118,93 @@ def test_bos_choch_insufficient_data():
     """Less than 10 candles -> None."""
     result = detect_bos_choch(_flat_candles(5), lookback=5)
     assert result is None
+
+
+def _uptrend_then_bos_bullish() -> list[dict]:
+    """
+    Uptrend (HH+HL) where final candle crosses above last swing high -> BOS bullish.
+
+    Wave 1: swing low at 88, swing high at 102.
+    Wave 2: swing low at 91 (HL > 88), swing high at 108 (HH > 102).
+    Final candle crosses above 108: prev_close=105 < 108, close=109 > 108.
+
+    6 flat prefix candles ensure both swing pairs fall within lookback=len(candles)-6.
+    """
+    prefix = _flat_candles(6, 95.0)
+    pattern = [
+        # Lead-in descent
+        _candle(95, 96, 93, 94),      # 0
+        _candle(94, 94, 91, 92),      # 1
+        # Swing low 1 (low=88, strictly less than ±2 neighbors)
+        _candle(92, 92, 88, 90),      # 2 - SWING LOW 1 (88)
+        _candle(90, 94, 90, 93),      # 3
+        _candle(93, 97, 92, 96),      # 4
+        # Swing high 1 (high=102)
+        _candle(96, 102, 95, 100),    # 5 - SWING HIGH 1 (102)
+        _candle(100, 100, 96, 97),    # 6
+        _candle(97,  98, 92, 94),     # 7
+        # Swing low 2 (low=91 > 88 = HL)
+        _candle(94,  94, 91, 92),     # 8 - SWING LOW 2 (91)
+        _candle(92,  96, 92, 95),     # 9
+        _candle(95, 100, 94, 99),     # 10
+        # Swing high 2 (high=108 > 102 = HH)
+        _candle(99, 108, 98, 106),    # 11 - SWING HIGH 2 (108)
+        _candle(106, 107, 103, 105),  # 12
+        _candle(105, 106, 104, 105),  # 13 - prev_close=105 < 108
+        _candle(105, 110, 104, 109),  # 14 - close=109 > 108 -> BOS bullish
+    ]
+    return prefix + pattern
+
+
+def _downtrend_then_bos_bearish() -> list[dict]:
+    """
+    Downtrend (LH+LL) where final candle crosses below last swing low -> BOS bearish.
+
+    Wave 1: swing high at 112, swing low at 92.
+    Wave 2: swing high at 106 (LH < 112), swing low at 88 (LL < 92).
+    Final candle crosses below 88: prev_close=91 > 88, close=86 < 88.
+
+    6 flat prefix candles ensure both swing pairs fall within lookback=len(candles)-6.
+    """
+    prefix = _flat_candles(6, 105.0)
+    pattern = [
+        # Lead-in ascent
+        _candle(105, 107, 104, 106),  # 0
+        _candle(106, 109, 105, 108),  # 1
+        # Swing high 1 (high=112)
+        _candle(108, 112, 107, 110),  # 2 - SWING HIGH 1 (112)
+        _candle(110, 110, 106, 108),  # 3
+        _candle(108, 106, 102, 104),  # 4
+        # Swing low 1 (low=92)
+        _candle(104, 100, 92, 94),    # 5 - SWING LOW 1 (92)
+        _candle(94,  98, 93, 97),     # 6
+        _candle(97, 102, 96, 100),    # 7
+        # Swing high 2 (high=106 < 112 = LH)
+        _candle(100, 106, 99, 104),   # 8 - SWING HIGH 2 (106)
+        _candle(104, 105, 100, 102),  # 9
+        _candle(102, 101, 96, 98),    # 10
+        # Swing low 2 (low=88 < 92 = LL)
+        _candle(98,  96, 88, 90),     # 11 - SWING LOW 2 (88)
+        _candle(90,  94, 89, 93),     # 12
+        _candle(93,  94, 90, 91),     # 13 - prev_close=91 > 88
+        _candle(91,  92, 85, 86),     # 14 - close=86 < 88 -> BOS bearish
+    ]
+    return prefix + pattern
+
+
+def test_bos_choch_bos_bullish():
+    """Uptrend -> price crosses above last swing high -> BOS bullish (+12)."""
+    candles = _uptrend_then_bos_bullish()
+    result = detect_bos_choch(candles, lookback=len(candles) - 6)
+    assert result is not None, "Expected BOS bullish signal"
+    assert result["type"] == "bos_bullish", f"Expected bos_bullish, got {result['type']}"
+    assert result["score"] == 12
+
+
+def test_bos_choch_bos_bearish():
+    """Downtrend -> price crosses below last swing low -> BOS bearish (-12)."""
+    candles = _downtrend_then_bos_bearish()
+    result = detect_bos_choch(candles, lookback=len(candles) - 6)
+    assert result is not None, "Expected BOS bearish signal"
+    assert result["type"] == "bos_bearish", f"Expected bos_bearish, got {result['type']}"
+    assert result["score"] == -12

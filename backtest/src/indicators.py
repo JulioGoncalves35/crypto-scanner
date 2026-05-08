@@ -647,12 +647,11 @@ def detect_bos_choch(candles: list[dict], lookback: int = 60) -> Optional[dict]:
     cross check (price must have crossed the level, not just be beyond it).
     """
     total = len(candles)
-    if total < 10:
+    n = min(lookback, total)
+    if total < lookback + 5:
         return None
 
-    n = min(lookback, total)
     recent = candles[-n:]
-    sl_len = len(recent)
 
     highs = _find_swing_highs(recent)
     lows  = _find_swing_lows(recent)
