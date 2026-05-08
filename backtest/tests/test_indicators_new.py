@@ -2,7 +2,7 @@
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from indicators import detect_bos_choch, detect_order_blocks
+from indicators import detect_bos_choch, detect_order_blocks, detect_trendline_break
 
 
 def _candle(open_, high, low, close, volume=1000.0):
@@ -279,4 +279,66 @@ def test_order_block_bearish_in_zone():
 def test_order_block_no_signal_flat():
     """No swing structure -> no OB."""
     result = detect_order_blocks(_flat_candles(40), lookback=40)
+    assert result is None
+
+
+# ── Trendline Break tests ────────────────────────────────────────────────────
+
+def _ltb_break_candles() -> list[dict]:
+    """Two descending swing highs, then price closes above projected resistance."""
+    candles = []
+    for i in range(35):
+        if i == 10:
+            candles.append(_candle(109, 110, 108, 109))   # swing high at 110 (h1)
+        elif i == 20:
+            candles.append(_candle(104, 105, 103, 104))   # swing high at 105 (h2 < h1 -> LTB)
+        else:
+            candles.append(_candle(100, 101, 99, 100))
+    # slope = (105-110)/(20-10) = -0.5/bar
+    # projected at bar 34 (last): 105 + (-0.5)*(34-20) = 105 - 7 = 98.0
+    # break threshold: 98.0 * 1.0015 = 98.147 -> close must be > 98.147
+    # close=101 clears this comfortably
+    candles.append(_candle(100, 102, 100, 101))
+    return candles
+
+
+def _lta_break_candles() -> list[dict]:
+    """Two ascending swing lows, then price closes below projected support."""
+    candles = []
+    for i in range(35):
+        if i == 10:
+            candles.append(_candle(91, 92, 90, 91))    # swing low at 90 (l1)
+        elif i == 20:
+            candles.append(_candle(96, 97, 95, 96))    # swing low at 95 (l2 > l1 -> LTA)
+        else:
+            candles.append(_candle(100, 101, 99, 100))
+    # slope = (95-90)/(20-10) = 0.5/bar
+    # projected at bar 34: 95 + 0.5*(34-20) = 95 + 7 = 102.0
+    # break threshold: 102.0 * (1-0.0015) = 101.847 -> close must be < 101.847
+    # close=99 clears this comfortably
+    candles.append(_candle(100, 100, 98, 99))
+    return candles
+
+
+def test_trendline_ltb_break():
+    """Descending swing highs -> price closes above projected resistance -> LTB break (+10)."""
+    candles = _ltb_break_candles()
+    result = detect_trendline_break(candles, lookback=len(candles))
+    assert result is not None, "Expected LTB break signal"
+    assert result["type"] == "ltb_break"
+    assert result["score"] == 10
+
+
+def test_trendline_lta_break():
+    """Ascending swing lows -> price closes below projected support -> LTA break (-10)."""
+    candles = _lta_break_candles()
+    result = detect_trendline_break(candles, lookback=len(candles))
+    assert result is not None, "Expected LTA break signal"
+    assert result["type"] == "lta_break"
+    assert result["score"] == -10
+
+
+def test_trendline_no_break_flat():
+    """Flat price -> no trendline break."""
+    result = detect_trendline_break(_flat_candles(40), lookback=40)
     assert result is None

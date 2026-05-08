@@ -4,9 +4,9 @@ scorer.py — Python port of _computeScore from painel-core.js.
 Input: price, ind (from calc_tech_indicators), fg, funding_rate, open_interest.
 Returns: dict with score (raw int), direction, normalized_score (0-100).
 
-Known gap vs live scanner: Trendline Break (+-10),
-EMACross, MarketStructure, Triangle, DoublePattern — all return 0 in this port (v1).
-BOS/CHoCH (+-12/22) and Order Block (+-14) are now ported.
+Known gap vs live scanner: EMACross, MarketStructure, Triangle, DoublePattern — all
+return 0 in this port (v1). BOS/CHoCH (+-12/22), Order Block (+-14), and
+Trendline Break (+-10) are now ported.
 """
 
 from typing import Optional
@@ -47,8 +47,9 @@ def compute_score(
     ichimoku     = ind["ichimoku"]
     anchored_vwap = ind["anchored_vwap"]
     squeeze      = ind["squeeze"]
-    bos_choch    = ind.get("bos_choch")
-    order_block  = ind.get("order_block")
+    bos_choch       = ind.get("bos_choch")
+    order_block     = ind.get("order_block")
+    trendline_break = ind.get("trendline_break")
 
     score = 0
 
@@ -246,7 +247,11 @@ def compute_score(
     if order_block is not None and order_block.get("price_in_zone"):
         score += order_block["score"]
 
-    # Not ported for v1: Trendline Break (+-10)
+    # Trendline Break
+    if trendline_break is not None:
+        score += trendline_break["score"]
+
+    # v1 gaps fully closed: BOS/CHoCH, Order Block, Trendline Break all ported above.
 
     # Confluence multi-category bonus
     if score != 0:

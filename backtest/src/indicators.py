@@ -689,6 +689,43 @@ def detect_bos_choch(candles: list[dict], lookback: int = 60) -> Optional[dict]:
     return None
 
 
+def detect_trendline_break(candles: list[dict], lookback: int = 60) -> Optional[dict]:
+    """
+    Detects LTB (lower tops break, +10) and LTA (lower bottoms break, -10).
+    Mirrors detectTrendlineBreak from painel-core.js.
+    BREAK_PCT = 0.15% minimum close beyond projected trendline.
+    """
+    BREAK_PCT = 0.0015
+    n = min(lookback, len(candles))
+    if n < 10:
+        return None
+    recent = candles[-n:]
+    last_i = len(recent) - 1
+    close  = recent[-1]["close"]
+
+    # LTB: descending swing highs = bearish resistance trendline; price breaking above = bullish
+    highs = _find_swing_highs(recent)
+    if len(highs) >= 2:
+        h1, h2 = highs[-2], highs[-1]
+        if h2["price"] < h1["price"] and h2["i"] != h1["i"]:  # lower highs
+            slope     = (h2["price"] - h1["price"]) / (h2["i"] - h1["i"])
+            projected = h2["price"] + slope * (last_i - h2["i"])
+            if close > projected * (1 + BREAK_PCT):
+                return {"type": "ltb_break", "score": 10, "name": "LTB Break Altista"}
+
+    # LTA: ascending swing lows = bullish support trendline; price breaking below = bearish
+    lows = _find_swing_lows(recent)
+    if len(lows) >= 2:
+        l1, l2 = lows[-2], lows[-1]
+        if l2["price"] > l1["price"] and l2["i"] != l1["i"]:  # higher lows
+            slope     = (l2["price"] - l1["price"]) / (l2["i"] - l1["i"])
+            projected = l2["price"] + slope * (last_i - l2["i"])
+            if close < projected * (1 - BREAK_PCT):
+                return {"type": "lta_break", "score": -10, "name": "LTA Break Baixista"}
+
+    return None
+
+
 def detect_order_blocks(candles: list[dict], lookback: int = 100) -> Optional[dict]:
     """
     Detects Order Block zones (+-14 when price retesting).
@@ -873,5 +910,5 @@ def calc_tech_indicators(candles: list[dict], tf: str) -> dict:
         "dbl_pattern": None,
         "bos_choch": detect_bos_choch(candles, lookback=lb),
         "order_block": detect_order_blocks(candles, lookback=lb),
-        "trendline_break": None,
+        "trendline_break": detect_trendline_break(candles, lookback=lb),
     }
