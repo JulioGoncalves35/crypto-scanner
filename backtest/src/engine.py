@@ -403,7 +403,7 @@ def run_walk_forward(
         val_end   = cursor + step
         window_n += 1
         if verbose:
-            print(f"[Window {window_n}] Validation: {val_start.date()} → {val_end.date()}")
+            print(f"[Window {window_n}] Validation: {val_start.date()} -> {val_end.date()}")
 
         trades, stats = run_validation_window(
             data, coins, timeframes,
