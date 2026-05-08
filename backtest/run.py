@@ -12,12 +12,15 @@ Usage:
 """
 
 import sys
+import time
 import argparse
 from pathlib import Path
 
+import ccxt
+
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from fetcher import fetch_all, SCAN_COINS, TIMEFRAMES
+from fetcher import fetch_all, fetch_coin, SCAN_COINS, TIMEFRAMES
 from engine import run_walk_forward
 from report import save_results
 
@@ -68,6 +71,18 @@ def main() -> None:
     # ── Step 1: Download data ───────────────────────────────────────────────
     print("Downloading / updating OHLCV cache...")
     data = fetch_all(coins=coins, timeframes=tfs, since_iso=f"{since}T00:00:00Z", verbose=verbose)
+
+    # Regime filter needs BTC 4h — fetch it separately if not already in data
+    if args.btc_regime_filter and ("BTC", "4h") not in data:
+        print("Fetching BTC 4h for regime filter...")
+        exchange = ccxt.bybit({"enableRateLimit": True})
+        since_ms = exchange.parse8601(f"{since}T00:00:00Z")
+        end_ms = int(time.time() * 1000)
+        btc_4h = fetch_coin(exchange, "BTC", "4h", since_ms, end_ms, verbose=verbose)
+        if not btc_4h.empty:
+            data[("BTC", "4h")] = btc_4h
+            print(f"BTC 4h: {len(btc_4h)} candles loaded for regime filter")
+
     print(f"Data ready: {len(data)} coin/tf pairs\n")
 
     if args.fetch_only:
