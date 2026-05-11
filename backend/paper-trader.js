@@ -53,9 +53,9 @@ export async function openPosition(setup) {
 
   const entry = parseFloat(setup.entry);
   const stop  = parseFloat(setup.stop);
-  const m1    = parseFloat(setup.m1.price);
-  const m2    = parseFloat(setup.m2.price);
-  const m3    = parseFloat(setup.m3.price);
+  const m1    = parseFloat(setup.m1?.price ?? setup.m1);
+  const m2    = parseFloat(setup.m2?.price ?? setup.m2);
+  const m3    = parseFloat(setup.m3?.price ?? setup.m3);
 
   const stop_pct = Math.abs((stop - entry) / entry) * 100;
 

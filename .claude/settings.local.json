@@ -53,7 +53,16 @@
       "Bash(Get-ChildItem -Path C:\\\\Users\\\\julio\\\\Documents\\\\github\\\\crypto-scanner\\\\agents-v2 -Recurse)",
       "Bash(Select-Object -First 20 FullName)",
       "Bash(Get-ChildItem *)",
-      "Bash(git check-ignore *)"
+      "Bash(git check-ignore *)",
+      "Bash(awk -F'_' '{print $1}')",
+      "Bash(ps -W)",
+      "Bash(grep -E \"^\\(BTC|ETH|SOL\\)_\\(15m|1h|4h\\)\\\\.csv$\")",
+      "Bash(xargs grep -l \"python\\\\|hook\")",
+      "Bash(xargs grep -l \"PostToolUse\\\\|PreToolUse\\\\|Write\\\\|python\")",
+      "Bash(where python *)",
+      "Bash(where python3 *)",
+      "Bash(Sort-Object LastWriteTime -Descending)",
+      "Bash(Select-Object -First 5)"
     ]
   }
 }

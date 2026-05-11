@@ -9,12 +9,16 @@ import argparse
 import logging
 import sys
 import httpx
+from datetime import datetime
+from pathlib import Path
 
 from src import config
 from src.backend_client import (
     get_active_trades, tighten_stop, close_trade,
 )
 from src.agents.risk_reviewer import run as run_reviewer
+
+_LOG_DIR = Path(__file__).parent / "logs"
 
 def _current_price(coin: str) -> float | None:
     try:
@@ -34,8 +38,17 @@ def main(argv: list[str]) -> int:
     g.add_argument("--live", action="store_true")
     args = parser.parse_args(argv)
 
-    logging.basicConfig(level=config.LOG_LEVEL,
-                        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+    _LOG_DIR.mkdir(exist_ok=True)
+    log_file = _LOG_DIR / f"risk_review_{datetime.now():%Y-%m-%d}.log"
+    fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+    file_handler = logging.FileHandler(log_file, encoding="utf-8")
+    file_handler.setFormatter(fmt)
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(fmt)
+    root = logging.getLogger()
+    root.setLevel(config.LOG_LEVEL)
+    root.addHandler(file_handler)
+    root.addHandler(console_handler)
     log = logging.getLogger("run_risk_review")
 
     dry = True if args.dry_run else (False if args.live else config.DRY_RUN)

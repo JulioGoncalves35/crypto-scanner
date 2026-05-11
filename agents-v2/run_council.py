@@ -8,6 +8,8 @@ Usage:
 import argparse
 import logging
 import sys
+from datetime import datetime
+from pathlib import Path
 
 from src import config
 from src.db import ensure_table, insert_decision
@@ -15,11 +17,24 @@ from src.backend_client import get_latest_scan_candidates, open_trade
 from src.schemas import Candidate
 from src.graph import run_council
 
+_LOG_DIR = Path(__file__).parent / "logs"
+
 def _setup_logging(level: str) -> None:
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    )
+    _LOG_DIR.mkdir(exist_ok=True)
+    log_file = _LOG_DIR / f"council_{datetime.now():%Y-%m-%d}.log"
+
+    fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+
+    file_handler = logging.FileHandler(log_file, encoding="utf-8")
+    file_handler.setFormatter(fmt)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(fmt)
+
+    root = logging.getLogger()
+    root.setLevel(level)
+    root.addHandler(file_handler)
+    root.addHandler(console_handler)
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()

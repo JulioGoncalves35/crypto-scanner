@@ -104,10 +104,13 @@ def open_trade(payload: OpenPayload) -> dict[str, Any]:
     - On block: {"blocked": True, "reason": "..."}
     """
     body = payload.model_dump()
+    body["dir"] = body.pop("direction")  # backend expects 'dir', not 'direction'
     with _client() as c:
         r = c.post("/api/trades/open", json=body)
         if r.status_code == 409:
             return {"blocked": True, "reason": r.json().get("error", "blocked")}
+        if r.status_code == 400:
+            return {"blocked": True, "reason": r.json().get("error", r.text)}
         r.raise_for_status()
         return r.json()
 
