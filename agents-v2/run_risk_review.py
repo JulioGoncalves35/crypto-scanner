@@ -22,9 +22,10 @@ _LOG_DIR = Path(__file__).parent / "logs"
 
 def _current_price(coin: str) -> float | None:
     try:
+        symbol = coin.upper() if coin.upper().endswith("USDT") else f"{coin.upper()}USDT"
         r = httpx.get(
             "https://api.bybit.com/v5/market/tickers",
-            params={"category": "linear", "symbol": f"{coin}USDT"},
+            params={"category": "linear", "symbol": symbol},
             timeout=5,
         )
         return float(r.json()["result"]["list"][0]["lastPrice"])

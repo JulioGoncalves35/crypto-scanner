@@ -13,11 +13,28 @@ import json
 import logging
 import re
 import time
+from datetime import date
+from pathlib import Path
 from typing import Callable, Any
 
 from src import config
 
 log = logging.getLogger(__name__)
+
+_RPD_FILE = Path(__file__).resolve().parents[1] / "logs" / "gemini_rpd.json"
+_GEMINI_RPD_LIMIT = 20
+
+def _increment_gemini_rpd() -> int:
+    """Increment today's Gemini RPD counter and return the new total."""
+    _RPD_FILE.parent.mkdir(exist_ok=True)
+    today = str(date.today())
+    try:
+        data = json.loads(_RPD_FILE.read_text()) if _RPD_FILE.exists() else {}
+    except Exception:
+        data = {}
+    data[today] = data.get(today, 0) + 1
+    _RPD_FILE.write_text(json.dumps(data))
+    return data[today]
 
 ROUTES: dict[str, dict[str, str]] = {
     "technical":     {"primary": "cerebras-qwen235b",   "fallback": "groq-llama70b"},
@@ -26,7 +43,7 @@ ROUTES: dict[str, dict[str, str]] = {
     "bull":          {"primary": "groq-llama70b",       "fallback": "cerebras-qwen235b"},
     "bear":          {"primary": "groq-llama70b",       "fallback": "cerebras-qwen235b"},
     "trader":        {"primary": "mistral-large",       "fallback": "groq-llama70b"},
-    "risk_reviewer": {"primary": "openrouter-deepseek", "fallback": "cerebras-qwen235b"},
+    "risk_reviewer": {"primary": "mistral-large",       "fallback": "groq-llama70b"},
 }
 
 # ─── Provider implementations ────────────────────────────────────────────────
@@ -148,6 +165,11 @@ def call_llm(agent: str, *, system: str, user: str, as_json: bool = False):
             try:
                 log.info("[llm] %s → %s (%s, attempt=%d)", agent, provider, tier, attempt)
                 raw = fn(system, user, as_json)
+                if provider == "gemini-flash":
+                    used = _increment_gemini_rpd()
+                    remaining = _GEMINI_RPD_LIMIT - used
+                    level = logging.WARNING if remaining <= 5 else logging.INFO
+                    log.log(level, "[gemini-rpd] today=%d/%d remaining=%d", used, _GEMINI_RPD_LIMIT, remaining)
                 return json.loads(raw) if as_json else raw
             except Exception as e:
                 msg = str(e)

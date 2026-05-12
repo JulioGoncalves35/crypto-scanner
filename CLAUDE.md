@@ -153,16 +153,16 @@ Roda em `http://localhost:3001`. Cron de **15min** escaneia todos os 41 coins �
 
 **Localização:** `agents-v2/` (dir Python isolado, não toca no Council Claude v0.1).
 
-**Stack (2026-05-08):** LangGraph + **Cerebras Qwen3 235B** (primary technical/sentiment, ~14.4k TPM free) + **Groq Llama 3.3 70B** (primary bull/bear, 100k TPD free) + **Mistral Large** (primary trader, ~1B tokens/mes free) + Gemini 2.5 Flash (primary news, 20 RPD) + OpenRouter Qwen3-Next (fallback geral). Cadencia alvo: **1 run a cada 2 horas** via Windows Task Scheduler (`agents-v2/scripts/run_council_scheduled.ps1`). Pre-filter no `run_council.py` descarta TFs 5m/15m/30m e candidatos com score < 88 antes do LLM.
+**Stack (2026-05-11):** LangGraph + **Cerebras Qwen3 235B** (primary technical/sentiment, ~14.4k TPM free) + **Groq Llama 3.3 70B** (primary bull/bear, 100k TPD free) + **Mistral Large** (primary trader + risk_reviewer, ~1B tokens/mes free) + Gemini 2.5 Flash (primary news, 20 RPD) + OpenRouter Qwen3-Next (fallback geral). Cadencia alvo: **1 run a cada 2 horas** via Windows Task Scheduler (`agents-v2/scripts/run_council_scheduled.ps1`). Pre-filter no `run_council.py` descarta TFs 5m/15m/30m e candidatos com score < 88 antes do LLM.
 
 **6 agentes + 1 reviewer:**
-- `technical` (Gemini Flash) — re-interpreta indicadores do scanner
-- `sentiment` (Gemini Flash) — F&G, funding, OI; flags de crowded trade
-- `news`      (Gemini Flash) — Verification Section obrigatória; pode hard-block
-- `bull`      (Groq Llama 70B) — case pró-trade
-- `bear`      (Groq Llama 70B) — sempre roda, case anti-trade
-- `trader`    (Groq Llama 70B) — decisão final OPEN/SKIP/OPEN_REDUCED + payload pronto. Gemini Pro era primary mas free tier = 0 RPD; rerouted em 2026-05-08.
-- `risk_reviewer` (OpenRouter DeepSeek R1) — cron horário, HOLD/EXIT/TIGHTEN_STOP
+- `technical` (Cerebras Qwen3 235B, fallback Groq) — re-interpreta indicadores do scanner
+- `sentiment` (Cerebras Qwen3 235B, fallback Groq) — F&G, funding, OI; flags de crowded trade
+- `news`      (Gemini Flash, fallback OpenRouter) — Verification Section obrigatória; pode hard-block
+- `bull`      (Groq Llama 70B, fallback Cerebras) — case pró-trade
+- `bear`      (Groq Llama 70B, fallback Cerebras) — sempre roda, case anti-trade
+- `trader`    (Mistral Large, fallback Groq) — decisão final OPEN/SKIP/OPEN_REDUCED + payload pronto
+- `risk_reviewer` (Mistral Large, fallback Groq) — roda manualmente ou 1×/hora, HOLD/EXIT/TIGHTEN_STOP. Migrado de OpenRouter em 2026-05-11 (429s excessivos)
 
 **Guardrails determinísticos no `trader.py` (antes do LLM):**
 - timeframe ∈ {5m, 30m} → SKIP
@@ -193,6 +193,11 @@ cd agents-v2 && python run_backtest_replay.py --since 2026-04-15
 - **Pre-filter no `run_council.py`:** TFs 5m/15m/30m são descartados antes do LLM (já seriam SKIP determinístico no trader por `BANNED_TFS`). `COUNCIL_MIN_SCORE` default subiu de 80 para 88 (alinhado com WR observado: 80-84 = 9% WR, 88+ = 18% WR).
 - **Mistral SDK 2.x não é OpenAI-compatible:** `_call_mistral` em `llm_client.py` usa `from mistralai.client.sdk import Mistral` (top-level `from mistralai import Mistral` falha — `Mistral` mora em `mistralai.client.sdk` no pacote 2.4.5). Chamada é `client.chat.complete()` (sem `s`, sem `chat.completions.create`). Não confundir com OpenRouter/Cerebras que usam `from openai import OpenAI`.
 - **Cerebras model ID:** `qwen-3-235b-a22b-instruct-2507` (free tier do Cerebras Cloud em 2026-05-08 não tem Llama 3.3 70B — modelos disponíveis: `qwen-3-235b-a22b-instruct-2507`, `gpt-oss-120b`, `zai-glm-4.7`, `llama3.1-8b`). Compatível com OpenAI SDK via `base_url="https://api.cerebras.ai/v1"`. Verificar lista atual com `client.models.list()` se mudar.
+- **`POST /api/trades/open` — campo `dir` não `direction`:** backend `trades.js` valida `setup.dir`. `OpenPayload` tem campo `direction`; `backend_client.py` faz `body["dir"] = body.pop("direction")` antes do POST. Não remover essa linha — sem ela todo trade retorna 400.
+- **`paper-trader.js` — m1/m2/m3 aceitam float ou objeto:** `openPosition` usa `setup.m1?.price ?? setup.m1`. Frontend passa `{price, cap, pct}`; agents-v2 passa float puro. Não reverter para `setup.m1.price` — quebra o council com 500.
+- **`run_risk_review.py` — coin já vem com USDT do banco:** `trade.coin` é `"ATOMUSDT"`. `_current_price` não deve concatenar `+ USDT` — usa `coin if coin.endswith("USDT") else f"{coin}USDT"`. Antes gerava `ATOMUSDTUSDT` e Bybit retornava price vazio → todos os trades pulados.
+- **Logs em arquivo — council e risk_review:** ambos os entry points gravam em `agents-v2/logs/council_YYYY-MM-DD.log` e `risk_review_YYYY-MM-DD.log`. Log duplo: arquivo + console. Não precisa redirecionar `*>>` manualmente.
+- **Gemini RPD counter:** `llm_client.py` incrementa `agents-v2/logs/gemini_rpd.json` a cada chamada bem-sucedida ao `gemini-flash`. Log: `[gemini-rpd] today=N/20 remaining=M`. WARNING automático quando remaining ≤ 5.
 
 ---
 

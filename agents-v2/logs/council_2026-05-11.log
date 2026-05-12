@@ -1,0 +1,108 @@
+2026-05-11 20:59:29,452 [INFO] run_council: council starting (dry_run=False, min_score=88)
+2026-05-11 21:01:27,580 [INFO] httpx: HTTP Request: POST http://localhost:3001/api/scan/preview "HTTP/1.1 200 OK"
+2026-05-11 21:01:27,596 [INFO] run_council: scan_id=2090, 8 raw candidates
+2026-05-11 21:01:27,596 [INFO] run_council: 3 candidates pass min_score=88 and tf-filter
+2026-05-11 21:01:27,596 [INFO] run_council: → council on XRP buy 4h (score=89)
+2026-05-11 21:01:27,612 [INFO] src.llm_client: [llm] technical → cerebras-qwen235b (primary, attempt=1)
+2026-05-11 21:01:27,613 [INFO] src.llm_client: [llm] news → gemini-flash (primary, attempt=1)
+2026-05-11 21:01:28,541 [INFO] httpx: HTTP Request: GET https://api.alternative.me/fng/?limit=1 "HTTP/1.1 200 OK"
+2026-05-11 21:01:29,512 [INFO] httpx: HTTP Request: GET https://api.bybit.com/v5/market/funding/history?category=linear&symbol=XRPUSDT&limit=1 "HTTP/1.1 200 OK"
+2026-05-11 21:01:30,171 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-05-11 21:01:30,377 [INFO] httpx: HTTP Request: GET https://api.bybit.com/v5/market/open-interest?category=linear&symbol=XRPUSDT&intervalTime=1h&limit=25 "HTTP/1.1 200 OK"
+2026-05-11 21:01:30,379 [INFO] src.llm_client: [llm] sentiment → cerebras-qwen235b (primary, attempt=1)
+2026-05-11 21:01:30,858 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 21:01:30,892 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:01:30,892 [INFO] openai._base_client: Retrying request to /chat/completions in 60.000000 seconds
+2026-05-11 21:01:41,287 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-05-11 21:02:31,133 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:02:31,136 [WARNING] src.llm_client: [llm] sentiment on cerebras-qwen235b 429 — sleeping 12.0s then retry
+2026-05-11 21:02:43,137 [INFO] src.llm_client: [llm] sentiment → cerebras-qwen235b (primary, attempt=2)
+2026-05-11 21:02:43,679 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:02:43,679 [INFO] openai._base_client: Retrying request to /chat/completions in 48.000000 seconds
+2026-05-11 21:03:31,954 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:03:31,954 [WARNING] src.llm_client: [llm] sentiment on cerebras-qwen235b failed: Error code: 429 - {'message': "We're experiencing high traffic right now! Please try again soon.", 'type': 'too_many_requests_error', 'param': 'queue', 'code': 'queue_exceeded'}
+2026-05-11 21:03:31,954 [INFO] src.llm_client: [llm] sentiment → groq-llama70b (fallback, attempt=1)
+2026-05-11 21:03:32,782 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 21:03:32,803 [INFO] src.llm_client: [llm] bull → groq-llama70b (primary, attempt=1)
+2026-05-11 21:03:32,803 [INFO] src.llm_client: [llm] bear → groq-llama70b (primary, attempt=1)
+2026-05-11 21:03:33,951 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 21:03:34,343 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 21:03:34,360 [INFO] run_council:   decision=SKIP trade_id=None
+2026-05-11 21:03:34,360 [INFO] run_council: → council on ATOM buy 1h (score=94)
+2026-05-11 21:03:34,362 [INFO] src.llm_client: [llm] technical → cerebras-qwen235b (primary, attempt=1)
+2026-05-11 21:03:34,363 [INFO] src.llm_client: [llm] news → gemini-flash (primary, attempt=1)
+2026-05-11 21:03:35,189 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:03:35,189 [INFO] openai._base_client: Retrying request to /chat/completions in 56.000000 seconds
+2026-05-11 21:03:35,430 [INFO] httpx: HTTP Request: GET https://api.alternative.me/fng/?limit=1 "HTTP/1.1 200 OK"
+2026-05-11 21:03:35,626 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-05-11 21:03:36,268 [INFO] httpx: HTTP Request: GET https://api.bybit.com/v5/market/funding/history?category=linear&symbol=ATOMUSDT&limit=1 "HTTP/1.1 200 OK"
+2026-05-11 21:03:37,019 [INFO] httpx: HTTP Request: GET https://api.bybit.com/v5/market/open-interest?category=linear&symbol=ATOMUSDT&intervalTime=1h&limit=25 "HTTP/1.1 200 OK"
+2026-05-11 21:03:37,020 [INFO] src.llm_client: [llm] sentiment → cerebras-qwen235b (primary, attempt=1)
+2026-05-11 21:03:37,544 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:03:37,545 [INFO] openai._base_client: Retrying request to /chat/completions in 54.000000 seconds
+2026-05-11 21:03:45,741 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-05-11 21:04:31,487 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:04:31,487 [WARNING] src.llm_client: [llm] technical on cerebras-qwen235b 429 — sleeping 12.0s then retry
+2026-05-11 21:04:31,824 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:04:31,824 [INFO] openai._base_client: Retrying request to /chat/completions in 60.000000 seconds
+2026-05-11 21:04:43,488 [INFO] src.llm_client: [llm] technical → cerebras-qwen235b (primary, attempt=2)
+2026-05-11 21:04:44,019 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:04:44,020 [INFO] openai._base_client: Retrying request to /chat/completions in 47.000000 seconds
+2026-05-11 21:05:31,254 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:05:31,255 [WARNING] src.llm_client: [llm] technical on cerebras-qwen235b failed: Error code: 429 - {'message': "We're experiencing high traffic right now! Please try again soon.", 'type': 'too_many_requests_error', 'param': 'queue', 'code': 'queue_exceeded'}
+2026-05-11 21:05:31,255 [INFO] src.llm_client: [llm] technical → groq-llama70b (fallback, attempt=1)
+2026-05-11 21:05:32,037 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:05:32,039 [WARNING] src.llm_client: [llm] sentiment on cerebras-qwen235b 429 — sleeping 12.0s then retry
+2026-05-11 21:05:32,205 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 21:05:44,040 [INFO] src.llm_client: [llm] sentiment → cerebras-qwen235b (primary, attempt=2)
+2026-05-11 21:05:44,917 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:05:44,917 [INFO] openai._base_client: Retrying request to /chat/completions in 47.000000 seconds
+2026-05-11 21:06:32,510 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 21:06:32,514 [INFO] src.llm_client: [llm] bull → groq-llama70b (primary, attempt=1)
+2026-05-11 21:06:32,514 [INFO] src.llm_client: [llm] bear → groq-llama70b (primary, attempt=1)
+2026-05-11 21:06:33,669 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 21:06:33,686 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 21:06:33,688 [INFO] src.llm_client: [llm] trader → mistral-large (primary, attempt=1)
+2026-05-11 21:06:42,890 [INFO] httpx: HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 21:06:43,294 [INFO] httpx: HTTP Request: POST http://localhost:3001/api/trades/open "HTTP/1.1 200 OK"
+2026-05-11 21:06:43,307 [INFO] run_council:   decision=OPEN trade_id=1778544403291-ATOM-1h
+2026-05-11 21:06:43,307 [INFO] run_council: → council on PENDLE buy 1h (score=100)
+2026-05-11 21:06:43,311 [INFO] src.llm_client: [llm] technical → cerebras-qwen235b (primary, attempt=1)
+2026-05-11 21:06:43,312 [INFO] src.llm_client: [llm] news → gemini-flash (primary, attempt=1)
+2026-05-11 21:06:44,439 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:06:44,440 [INFO] openai._base_client: Retrying request to /chat/completions in 48.000000 seconds
+2026-05-11 21:06:44,547 [INFO] httpx: HTTP Request: GET https://api.alternative.me/fng/?limit=1 "HTTP/1.1 200 OK"
+2026-05-11 21:06:45,018 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-05-11 21:06:45,501 [INFO] httpx: HTTP Request: GET https://api.bybit.com/v5/market/funding/history?category=linear&symbol=PENDLEUSDT&limit=1 "HTTP/1.1 200 OK"
+2026-05-11 21:06:46,319 [INFO] httpx: HTTP Request: GET https://api.bybit.com/v5/market/open-interest?category=linear&symbol=PENDLEUSDT&intervalTime=1h&limit=25 "HTTP/1.1 200 OK"
+2026-05-11 21:06:46,319 [INFO] src.llm_client: [llm] sentiment → cerebras-qwen235b (primary, attempt=1)
+2026-05-11 21:06:46,971 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:06:46,971 [INFO] openai._base_client: Retrying request to /chat/completions in 46.000000 seconds
+2026-05-11 21:06:58,826 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-05-11 21:07:32,716 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:07:32,717 [WARNING] src.llm_client: [llm] technical on cerebras-qwen235b 429 — sleeping 12.0s then retry
+2026-05-11 21:07:33,217 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:07:33,218 [INFO] openai._base_client: Retrying request to /chat/completions in 59.000000 seconds
+2026-05-11 21:07:44,718 [INFO] src.llm_client: [llm] technical → cerebras-qwen235b (primary, attempt=2)
+2026-05-11 21:07:45,326 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:07:45,326 [INFO] openai._base_client: Retrying request to /chat/completions in 47.000000 seconds
+2026-05-11 21:08:32,447 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:08:32,448 [WARNING] src.llm_client: [llm] sentiment on cerebras-qwen235b 429 — sleeping 12.0s then retry
+2026-05-11 21:08:32,548 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:08:32,548 [INFO] openai._base_client: Retrying request to /chat/completions in 60.000000 seconds
+2026-05-11 21:08:44,448 [INFO] src.llm_client: [llm] sentiment → cerebras-qwen235b (primary, attempt=2)
+2026-05-11 21:08:45,013 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:08:45,013 [INFO] openai._base_client: Retrying request to /chat/completions in 47.000000 seconds
+2026-05-11 21:09:32,236 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:09:32,236 [WARNING] src.llm_client: [llm] sentiment on cerebras-qwen235b failed: Error code: 429 - {'message': "We're experiencing high traffic right now! Please try again soon.", 'type': 'too_many_requests_error', 'param': 'queue', 'code': 'queue_exceeded'}
+2026-05-11 21:09:32,237 [INFO] src.llm_client: [llm] sentiment → groq-llama70b (fallback, attempt=1)
+2026-05-11 21:09:32,783 [INFO] httpx: HTTP Request: POST https://api.cerebras.ai/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2026-05-11 21:09:32,784 [WARNING] src.llm_client: [llm] technical on cerebras-qwen235b failed: Error code: 429 - {'message': 'Requests per minute limit exceeded - too many requests sent.', 'type': 'too_many_requests_error', 'param': 'quota', 'code': 'request_quota_exceeded'}
+2026-05-11 21:09:32,784 [INFO] src.llm_client: [llm] technical → groq-llama70b (fallback, attempt=1)
+2026-05-11 21:09:33,072 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 21:09:33,943 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 21:09:33,946 [INFO] src.llm_client: [llm] bull → groq-llama70b (primary, attempt=1)
+2026-05-11 21:09:33,946 [INFO] src.llm_client: [llm] bear → groq-llama70b (primary, attempt=1)
+2026-05-11 21:09:35,221 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 21:09:35,275 [INFO] httpx: HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-11 21:09:35,290 [INFO] run_council:   decision=SKIP trade_id=None
