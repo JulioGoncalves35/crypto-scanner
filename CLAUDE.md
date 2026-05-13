@@ -198,6 +198,8 @@ cd agents-v2 && python run_backtest_replay.py --since 2026-04-15
 - **`run_risk_review.py` — coin já vem com USDT do banco:** `trade.coin` é `"ATOMUSDT"`. `_current_price` não deve concatenar `+ USDT` — usa `coin if coin.endswith("USDT") else f"{coin}USDT"`. Antes gerava `ATOMUSDTUSDT` e Bybit retornava price vazio → todos os trades pulados.
 - **Logs em arquivo — council e risk_review:** ambos os entry points gravam em `agents-v2/logs/council_YYYY-MM-DD.log` e `risk_review_YYYY-MM-DD.log`. Log duplo: arquivo + console. Não precisa redirecionar `*>>` manualmente.
 - **Gemini RPD counter:** `llm_client.py` incrementa `agents-v2/logs/gemini_rpd.json` a cada chamada bem-sucedida ao `gemini-flash`. Log: `[gemini-rpd] today=N/20 remaining=M`. WARNING automático quando remaining ≤ 5.
+- **Council log — SKIP reason:** `run_council.py` linha 99 logava só `decision` e `trade_id`, omitindo `reason`. Corrigido em 2026-05-13 — agora loga `decision=SKIP trade_id=None reason=<motivo>`. Motivos comuns dos guardrails: `bear_rr > bull_rr`, `tf_alignment == "conflicting"`, `news hard_block`.
+- **Task Scheduler + log PermissionError:** Se uma instância do council travar com o FileHandler aberto, a próxima instância falha com `PermissionError` no `_setup_logging` (antes de qualquer lógica de negócio) — o processo aborta inteiro. Sintoma: `=== run @ ... ===` seguido de traceback no início do log, runs acumulando sem candidatos processados. Fix temporário: renomear/deletar o arquivo de log do dia travado.
 
 ---
 
