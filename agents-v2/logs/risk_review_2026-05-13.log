@@ -1,0 +1,10 @@
+2026-05-13 11:37:43,892 [INFO] httpx: HTTP Request: GET http://localhost:3001/api/trades/active "HTTP/1.1 200 OK"
+2026-05-13 11:37:43,894 [INFO] run_risk_review: reviewing 2 active trades (dry_run=False)
+2026-05-13 11:37:45,412 [INFO] httpx: HTTP Request: GET https://api.bybit.com/v5/market/tickers?category=linear&symbol=ATOMUSDT "HTTP/1.1 200 OK"
+2026-05-13 11:37:45,422 [INFO] src.llm_client: [llm] risk_reviewer → mistral-large (primary, attempt=1)
+2026-05-13 11:37:48,525 [INFO] httpx: HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-13 11:37:48,536 [INFO] run_risk_review: trade 1778647834831-ATOM-4h (ATOMUSDT): HOLD — Thesis remains intact as price is between current_stop and m1, with no significant progress toward m1 yet.
+2026-05-13 11:37:49,501 [INFO] httpx: HTTP Request: GET https://api.bybit.com/v5/market/tickers?category=linear&symbol=AVAXUSDT "HTTP/1.1 200 OK"
+2026-05-13 11:37:49,502 [INFO] src.llm_client: [llm] risk_reviewer → mistral-large (primary, attempt=1)
+2026-05-13 11:37:52,498 [INFO] httpx: HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-13 11:37:52,501 [INFO] run_risk_review: trade 1778105515638-AVAX-4h (AVAXUSDT): HOLD — Thesis intact as price remains between current_stop and m1, with no significant progress toward m1 yet.
