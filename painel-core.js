@@ -1980,7 +1980,7 @@ function applyMTFScoring(results, softResults = []) {
       const softTFs = softConfirms.map(s => s.timeframe);
 
       dirSetups.forEach(s => {
-        s.score = Math.min(100, s.score + bonus);
+        s.entryScore = s.entryScore + bonus;  // uncapped
         s.mtfConfluence = {
           dir,
           count: allConfirmingTFs.length,
@@ -2010,7 +2010,7 @@ function applyMTFScoring(results, softResults = []) {
         if (sIsLower && s.dir !== highestTF.dir) {
           const tfGap = TF_ORDER.indexOf(highestTF.timeframe) - TF_ORDER.indexOf(s.timeframe);
           const penalty = tfGap >= 2 ? 20 : 8;
-          s.score = Math.max(0, s.score - penalty);
+          s.entryScore = s.entryScore - penalty;  // signed; allowed to go negative
           if (!s.reasons.find(r => r.text.includes('Conflito')))
             s.reasons.unshift({ text: `Conflito: ${s.timeframe} vs ${highestTF.timeframe} (-${penalty} pts)`, type: 'negative' });
         }
@@ -2021,7 +2021,7 @@ function applyMTFScoring(results, softResults = []) {
   // Deduplication: keep only best (highest score) setup per coin
   const bestByCoin = {};
   results.forEach(r => {
-    if (!bestByCoin[r.coin] || r.score > bestByCoin[r.coin].score)
+    if (!bestByCoin[r.coin] || Math.abs(r.entryScore) > Math.abs(bestByCoin[r.coin].entryScore))
       bestByCoin[r.coin] = r;
   });
   const deduped = Object.values(bestByCoin);
