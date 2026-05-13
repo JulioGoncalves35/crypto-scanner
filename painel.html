@@ -2299,361 +2299,180 @@ function _calcTechIndicators(candles, closes, tf) {
 }
 
 // Fase 2: calcular score e razões com base nos indicadores
-function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) {
-  const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
-    ema9, ema21, ema200, bb, vwap, obvTrend, volRatio, patterns, divergences, adx,
-    emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd, volProfile,
-    ichimoku, anchoredVwap, squeeze, orderBlock, trendlineBreak } = ind;
+function _computeRegimeScore(price, ind, fg, fundingRate = null, openInterest = null) {
+  const { ema9, ema21, ema200, vwap, obvTrend, adx, cvd,
+    ichimoku, anchoredVwap, macdNow, sigNow } = ind;
 
   let score = 0;
   const reasons = [], indicators = [];
 
-  // RSI
-  if (rsi !== null) {
-    if      (rsi < 30) { score += 20; reasons.push({text:`RSI ${rsi.toFixed(1)} — Sobrevendido`,type:'positive'}); }
-    else if (rsi < 40) { score += 10; reasons.push({text:`RSI ${rsi.toFixed(1)} — Zona de compra`,type:'positive'}); }
-    else if (rsi > 70) { score -= 20; reasons.push({text:`RSI ${rsi.toFixed(1)} — Sobrecomprado`,type:'negative'}); }
-    else if (rsi > 60) { score -= 10; reasons.push({text:`RSI ${rsi.toFixed(1)} — Zona de venda`,type:'negative'}); }
-    else               { reasons.push({text:`RSI ${rsi.toFixed(1)} — Neutro`,type:'neutral'}); }
-    indicators.push({name:'RSI (14)',reading:rsi.toFixed(1),color:rsi<35?'var(--accent)':rsi>65?'var(--danger)':'var(--warn)'});
-  }
-
-  // Stochastic RSI
-  if (stochRSI !== null) {
-    if      (stochRSI < 20) { score += 8;  reasons.push({text:`StochRSI ${stochRSI.toFixed(0)} — Sobrevendido`,type:'positive'}); }
-    else if (stochRSI > 80) { score -= 8;  reasons.push({text:`StochRSI ${stochRSI.toFixed(0)} — Sobrecomprado`,type:'negative'}); }
-    indicators.push({name:'Stochastic RSI',reading:stochRSI.toFixed(1),color:stochRSI<20?'var(--accent)':stochRSI>80?'var(--danger)':'var(--muted)'});
-  }
-
-  // MACD
-  const mxUp   = macdNow > sigNow && macdPrev <= sigPrev;
-  const mxDown = macdNow < sigNow && macdPrev >= sigPrev;
-  const mAbove = macdNow > sigNow;
-  if      (mxUp)   { score += 20; reasons.push({text:'MACD Cruzamento ↑',type:'positive'}); }
-  else if (mxDown) { score -= 20; reasons.push({text:'MACD Cruzamento ↓',type:'negative'}); }
-  else if (mAbove) { score += 7;  reasons.push({text:'MACD acima da signal',type:'positive'}); }
-  else             { score -= 7;  reasons.push({text:'MACD abaixo da signal',type:'negative'}); }
-  if (histNow > histPrev && histNow > 0) score += 4;
-  if (histNow < histPrev && histNow < 0) score -= 4;
-  indicators.push({name:'MACD',reading:mxUp?'Cruzamento altista ✓':mxDown?'Cruzamento baixista ✓':mAbove?'Acima da signal':'Abaixo da signal',color:mxUp||mAbove?'var(--accent)':'var(--danger)'});
-
-  // EMAs
+  // EMA alignment
   if (ema9 != null && ema21 != null && ema200 != null) {
     if      (price > ema9 && ema9 > ema21 && ema21 > ema200) { score += 16; reasons.push({text:'EMAs alinhadas ↑',type:'positive'}); }
     else if (price < ema9 && ema9 < ema21 && ema21 < ema200) { score -= 16; reasons.push({text:'EMAs alinhadas ↓',type:'negative'}); }
     else if (price > ema200) { score += 7; reasons.push({text:'Acima da EMA200',type:'positive'}); }
     else                     { score -= 7; reasons.push({text:'Abaixo da EMA200',type:'negative'}); }
-    indicators.push({name:'EMA 9 / 21 / 200',reading:`${ema9.toFixed(2)} / ${ema21.toFixed(2)} / ${ema200.toFixed(2)}`,color:price>ema200?'var(--accent)':'var(--danger)'});
-  } else if (ema9 != null && ema21 != null) {
-    if (price > ema9 && ema9 > ema21) { score += 10; reasons.push({text:'EMA9 > EMA21 ↑',type:'positive'}); }
-    else if (price < ema9 && ema9 < ema21) { score -= 10; reasons.push({text:'EMA9 < EMA21 ↓',type:'negative'}); }
-    indicators.push({name:'EMA 9 / 21',reading:`${ema9.toFixed(2)} / ${ema21.toFixed(2)}`,color:price>ema21?'var(--accent)':'var(--danger)'});
   }
 
-  // Bollinger
-  if (bb) {
-    if      (price <= bb.lower) { score += 10; reasons.push({text:'Bollinger — Banda inferior',type:'positive'}); }
-    else if (price >= bb.upper) { score -= 10; reasons.push({text:'Bollinger — Banda superior',type:'negative'}); }
-    indicators.push({name:'Bollinger Bands',reading:`L:${bb.lower.toFixed(2)} M:${bb.mid.toFixed(2)} H:${bb.upper.toFixed(2)}`,color:price<=bb.lower?'var(--accent)':price>=bb.upper?'var(--danger)':'var(--muted)'});
+  // Ichimoku cloud (capped internally at ±20)
+  if (ichimoku != null) {
+    let ichScore = 0;
+    if (ichimoku.priceAboveCloud) ichScore += 10;
+    else if (ichimoku.priceBelowCloud) ichScore -= 10;
+    if (ichimoku.tkCross === 'bullish') ichScore += 8;
+    else if (ichimoku.tkCross === 'bearish') ichScore -= 8;
+    if (ichimoku.chikouBull === true) ichScore += 4;
+    else if (ichimoku.chikouBull === false) ichScore -= 4;
+    score += Math.max(-20, Math.min(20, ichScore));
+  }
+
+  // OBV
+  if (obvTrend === 'rising')  { score += 6; reasons.push({text:'OBV ascensão',type:'positive'}); }
+  if (obvTrend === 'falling') { score -= 6; reasons.push({text:'OBV queda',type:'negative'}); }
+
+  // CVD
+  if (cvd != null) {
+    if (cvd.trend === 'rising')  score += 7;
+    else if (cvd.trend === 'falling') score -= 7;
   }
 
   // VWAP
   if (vwap) {
-    if      (price > vwap * 1.002) { score += 7; reasons.push({text:'Acima do VWAP',type:'positive'}); }
-    else if (price < vwap * 0.998) { score -= 7; reasons.push({text:'Abaixo do VWAP',type:'negative'}); }
-    indicators.push({name:'VWAP',reading:'$'+vwap.toFixed(vwap>=1?2:4),color:price>vwap?'var(--accent)':'var(--danger)'});
+    if      (price > vwap * 1.002) score += 7;
+    else if (price < vwap * 0.998) score -= 7;
   }
 
   // Anchored VWAP
   if (anchoredVwap != null) {
     const av = anchoredVwap.vwap;
-    if      (price > av * 1.002) { score += 8; reasons.push({ text: 'AVWAP — Preço acima do VWAP ancorado', type: 'positive' }); }
-    else if (price < av * 0.998) { score -= 8; reasons.push({ text: 'AVWAP — Preço abaixo do VWAP ancorado', type: 'negative' }); }
-    else                         { reasons.push({ text: 'AVWAP — Preço testando o VWAP ancorado', type: 'neutral' }); }
-    indicators.push({ name: 'AVWAP', reading: '$' + av.toFixed(av >= 1 ? 2 : 4),
-      color: price > av * 1.002 ? 'var(--accent)' : price < av * 0.998 ? 'var(--danger)' : 'var(--warn)' });
+    if      (price > av * 1.002) score += 8;
+    else if (price < av * 0.998) score -= 8;
   }
 
-  // Volume Profile — POC, VAH, VAL
-  if (volProfile != null) {
-    const { poc, vah, val } = volProfile;
-    const pocDist = Math.abs(price - poc) / price;
-    const fmtVP = v => '$' + v.toFixed(v >= 1 ? 2 : 4);
-
-    if (pocDist < 0.005) {
-      reasons.push({ text: `Preço no POC ${fmtVP(poc)} — zona de maior volume negociado`, type: 'neutral' });
-    } else if (price < val) {
-      score += 5;
-      reasons.push({ text: `Abaixo da Value Area (VAL ${fmtVP(val)}) — possível retorno ao POC`, type: 'positive' });
-    } else if (price > vah) {
-      score -= 5;
-      reasons.push({ text: `Acima da Value Area (VAH ${fmtVP(vah)}) — possível retorno ao POC`, type: 'negative' });
-    } else if (price > poc) {
-      score += 6;
-      reasons.push({ text: `Preço acima do POC ${fmtVP(poc)} — suporte de volume`, type: 'positive' });
-    } else {
-      score -= 6;
-      reasons.push({ text: `Preço abaixo do POC ${fmtVP(poc)} — resistência de volume`, type: 'negative' });
-    }
-
-    indicators.push({
-      name: 'Volume Profile',
-      reading: `POC ${fmtVP(poc)} · VAH ${fmtVP(vah)} · VAL ${fmtVP(val)}`,
-      color: price > poc ? 'var(--accent)' : price < poc ? 'var(--danger)' : 'var(--warn)'
-    });
+  // MACD POSITION (not crossover — crossover lives in entry score)
+  if (macdNow != null && sigNow != null) {
+    if (macdNow > sigNow) score += 7;
+    else                  score -= 7;
   }
 
-  // Ichimoku Cloud
-  if (ichimoku != null) {
-    let ichScore = 0;
-    if (ichimoku.priceAboveCloud) {
-      ichScore += 10;
-      reasons.push({ text: 'Ichimoku — Preço acima da nuvem altista', type: 'positive', isPattern: true });
-    } else if (ichimoku.priceBelowCloud) {
-      ichScore -= 10;
-      reasons.push({ text: 'Ichimoku — Preço abaixo da nuvem baixista', type: 'negative', isPattern: true });
-    } else {
-      reasons.push({ text: 'Ichimoku — Preço na nuvem (consolidação)', type: 'neutral' });
-    }
-    if (ichimoku.tkCross === 'bullish') {
-      ichScore += 8;
-      reasons.push({ text: 'Ichimoku — Cruzamento TK altista', type: 'positive', isPattern: true });
-    } else if (ichimoku.tkCross === 'bearish') {
-      ichScore -= 8;
-      reasons.push({ text: 'Ichimoku — Cruzamento TK baixista', type: 'negative', isPattern: true });
-    }
-    if (ichimoku.chikouBull === true) {
-      ichScore += 4;
-      reasons.push({ text: 'Ichimoku — Chikou confirma alta', type: 'positive' });
-    } else if (ichimoku.chikouBull === false) {
-      ichScore -= 4;
-      reasons.push({ text: 'Ichimoku — Chikou confirma baixa', type: 'negative' });
-    }
-    score += Math.max(-20, Math.min(20, ichScore));
-    indicators.push({
-      name: 'Ichimoku Cloud',
-      reading: ichimoku.priceAboveCloud ? 'Acima da nuvem ↑' : ichimoku.priceBelowCloud ? 'Abaixo da nuvem ↓' : 'Na nuvem',
-      color: ichimoku.priceAboveCloud ? 'var(--accent)' : ichimoku.priceBelowCloud ? 'var(--danger)' : 'var(--warn)'
-    });
-  }
-
-  if (obvTrend === 'rising')  { score += 6; reasons.push({text:'OBV em ascensão (acumulação)',type:'positive'}); }
-  if (obvTrend === 'falling') { score -= 6; reasons.push({text:'OBV em queda (distribuição)',type:'negative'}); }
-  indicators.push({name:'OBV (tendência)',reading:obvTrend==='rising'?'Acumulação ↑':obvTrend==='falling'?'Distribuição ↓':'Neutro',color:obvTrend==='rising'?'var(--accent)':obvTrend==='falling'?'var(--danger)':'var(--muted)'});
-
-  // Snapshot direction before applying bonuses that amplify rather than determine bias.
-  // Using the running score here would make Volume/ADX/OI results order-dependent.
-  const scoreDir = score >= 0 ? 1 : -1;
-
-  // Volume
-  const vp = ((volRatio-1)*100).toFixed(0);
-  if (volRatio > 1.5) { score += scoreDir * 7; reasons.push({text:`Volume +${vp}% acima da média`,type:scoreDir>0?'positive':'negative'}); }
-  indicators.push({name:'Volume (20p média)',reading:`${vp>0?'+':''}${vp}% vs. média`,color:volRatio>1.3?'var(--accent)':'var(--muted)'});
-  indicators.push({name:'ATR (14)',reading:ind.atr>1?ind.atr.toFixed(2):ind.atr.toFixed(4),color:'var(--muted)'});
-
-  // ADX
+  // ADX strength (direction taken from running regime score)
+  const regimeDir = score >= 0 ? 1 : -1;
   if (adx !== null) {
-    if      (adx > 30) { score += scoreDir * 10; reasons.push({text:`ADX ${adx.toFixed(1)} — Tendência muito forte`,type:scoreDir>0?'positive':'negative'}); }
-    else if (adx > 25) { score += scoreDir * 6;  reasons.push({text:`ADX ${adx.toFixed(1)} — Tendência forte`,type:scoreDir>0?'positive':'negative'}); }
-    else if (adx < 20) { score -= 8; reasons.push({text:`ADX ${adx.toFixed(1)} — Mercado lateral`,type:'negative'}); }
-    else               { score -= 3; reasons.push({text:`ADX ${adx.toFixed(1)} — Tendência fraca`,type:'negative'}); }
-    const adxColor = adx > 25 ? 'var(--accent)' : adx < 20 ? 'var(--danger)' : 'var(--warn)';
-    indicators.push({name:'ADX (14)',reading:`${adx.toFixed(1)} — ${adx>30?'Tendência muito forte':adx>25?'Tendência forte':adx<20?'Mercado lateral':'Tendência fraca'}`,color:adxColor});
+    if      (adx > 30) score += regimeDir * 10;
+    else if (adx > 25) score += regimeDir * 6;
+    else if (adx < 20) score -= 8;
+    else               score -= 3;
   }
 
-  // Funding Rate
+  // Funding rate
   if (fundingRate !== null) {
-    const frPct = (fundingRate * 100).toFixed(4);
-    if (fundingRate <= -0.0005) {
-      score += 12;
-      reasons.push({ text: `Funding ${frPct}% — Shorts sobrecarregados (pressao de alta)`, type: 'positive' });
-    } else if (fundingRate <= -0.0001) {
-      score += 6;
-      reasons.push({ text: `Funding ${frPct}% — Leve pressao altista`, type: 'positive' });
-    } else if (fundingRate >= 0.0005) {
-      score -= 12;
-      reasons.push({ text: `Funding ${frPct}% — Longs sobrecarregados (pressao de baixa)`, type: 'negative' });
-    } else if (fundingRate >= 0.0001) {
-      score -= 6;
-      reasons.push({ text: `Funding ${frPct}% — Leve pressao baixista`, type: 'negative' });
-    } else {
-      reasons.push({ text: `Funding ${frPct}% — Neutro`, type: 'neutral' });
-    }
-    indicators.push({
-      name: 'Funding Rate',
-      reading: `${frPct}%`,
-      color: fundingRate <= -0.0001 ? 'var(--accent)' : fundingRate >= 0.0001 ? 'var(--danger)' : 'var(--muted)'
-    });
+    if      (fundingRate <= -0.0005) score += 12;
+    else if (fundingRate <= -0.0001) score += 6;
+    else if (fundingRate >=  0.0005) score -= 12;
+    else if (fundingRate >=  0.0001) score -= 6;
   }
 
   // Open Interest
   if (openInterest !== null) {
     const oiChg = openInterest.change24h;
-    const oiStr = `${oiChg >= 0 ? '+' : ''}${oiChg.toFixed(1)}% (24h)`;
-    if (oiChg > 5) {
-      score += scoreDir * 8;
-      const tipo = scoreDir > 0 ? 'Capital novo entrando (confirma long)' : 'Capital novo no short (confirma)';
-      reasons.push({ text: `OI ${oiStr} — ${tipo}`, type: scoreDir > 0 ? 'positive' : 'negative' });
-    } else if (oiChg < -5) {
-      score -= 6;
-      reasons.push({ text: `OI ${oiStr} — Fechamento de posicoes, fraqueza`, type: 'negative' });
-    } else {
-      reasons.push({ text: `OI ${oiStr} — Estavel`, type: 'neutral' });
-    }
-    indicators.push({
-      name: 'Open Interest (24h)',
-      reading: oiStr,
-      color: oiChg > 5 ? 'var(--accent)' : oiChg < -5 ? 'var(--danger)' : 'var(--muted)'
-    });
+    if      (oiChg >  5) score += regimeDir * 8;
+    else if (oiChg < -5) score -= 6;
   }
 
   // Fear & Greed
-  if      (fg.value < 25) { score += 10; reasons.push({text:`F&G ${fg.value} — Medo Extremo`,type:'positive'}); }
-  else if (fg.value > 75) { score -= 10; reasons.push({text:`F&G ${fg.value} — Ganância Extrema`,type:'negative'}); }
-  else                    { reasons.push({text:`F&G ${fg.value} — ${fg.label}`,type:'neutral'}); }
-  indicators.push({name:'Fear & Greed Index',reading:`${fg.value} — ${fg.label}`,color:fg.value<30?'var(--accent)':fg.value>70?'var(--danger)':'var(--warn)'});
+  if      (fg.value < 25) score += 10;
+  else if (fg.value > 75) score -= 10;
 
-  // Padrões de candlestick
-  patterns.forEach(pat => {
-    if (pat.score !== 0) {
-      score += pat.score;
-      reasons.push({text:pat.name, type: pat.score > 0 ? 'positive' : pat.score < 0 ? 'negative' : 'neutral', isPattern: true});
-    }
-  });
+  return { regimeScore: score, reasons, indicators };
+}
 
-  // Divergências
-  divergences.forEach(div => {
-    score += div.score;
-    reasons.push({text:div.name, type: div.score > 0 ? 'positive' : 'negative', isDivergence: true});
-  });
+function _computeEntryScore(price, ind, fg, patterns = null, divergences = null) {
+  const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
+    bb, volRatio, bosChoch, squeeze, orderBlock, trendlineBreak,
+    emaCross, mktStruct, triangle, dblPattern } = ind;
+  const pats = patterns ?? ind.patterns ?? [];
+  const divs = divergences ?? ind.divergences ?? [];
 
-  // Cruz Dourada / Cruz da Morte (EMA 50 × EMA 200)
-  if (emaCross && emaCross.score !== 0) {
-    score += emaCross.score;
-    reasons.push({text: emaCross.name, type: emaCross.score > 0 ? 'positive' : 'negative', isPattern: true});
-    indicators.push({name:'EMA 50 / 200 Cross',reading:emaCross.name,color:emaCross.score>0?'var(--accent)':'var(--danger)'});
+  let score = 0;
+  const reasons = [], indicators = [];
+
+  // RSI extremes
+  if (rsi !== null) {
+    if      (rsi < 30) score += 20;
+    else if (rsi < 40) score += 10;
+    else if (rsi > 70) score -= 20;
+    else if (rsi > 60) score -= 10;
   }
 
-  // Estrutura de mercado (HH/HL vs LH/LL)
-  if (mktStruct && mktStruct.score !== 0) {
-    score += mktStruct.score;
-    reasons.push({text: mktStruct.name, type: mktStruct.score > 0 ? 'positive' : 'negative', isPattern: true});
+  // StochRSI extremes
+  if (stochRSI !== null) {
+    if      (stochRSI < 20) score += 8;
+    else if (stochRSI > 80) score -= 8;
   }
 
-  // Triângulos
-  if (triangle && triangle.score !== 0) {
-    score += triangle.score;
-    reasons.push({text: triangle.name, type: triangle.score > 0 ? 'positive' : 'negative', isPattern: true});
+  // MACD CROSSOVER ONLY (position lives in regime score)
+  const mxUp   = macdNow > sigNow && macdPrev <= sigPrev;
+  const mxDown = macdNow < sigNow && macdPrev >= sigPrev;
+  if      (mxUp)   score += 20;
+  else if (mxDown) score -= 20;
+  if (histNow > histPrev && histNow > 0) score += 4;
+  if (histNow < histPrev && histNow < 0) score -= 4;
+
+  // Bollinger touch
+  if (bb) {
+    if      (price <= bb.lower) score += 10;
+    else if (price >= bb.upper) score -= 10;
   }
 
-  // Topo Duplo / Fundo Duplo
-  if (dblPattern && dblPattern.score !== 0) {
-    score += dblPattern.score;
-    reasons.push({text: dblPattern.name, type: dblPattern.score > 0 ? 'positive' : 'negative', isPattern: true});
-  }
+  // Volume spike (snapshot direction before applying)
+  const entryDir = score >= 0 ? 1 : -1;
+  if (volRatio > 1.5) score += entryDir * 7;
 
-  // CVD — Cumulative Volume Delta
-  if (cvd !== null) {
-    if (cvd.trend === 'rising') {
-      score += 7;
-      reasons.push({ text: 'CVD crescente — pressao compradora acumulando', type: 'positive' });
-    } else if (cvd.trend === 'falling') {
-      score -= 7;
-      reasons.push({ text: 'CVD em queda — pressao vendedora acumulando', type: 'negative' });
-    }
-    indicators.push({
-      name: 'CVD (30 candles)',
-      reading: cvd.trend === 'rising' ? 'Pressao compradora ↑' : cvd.trend === 'falling' ? 'Pressao vendedora ↓' : 'Neutro',
-      color: cvd.trend === 'rising' ? 'var(--accent)' : cvd.trend === 'falling' ? 'var(--danger)' : 'var(--muted)'
-    });
-  }
+  // Pattern signals
+  pats.forEach(pat => { if (pat.score !== 0) score += pat.score; });
+  divs.forEach(div => { score += div.score; });
 
-  // BOS / CHoCH
-  if (bosChoch && bosChoch.score !== 0) {
-    score += bosChoch.score;
-    reasons.push({ text: bosChoch.name, type: bosChoch.score > 0 ? 'positive' : 'negative', isPattern: true });
-  }
+  if (emaCross && emaCross.score !== 0) score += emaCross.score;
+  if (mktStruct && mktStruct.score !== 0) score += mktStruct.score;
+  if (triangle && triangle.score !== 0) score += triangle.score;
+  if (dblPattern && dblPattern.score !== 0) score += dblPattern.score;
+  if (bosChoch && bosChoch.score !== 0) score += bosChoch.score;
+  if (trendlineBreak != null) score += trendlineBreak.score;
 
-  // Trendline Break (LTA / LTB)
-  if (trendlineBreak != null) {
-    score += trendlineBreak.score;
-    reasons.push({ text: trendlineBreak.name, type: trendlineBreak.score > 0 ? 'positive' : 'negative', isPattern: true });
-  }
-
-  // Squeeze Momentum
+  // Squeeze
   if (squeeze != null) {
-    if (squeeze.releasedBull) {
-      score += 15;
-      reasons.push({ text: 'Squeeze Momentum — rompimento altista', type: 'positive', isPattern: true });
-    } else if (squeeze.releasedBear) {
-      score -= 15;
-      reasons.push({ text: 'Squeeze Momentum — rompimento baixista', type: 'negative', isPattern: true });
-    } else if (!squeeze.squeezed && squeeze.momentumTrend === 'rising') {
-      score += 6;
-      reasons.push({ text: 'Momentum crescente pós-squeeze', type: 'positive' });
-    } else if (!squeeze.squeezed && squeeze.momentumTrend === 'falling') {
-      score -= 6;
-      reasons.push({ text: 'Momentum em queda pós-squeeze', type: 'negative' });
-    } else if (squeeze.squeezed) {
-      reasons.push({ text: 'Squeeze ativo — aguardar rompimento', type: 'neutral' });
-    }
-    indicators.push({
-      name: 'Squeeze Momentum',
-      reading: squeeze.squeezed ? 'Comprimido ⬛' : squeeze.releasedBull ? 'Rompimento ↑' :
-               squeeze.releasedBear ? 'Rompimento ↓' : squeeze.momentumTrend === 'rising' ? 'Momentum ↑' : 'Momentum ↓',
-      color: (squeeze.releasedBull || (!squeeze.squeezed && squeeze.momentumTrend === 'rising')) ? 'var(--accent)' :
-             (squeeze.releasedBear || (!squeeze.squeezed && squeeze.momentumTrend === 'falling')) ? 'var(--danger)' : 'var(--warn)'
-    });
+    if      (squeeze.releasedBull) score += 15;
+    else if (squeeze.releasedBear) score -= 15;
+    else if (!squeeze.squeezed && squeeze.momentumTrend === 'rising')  score += 6;
+    else if (!squeeze.squeezed && squeeze.momentumTrend === 'falling') score -= 6;
   }
 
-  // Order Block
-  if (orderBlock != null && orderBlock.priceInZone) {
-    score += orderBlock.score;
-    reasons.push({ text: orderBlock.name, type: orderBlock.score > 0 ? 'positive' : 'negative', isPattern: true });
-    indicators.push({
-      name: 'Order Block',
-      reading: `Zona ${orderBlock.type === 'bullish_ob' ? 'demanda' : 'oferta'}: ${orderBlock.obLow.toFixed(orderBlock.obLow >= 1 ? 2 : 4)}–${orderBlock.obHigh.toFixed(orderBlock.obHigh >= 1 ? 2 : 4)}`,
-      color: orderBlock.score > 0 ? 'var(--accent)' : 'var(--danger)'
-    });
-  }
+  // Order Block (only when price in zone)
+  if (orderBlock != null && orderBlock.priceInZone) score += orderBlock.score;
 
-  // Bônus de confluência multi-categoria
+  // Multi-category confluence (entry timing quality)
   if (score !== 0) {
     const isLong = score > 0;
     const momentumAligned = rsi !== null && ((isLong && rsi < 50) || (!isLong && rsi > 50));
-    const trendAligned = (ema200 !== null && ((isLong && price > ema200) || (!isLong && price < ema200))) ||
-                         (mktStruct !== null && ((isLong && mktStruct.type === 'uptrend') || (!isLong && mktStruct.type === 'downtrend'))) ||
-                         (ichimoku !== null && ((isLong && ichimoku.priceAboveCloud) || (!isLong && ichimoku.priceBelowCloud))) ||
-                         (trendlineBreak != null && ((isLong && trendlineBreak.score > 0) || (!isLong && trendlineBreak.score < 0)));
-    const volumeAligned = (isLong && obvTrend === 'rising') || (!isLong && obvTrend === 'falling') ||
-                          (cvd !== null && ((isLong && cvd.trend === 'rising') || (!isLong && cvd.trend === 'falling')));
-    const patternAligned = patterns.some(pat => isLong ? pat.score > 0 : pat.score < 0) ||
-                           divergences.some(d => isLong ? d.score > 0 : d.score < 0) ||
-                           (squeeze !== null && ((isLong && (squeeze.releasedBull || squeeze.momentumTrend === 'rising')) ||
+    const patternAligned = pats.some(p => isLong ? p.score > 0 : p.score < 0) ||
+                           divs.some(d => isLong ? d.score > 0 : d.score < 0) ||
+                           (squeeze != null && ((isLong && (squeeze.releasedBull || squeeze.momentumTrend === 'rising')) ||
                                                  (!isLong && (squeeze.releasedBear || squeeze.momentumTrend === 'falling'))));
-    const alignedCount = [momentumAligned, trendAligned, volumeAligned, patternAligned].filter(Boolean).length;
+    const volumeAligned = volRatio > 1.5;
+    const eventAligned  = mxUp || mxDown || (bosChoch && bosChoch.score !== 0) || (trendlineBreak != null && trendlineBreak.score !== 0);
+    const alignedCount = [momentumAligned, patternAligned, volumeAligned, eventAligned].filter(Boolean).length;
     if (alignedCount >= 2) {
       const sign = isLong ? 1 : -1;
       const confBonus = alignedCount >= 4 ? 15 : alignedCount >= 3 ? 10 : 5;
-      const confLabel = alignedCount >= 4 ? 'Confluência total (4/4 categorias)' :
-                        alignedCount >= 3 ? 'Alta confluência (3/4 categorias)' : 'Confluência moderada (2/4 categorias)';
       score += sign * confBonus;
-      reasons.push({ text: confLabel, type: isLong ? 'positive' : 'negative' });
     }
   }
 
-  // Penalidade combo: RSI oversold + F&G Medo Extremo em setup SHORT = risco alto de short squeeze
-  if (score < 0 && rsi !== null && rsi < 40 && fg.value < 25) {
-    score += 20;
-    reasons.push({ text: `RISCO: RSI ${rsi.toFixed(1)} + F&G ${fg.value} — Short squeeze iminente`, type: 'negative' });
-  }
-  // Penalidade combo simétrica: RSI overbought + F&G Ganância Extrema em setup LONG = risco de bull trap
-  if (score > 0 && rsi !== null && rsi > 60 && fg.value > 75) {
-    score -= 20;
-    reasons.push({ text: `RISCO: RSI ${rsi.toFixed(1)} + F&G ${fg.value} — Bull trap iminente`, type: 'negative' });
-  }
+  // Combo penalty: short squeeze risk
+  if (score < 0 && rsi !== null && rsi < 40 && fg.value < 25) score += 20;
+  if (score > 0 && rsi !== null && rsi > 60 && fg.value > 75) score -= 20;
 
-  return { score, reasons, indicators, mxUp, mxDown, mAbove, emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd, ichimoku, squeeze, orderBlock, anchoredVwap, trendlineBreak };
+  return { entryScore: score, reasons, indicators, mxUp, mxDown };
 }
 
 // ─────────────────────────────────────────
@@ -2685,16 +2504,30 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
   const TF_ADX_MIN = { '5m': 23, '15m': 22, '30m': 20, '1h': 18, '4h': 18, '1D': 18 };
   if (ind.adx !== null && ind.adx < (TF_ADX_MIN[tf] ?? 18)) return null;
 
-  // Fase 2: score
+  // Fase 2: dual-score (regime + entry)
   const safeFg = fg ?? { value: 50, label: 'Neutro' };
-  const { score: rawScore, reasons, indicators, mxUp, mxDown, mAbove,
-    emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd,
-    ichimoku, squeeze, orderBlock, anchoredVwap } = _computeScore(price, ind, safeFg, fundingRate, openInterest);
+  const regimeOut = _computeRegimeScore(price, ind, safeFg, fundingRate, openInterest);
+  const entryOut  = _computeEntryScore(price, ind, safeFg, ind.patterns, ind.divergences);
+  const regimeScore = regimeOut.regimeScore;
+  const entryScore  = entryOut.entryScore;
 
-  const dir            = rawScore >= 0 ? 'buy' : 'sell';
-  const normScore      = Math.min(100, Math.round(Math.abs(rawScore)));
-  const _scoreMin      = scoreThreshold !== null ? scoreThreshold : parseInt(state.score);
-  if (normScore < _scoreMin) return null;
+  // Conflict: regime and entry disagree → discard
+  if (regimeScore !== 0 && entryScore !== 0 &&
+      Math.sign(regimeScore) !== Math.sign(entryScore)) {
+    return null;
+  }
+  const dir = (regimeScore + entryScore) >= 0 ? 'buy' : 'sell';
+
+  // Threshold filters by |entryScore| (frontend reads scoreThreshold or state.score)
+  const _scoreMin = scoreThreshold !== null ? scoreThreshold : parseInt(state.score);
+  if (Math.abs(entryScore) < _scoreMin) return null;
+
+  const reasons    = [...regimeOut.reasons, ...entryOut.reasons];
+  const indicators = [...regimeOut.indicators, ...entryOut.indicators];
+  const { mxUp, mxDown } = entryOut;
+  const mAbove = ind.macdNow > ind.sigNow;
+  const { emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd,
+          ichimoku, squeeze, orderBlock, anchoredVwap } = ind;
 
   // Stop Loss
   const MIN_STOP_PCT = 0.015; // piso mínimo de 1.5% — evita stops apertados em tokens voláteis
@@ -2769,7 +2602,7 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
 
   return {
     coin, pair:`${coin}/USDT`, dir,
-    score: normScore, timeframe: tf, leverage: lev,
+    regimeScore, entryScore, timeframe: tf, leverage: lev,
     entry, stop, liqPrice, entryToLiqDist, stopAdjusted,
     stopPct: fmtPct(stopPctRaw),
     m1:{ price:m1p, pct:fmtPct((m1p-entry)/entry*100), cap:capM1 },
@@ -3018,7 +2851,7 @@ async function runRealAnalysis(signal = null) {
       const softTFs = softConfirms.map(s => s.timeframe);
 
       dirSetups.forEach(s => {
-        s.score = Math.min(100, s.score + bonus);
+        s.entryScore = s.entryScore + bonus;  // uncapped
         s.mtfConfluence = {
           dir,
           count: allConfirmingTFs.length,
@@ -3048,7 +2881,7 @@ async function runRealAnalysis(signal = null) {
         if (sIsLower && s.dir !== highestTF.dir) {
           const tfGap = TF_ORDER_MTF.indexOf(highestTF.timeframe) - TF_ORDER_MTF.indexOf(s.timeframe);
           const penalty = tfGap >= 2 ? 20 : 8;
-          s.score = Math.max(0, s.score - penalty);
+          s.entryScore = s.entryScore - penalty;  // signed; allowed to go negative
           if (!s.reasons.find(r => r.text.includes('Conflito')))
             s.reasons.unshift({ text: `Conflito: ${s.timeframe} vs ${highestTF.timeframe} (-${penalty} pts)`, type: 'negative' });
         }
@@ -3059,7 +2892,7 @@ async function runRealAnalysis(signal = null) {
   // Deduplicar: manter apenas o melhor setup (maior score) por coin
   const bestByCoin = {};
   results.forEach(r => {
-    if (!bestByCoin[r.coin] || r.score > bestByCoin[r.coin].score)
+    if (!bestByCoin[r.coin] || Math.abs(r.entryScore) > Math.abs(bestByCoin[r.coin].entryScore))
       bestByCoin[r.coin] = r;
   });
   results.length = 0;
