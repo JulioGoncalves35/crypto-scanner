@@ -1360,6 +1360,95 @@ function _computeRegimeScore(price, ind, fg, fundingRate = null, openInterest = 
   return { regimeScore: score, reasons, indicators };
 }
 
+function _computeEntryScore(price, ind, fg, patterns = null, divergences = null) {
+  const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
+    bb, volRatio, bosChoch, squeeze, orderBlock, trendlineBreak,
+    emaCross, mktStruct, triangle, dblPattern } = ind;
+  const pats = patterns ?? ind.patterns ?? [];
+  const divs = divergences ?? ind.divergences ?? [];
+
+  let score = 0;
+  const reasons = [], indicators = [];
+
+  // RSI extremes
+  if (rsi !== null) {
+    if      (rsi < 30) score += 20;
+    else if (rsi < 40) score += 10;
+    else if (rsi > 70) score -= 20;
+    else if (rsi > 60) score -= 10;
+  }
+
+  // StochRSI extremes
+  if (stochRSI !== null) {
+    if      (stochRSI < 20) score += 8;
+    else if (stochRSI > 80) score -= 8;
+  }
+
+  // MACD CROSSOVER ONLY (position lives in regime score)
+  const mxUp   = macdNow > sigNow && macdPrev <= sigPrev;
+  const mxDown = macdNow < sigNow && macdPrev >= sigPrev;
+  if      (mxUp)   score += 20;
+  else if (mxDown) score -= 20;
+  if (histNow > histPrev && histNow > 0) score += 4;
+  if (histNow < histPrev && histNow < 0) score -= 4;
+
+  // Bollinger touch
+  if (bb) {
+    if      (price <= bb.lower) score += 10;
+    else if (price >= bb.upper) score -= 10;
+  }
+
+  // Volume spike (snapshot direction before applying)
+  const entryDir = score >= 0 ? 1 : -1;
+  if (volRatio > 1.5) score += entryDir * 7;
+
+  // Pattern signals
+  pats.forEach(pat => { if (pat.score !== 0) score += pat.score; });
+  divs.forEach(div => { score += div.score; });
+
+  if (emaCross && emaCross.score !== 0) score += emaCross.score;
+  if (mktStruct && mktStruct.score !== 0) score += mktStruct.score;
+  if (triangle && triangle.score !== 0) score += triangle.score;
+  if (dblPattern && dblPattern.score !== 0) score += dblPattern.score;
+  if (bosChoch && bosChoch.score !== 0) score += bosChoch.score;
+  if (trendlineBreak != null) score += trendlineBreak.score;
+
+  // Squeeze
+  if (squeeze != null) {
+    if      (squeeze.releasedBull) score += 15;
+    else if (squeeze.releasedBear) score -= 15;
+    else if (!squeeze.squeezed && squeeze.momentumTrend === 'rising')  score += 6;
+    else if (!squeeze.squeezed && squeeze.momentumTrend === 'falling') score -= 6;
+  }
+
+  // Order Block (only when price in zone)
+  if (orderBlock != null && orderBlock.priceInZone) score += orderBlock.score;
+
+  // Multi-category confluence (entry timing quality)
+  if (score !== 0) {
+    const isLong = score > 0;
+    const momentumAligned = rsi !== null && ((isLong && rsi < 50) || (!isLong && rsi > 50));
+    const patternAligned = pats.some(p => isLong ? p.score > 0 : p.score < 0) ||
+                           divs.some(d => isLong ? d.score > 0 : d.score < 0) ||
+                           (squeeze != null && ((isLong && (squeeze.releasedBull || squeeze.momentumTrend === 'rising')) ||
+                                                 (!isLong && (squeeze.releasedBear || squeeze.momentumTrend === 'falling'))));
+    const volumeAligned = volRatio > 1.5;
+    const eventAligned  = mxUp || mxDown || (bosChoch && bosChoch.score !== 0) || (trendlineBreak != null && trendlineBreak.score !== 0);
+    const alignedCount = [momentumAligned, patternAligned, volumeAligned, eventAligned].filter(Boolean).length;
+    if (alignedCount >= 2) {
+      const sign = isLong ? 1 : -1;
+      const confBonus = alignedCount >= 4 ? 15 : alignedCount >= 3 ? 10 : 5;
+      score += sign * confBonus;
+    }
+  }
+
+  // Combo penalty: short squeeze risk
+  if (score < 0 && rsi !== null && rsi < 40 && fg.value < 25) score += 20;
+  if (score > 0 && rsi !== null && rsi > 60 && fg.value > 75) score -= 20;
+
+  return { entryScore: score, reasons, indicators, mxUp, mxDown };
+}
+
 function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) {
   const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
     ema9, ema21, ema200, bb, vwap, obvTrend, volRatio, patterns, divergences, adx,
@@ -1948,7 +2037,7 @@ export {
   // Risk / Reward
   calcLiqPrice, capReturn, getFibSet, calcMetas,
   // Analysis engine
-  _calcTechIndicators, _computeScore, _computeRegimeScore, analyzeCandles,
+  _calcTechIndicators, _computeScore, _computeRegimeScore, _computeEntryScore, analyzeCandles,
   // API layer
   fetchJSON, fetchWithFallback, fetchCandles,
   // MTF

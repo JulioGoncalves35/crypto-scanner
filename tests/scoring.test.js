@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { _computeScore, _computeRegimeScore, _calcTechIndicators, calcADX, calcRSI } from '../painel-core.js';
+import { _computeScore, _computeRegimeScore, _computeEntryScore, _calcTechIndicators, calcADX, calcRSI } from '../painel-core.js';
 import { makeTrendingCandles, makeDowntrendCandles, makeFlatCandles } from './fixtures/candles.js';
 
 const NEUTRAL_FG = { value: 50, label: 'Neutro' };
@@ -545,5 +545,45 @@ describe('_computeRegimeScore', () => {
     const fg = { value: 20, label: 'Medo' };
     const { regimeScore } = _computeRegimeScore(110, ind, fg, -0.0006, { change24h: 6 });
     expect(regimeScore).toBeGreaterThan(80);
+  });
+});
+
+describe('_computeEntryScore', () => {
+  it('returns positive on RSI oversold + MACD bullish cross', () => {
+    const ind = makeInd({
+      rsi: 22, stochRSI: 10,
+      macdNow: 1, sigNow: 0, macdPrev: 0, sigPrev: 1, // cross up
+    });
+    const { entryScore } = _computeEntryScore(100, ind, NEUTRAL_FG, [], []);
+    expect(entryScore).toBeGreaterThan(0);
+  });
+
+  it('returns negative on RSI overbought + MACD bearish cross', () => {
+    const ind = makeInd({
+      rsi: 85, stochRSI: 95,
+      macdNow: 0, sigNow: 1, macdPrev: 1, sigPrev: 0, // cross down
+    });
+    const { entryScore } = _computeEntryScore(100, ind, NEUTRAL_FG, [], []);
+    expect(entryScore).toBeLessThan(0);
+  });
+
+  it('ignores EMA alignment (regime-only)', () => {
+    const flat   = makeInd({ ema9: 100, ema21: 100, ema200: 100 });
+    const aligned = makeInd({ ema9: 110, ema21: 105, ema200: 95 });
+    const r1 = _computeEntryScore(110, flat, NEUTRAL_FG, [], []);
+    const r2 = _computeEntryScore(110, aligned, NEUTRAL_FG, [], []);
+    expect(r1.entryScore).toBe(r2.entryScore);
+  });
+
+  it('is uncapped and applies confluence bonus', () => {
+    const ind = makeInd({
+      rsi: 18, stochRSI: 10,
+      macdNow: 2, sigNow: 1, macdPrev: 0, sigPrev: 1,
+      bb: { upper: 110, mid: 100, lower: 95 },
+      bosChoch: { name: 'CHoCH alta', score: 22 },
+      squeeze: { releasedBull: true, squeezed: false, momentumTrend: 'rising' },
+    });
+    const { entryScore } = _computeEntryScore(94, ind, NEUTRAL_FG, [], []);
+    expect(entryScore).toBeGreaterThan(60);
   });
 });
