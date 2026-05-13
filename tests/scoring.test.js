@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { _computeScore, _calcTechIndicators, calcADX, calcRSI } from '../painel-core.js';
+import { _computeScore, _computeRegimeScore, _calcTechIndicators, calcADX, calcRSI } from '../painel-core.js';
 import { makeTrendingCandles, makeDowntrendCandles, makeFlatCandles } from './fixtures/candles.js';
 
 const NEUTRAL_FG = { value: 50, label: 'Neutro' };
@@ -510,5 +510,40 @@ describe('_calcTechIndicators', () => {
     const closes = candles.map(c => c.close);
     const ind = _calcTechIndicators(candles, closes);
     expect(ind.rsiArr).toHaveLength(closes.length);
+  });
+});
+
+describe('_computeRegimeScore', () => {
+  it('returns positive when EMAs aligned bullish, price above', () => {
+    const ind = makeInd({ ema9: 105, ema21: 102, ema200: 95 });
+    const { regimeScore } = _computeRegimeScore(110, ind, NEUTRAL_FG, null, null);
+    expect(regimeScore).toBeGreaterThan(0);
+  });
+
+  it('returns negative when EMAs aligned bearish, price below', () => {
+    const ind = makeInd({ ema9: 95, ema21: 98, ema200: 105 });
+    const { regimeScore } = _computeRegimeScore(90, ind, NEUTRAL_FG, null, null);
+    expect(regimeScore).toBeLessThan(0);
+  });
+
+  it('ignores RSI extremes (entry-only indicator)', () => {
+    const indNeutral = makeInd({ rsi: 50 });
+    const indOversold = makeInd({ rsi: 15 });
+    const r1 = _computeRegimeScore(100, indNeutral, NEUTRAL_FG, null, null);
+    const r2 = _computeRegimeScore(100, indOversold, NEUTRAL_FG, null, null);
+    expect(r1.regimeScore).toBe(r2.regimeScore);
+  });
+
+  it('is uncapped (can exceed 100)', () => {
+    const ind = makeInd({
+      ema9: 110, ema21: 105, ema200: 95,
+      ichimoku: { priceAboveCloud: true, priceBelowCloud: false, tkCross: 'bullish', chikouBull: true },
+      vwap: 100, anchoredVwap: { vwap: 100 },
+      obvTrend: 'rising', cvd: { trend: 'rising' }, adx: 35,
+      macdNow: 2, sigNow: 1, macdPrev: 1, sigPrev: 1,
+    });
+    const fg = { value: 20, label: 'Medo' };
+    const { regimeScore } = _computeRegimeScore(110, ind, fg, -0.0006, { change24h: 6 });
+    expect(regimeScore).toBeGreaterThan(80);
   });
 });

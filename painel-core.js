@@ -1273,6 +1273,93 @@ function _calcTechIndicators(candles, closes, tf) {
     bosChoch, cvd, volProfile, anchoredVwap, squeeze, ichimoku, orderBlock, trendlineBreak };
 }
 
+function _computeRegimeScore(price, ind, fg, fundingRate = null, openInterest = null) {
+  const { ema9, ema21, ema200, vwap, obvTrend, adx, cvd,
+    ichimoku, anchoredVwap, macdNow, sigNow } = ind;
+
+  let score = 0;
+  const reasons = [], indicators = [];
+
+  // EMA alignment
+  if (ema9 != null && ema21 != null && ema200 != null) {
+    if      (price > ema9 && ema9 > ema21 && ema21 > ema200) { score += 16; reasons.push({text:'EMAs alinhadas ↑',type:'positive'}); }
+    else if (price < ema9 && ema9 < ema21 && ema21 < ema200) { score -= 16; reasons.push({text:'EMAs alinhadas ↓',type:'negative'}); }
+    else if (price > ema200) { score += 7; reasons.push({text:'Acima da EMA200',type:'positive'}); }
+    else                     { score -= 7; reasons.push({text:'Abaixo da EMA200',type:'negative'}); }
+  }
+
+  // Ichimoku cloud (capped internally at ±20)
+  if (ichimoku != null) {
+    let ichScore = 0;
+    if (ichimoku.priceAboveCloud) ichScore += 10;
+    else if (ichimoku.priceBelowCloud) ichScore -= 10;
+    if (ichimoku.tkCross === 'bullish') ichScore += 8;
+    else if (ichimoku.tkCross === 'bearish') ichScore -= 8;
+    if (ichimoku.chikouBull === true) ichScore += 4;
+    else if (ichimoku.chikouBull === false) ichScore -= 4;
+    score += Math.max(-20, Math.min(20, ichScore));
+  }
+
+  // OBV
+  if (obvTrend === 'rising')  { score += 6; reasons.push({text:'OBV ascensão',type:'positive'}); }
+  if (obvTrend === 'falling') { score -= 6; reasons.push({text:'OBV queda',type:'negative'}); }
+
+  // CVD
+  if (cvd != null) {
+    if (cvd.trend === 'rising')  score += 7;
+    else if (cvd.trend === 'falling') score -= 7;
+  }
+
+  // VWAP
+  if (vwap) {
+    if      (price > vwap * 1.002) score += 7;
+    else if (price < vwap * 0.998) score -= 7;
+  }
+
+  // Anchored VWAP
+  if (anchoredVwap != null) {
+    const av = anchoredVwap.vwap;
+    if      (price > av * 1.002) score += 8;
+    else if (price < av * 0.998) score -= 8;
+  }
+
+  // MACD POSITION (not crossover — crossover lives in entry score)
+  if (macdNow != null && sigNow != null) {
+    if (macdNow > sigNow) score += 7;
+    else                  score -= 7;
+  }
+
+  // ADX strength (direction taken from running regime score)
+  const regimeDir = score >= 0 ? 1 : -1;
+  if (adx !== null) {
+    if      (adx > 30) score += regimeDir * 10;
+    else if (adx > 25) score += regimeDir * 6;
+    else if (adx < 20) score -= 8;
+    else               score -= 3;
+  }
+
+  // Funding rate
+  if (fundingRate !== null) {
+    if      (fundingRate <= -0.0005) score += 12;
+    else if (fundingRate <= -0.0001) score += 6;
+    else if (fundingRate >=  0.0005) score -= 12;
+    else if (fundingRate >=  0.0001) score -= 6;
+  }
+
+  // Open Interest
+  if (openInterest !== null) {
+    const oiChg = openInterest.change24h;
+    if      (oiChg >  5) score += regimeDir * 8;
+    else if (oiChg < -5) score -= 6;
+  }
+
+  // Fear & Greed
+  if      (fg.value < 25) score += 10;
+  else if (fg.value > 75) score -= 10;
+
+  return { regimeScore: score, reasons, indicators };
+}
+
 function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) {
   const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
     ema9, ema21, ema200, bb, vwap, obvTrend, volRatio, patterns, divergences, adx,
@@ -1861,7 +1948,7 @@ export {
   // Risk / Reward
   calcLiqPrice, capReturn, getFibSet, calcMetas,
   // Analysis engine
-  _calcTechIndicators, _computeScore, analyzeCandles,
+  _calcTechIndicators, _computeScore, _computeRegimeScore, analyzeCandles,
   // API layer
   fetchJSON, fetchWithFallback, fetchCandles,
   // MTF
