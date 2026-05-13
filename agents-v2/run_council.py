@@ -96,7 +96,7 @@ def main(argv: list[str]) -> int:
             candidate_dir=candidate.direction, agent_outputs=agent_outputs,
             final_decision=decision, final_reason=reason, trade_id=trade_id,
         )
-        log.info("  decision=%s trade_id=%s", decision, trade_id)
+        log.info("  decision=%s trade_id=%s reason=%s", decision, trade_id, reason)
 
     return 0
 
