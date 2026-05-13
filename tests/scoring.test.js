@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { _computeScore, _computeRegimeScore, _computeEntryScore, _calcTechIndicators, calcADX, calcRSI } from '../painel-core.js';
+import { _computeScore, _computeRegimeScore, _computeEntryScore, _calcTechIndicators, calcADX, calcRSI, analyzeCandles } from '../painel-core.js';
 import { makeTrendingCandles, makeDowntrendCandles, makeFlatCandles } from './fixtures/candles.js';
 
 const NEUTRAL_FG = { value: 50, label: 'Neutro' };
@@ -585,5 +585,54 @@ describe('_computeEntryScore', () => {
     });
     const { entryScore } = _computeEntryScore(94, ind, NEUTRAL_FG, [], []);
     expect(entryScore).toBeGreaterThan(60);
+  });
+});
+
+// Sideways-with-drift fixture: high enough liquidity, ADX-pass regime trend,
+// but RSI stays mid so entry-score doesn't auto-conflict on extremes.
+function makeWavyCandles(count = 220, startPrice = 10000) {
+  const candles = [];
+  for (let i = 0; i < count; i++) {
+    const noise = (Math.sin(i / 10) + Math.cos(i / 3)) * 50;
+    const close = startPrice + i * 0.1 + noise;
+    const open  = close - 0.5;
+    candles.push({
+      time:   1000000 + i * 60000,
+      open,
+      high:   close + 5,
+      low:    open - 3,
+      close,
+      volume: 1000 + i * 10,
+    });
+  }
+  return candles;
+}
+
+describe('analyzeCandles dual-score', () => {
+  it('returns regimeScore + entryScore (signed, uncapped) and no `score` field', () => {
+    const candles = makeWavyCandles(220);
+    const out = analyzeCandles('BTC', '5m', candles, NEUTRAL_FG, null, null,
+      { score: '0', leverage: 10, rr: 'fib' });
+    expect(out).not.toBeNull();
+    expect(typeof out.regimeScore).toBe('number');
+    expect(typeof out.entryScore).toBe('number');
+    expect(out.score).toBeUndefined();
+  });
+
+  it('returns null when regime/entry directions conflict', () => {
+    const candles = makeTrendingCandles(220, 10000, 1);
+    const out = analyzeCandles('BTC', '1h', candles, NEUTRAL_FG, null, null,
+      { score: '0', leverage: 10, rr: 'fib' });
+    if (out) expect(Math.sign(out.regimeScore) * Math.sign(out.entryScore)).toBeGreaterThanOrEqual(0);
+  });
+
+  it('honours entry-score threshold in options.score', () => {
+    const candles = makeWavyCandles(220);
+    const lo = analyzeCandles('BTC', '5m', candles, NEUTRAL_FG, null, null,
+      { score: '0', leverage: 10, rr: 'fib' });
+    const hi = analyzeCandles('BTC', '5m', candles, NEUTRAL_FG, null, null,
+      { score: '999', leverage: 10, rr: 'fib' });
+    expect(lo).not.toBeNull();
+    expect(hi).toBeNull();
   });
 });

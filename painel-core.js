@@ -1825,13 +1825,29 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
   if (ind.adx !== null && ind.adx < (TF_ADX_MIN[tf] ?? 18)) return null;
 
   const safeFg = fg ?? { value: 50, label: 'Neutro' };
-  const { score: rawScore, reasons, indicators, mxUp, mxDown, mAbove,
-    emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd,
-    ichimoku, squeeze, orderBlock, anchoredVwap } = _computeScore(price, ind, safeFg, fundingRate, openInterest);
+  const regimeOut = _computeRegimeScore(price, ind, safeFg, fundingRate, openInterest);
+  const entryOut  = _computeEntryScore(price, ind, safeFg, ind.patterns, ind.divergences);
+  const regimeScore = regimeOut.regimeScore;
+  const entryScore  = entryOut.entryScore;
 
-  const dir       = rawScore >= 0 ? 'buy' : 'sell';
-  const normScore = Math.min(100, Math.round(Math.abs(rawScore)));
-  if (normScore < parseInt(options.score)) return null;
+  // Conflict: regime and entry disagree → discard
+  if (regimeScore !== 0 && entryScore !== 0 &&
+      Math.sign(regimeScore) !== Math.sign(entryScore)) {
+    return null;
+  }
+  const dir = (regimeScore + entryScore) >= 0 ? 'buy' : 'sell';
+
+  // options.score now filters by |entryScore|
+  if (Math.abs(entryScore) < parseInt(options.score)) return null;
+
+  const reasons    = [...regimeOut.reasons, ...entryOut.reasons];
+  const indicators = [...regimeOut.indicators, ...entryOut.indicators];
+  // mxUp/mxDown still needed downstream for `summary`
+  const { mxUp, mxDown } = entryOut;
+  const mAbove = ind.macdNow > ind.sigNow;
+  // Pattern objects pulled from ind for the return payload
+  const { emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd,
+          ichimoku, squeeze, orderBlock, anchoredVwap } = ind;
 
   const lev = options.leverage;
 
@@ -1894,7 +1910,7 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
 
   return {
     coin, pair:`${coin}/USDT`, dir,
-    score: normScore, timeframe: tf, leverage: lev,
+    regimeScore, entryScore, timeframe: tf, leverage: lev,
     entry, stop, liqPrice, entryToLiqDist, stopAdjusted,
     stopPct: fmtPct(stopPctRaw),
     m1:{ price:m1p, pct:fmtPct((m1p-entry)/entry*100), cap:capM1 },
