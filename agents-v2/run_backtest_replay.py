@@ -22,6 +22,8 @@ from pathlib import Path
 from src.schemas import Candidate
 from src.db import _path
 from src.graph import run_council
+from src.backend_client import _normalize_candidate
+
 
 def fetch_candidate_outcome_pairs(since: str, limit: int) -> list[tuple[dict, dict]]:
     """Pair each historical candidate with the outcome of its corresponding
@@ -43,20 +45,25 @@ def fetch_candidate_outcome_pairs(since: str, limit: int) -> list[tuple[dict, di
             except Exception:
                 continue
             for cand in cands:
+                # scan_log stores raw backend shape (dir, stopPct, coin without USDT)
+                # trades table stores coin with USDT suffix and direction as 'buy'/'sell'
+                coin_with_usdt = cand.get("coin", "") + "USDT"
+                direction = cand.get("dir")
                 t = c.execute("""
                     SELECT status, pnl FROM trades
                     WHERE coin = ? AND timeframe = ? AND direction = ?
                           AND ABS(score - ?) <= 2
                     ORDER BY found_at DESC LIMIT 1
-                """, (cand.get("coin", "").replace("USDT", ""),
-                      cand.get("timeframe"), cand.get("direction"),
+                """, (coin_with_usdt,
+                      cand.get("timeframe"), direction,
                       cand.get("score", 0))).fetchone()
                 if t:
                     outcome = {
-                        "hit": t["status"] if t["status"] in ("m1","m2","m3","stop") else "unknown",
+                        "hit": t["status"] if t["status"] in ("m1","m2","m3","stop","stopped_at_entry") else "unknown",
                         "pnl_pct": float(t["pnl"]) if t["pnl"] else 0.0,
                     }
-                    pairs.append((cand, outcome))
+                    # normalize to Candidate schema shape before returning
+                    pairs.append((_normalize_candidate(cand), outcome))
     return pairs
 
 def score_replay(cand: Candidate, decision: dict, outcome: dict) -> dict:
@@ -105,6 +112,8 @@ def main(argv):
         except Exception as e:
             log.warning("skip %s: %s", cand_dict.get("coin"), e)
             continue
+        log.info("running council on %s %s %s score=%s outcome=%s",
+                 cand.coin, cand.timeframe, cand.direction, cand.score, outcome["hit"])
         final = run_council(cand)
         trader = final.get("trader") or {"decision": "ERROR"}
         results.append(score_replay(cand, trader, outcome))
