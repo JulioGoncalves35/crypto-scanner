@@ -1407,8 +1407,9 @@ function _computeEntryScore(price, ind, fg, patterns = null, divergences = null)
                            divs.some(d => isLong ? d.score > 0 : d.score < 0) ||
                            (squeeze != null && ((isLong && (squeeze.releasedBull || squeeze.momentumTrend === 'rising')) ||
                                                  (!isLong && (squeeze.releasedBear || squeeze.momentumTrend === 'falling'))));
+    const volumeAligned = volRatio > 1.5;
     const eventAligned  = mxUp || mxDown || (bosChoch && bosChoch.score !== 0) || (trendlineBreak != null && trendlineBreak.score !== 0);
-    const alignedCount = [momentumAligned, patternAligned, eventAligned].filter(Boolean).length;
+    const alignedCount = [momentumAligned, patternAligned, volumeAligned, eventAligned].filter(Boolean).length;
     if (alignedCount >= 2) {
       const sign = isLong ? 1 : -1;
       const confBonus = alignedCount >= 4 ? 15 : alignedCount >= 3 ? 10 : 5;

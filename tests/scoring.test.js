@@ -723,7 +723,7 @@ describe('_computeEntryScore — momentum indicators removed', () => {
       bosChoch: { score: 12 }, volRatio: 1.0,
     }), FG);
     expect(withVol).toBeGreaterThan(withoutVol);
-    expect(withVol - withoutVol).toBe(7);
+    expect(withVol - withoutVol).toBe(12); // 7 volume + 5 confluence (volumeAligned + eventAligned)
   });
 });
 
