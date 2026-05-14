@@ -93,7 +93,8 @@ def test_open_trade_success():
         coin="XRPUSDT",
         direction="buy",
         timeframe="1h",
-        score=88,
+        regime_score=60,
+        entry_score=40,
         entry=1,
         stop=0.95,
         m1=1.05,
@@ -119,7 +120,8 @@ def test_open_trade_409_returns_blocked():
         coin="BTC",
         direction="buy",
         timeframe="1h",
-        score=88,
+        regime_score=60,
+        entry_score=40,
         entry=1,
         stop=0.9,
         m1=1.1,
@@ -198,6 +200,21 @@ def test_get_recent_reflections():
     reflections = get_recent_reflections(limit=10)
     assert len(reflections) == 1
     assert reflections[0]["lesson_tag"] == "R_R_EXECUTION"
+
+
+def test_normalize_candidate_maps_dual_score():
+    from src.backend_client import _normalize_candidate
+    raw = {
+        "coin": "BTC", "dir": "buy", "timeframe": "1h",
+        "regimeScore": 55, "entryScore": -10,
+        "entry": 100.0, "stop": 98.0,
+        "m1": {"price": 102.0}, "m2": {"price": 104.0}, "m3": {"price": 106.0},
+        "stopPct": "-2.00%", "leverage": 10, "reasons": [],
+    }
+    out = _normalize_candidate(raw)
+    assert out["regime_score"] == 55
+    assert out["entry_score"] == -10
+    assert "score" not in out
 
 
 @respx.mock
