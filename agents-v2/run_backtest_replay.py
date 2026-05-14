@@ -88,7 +88,7 @@ def score_replay(cand: Candidate, decision: dict, outcome: dict) -> dict:
         correct, attributed = None, 0.0
     return {
         "coin": cand.coin, "tf": cand.timeframe, "dir": cand.direction,
-        "score": cand.score, "decision": d, "outcome": hit,
+        "regime_score": cand.regime_score, "entry_score": cand.entry_score, "decision": d, "outcome": hit,
         "actual_pnl": pnl, "correct": correct, "pnl_attributed": attributed,
     }
 
