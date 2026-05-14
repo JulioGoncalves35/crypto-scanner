@@ -52,7 +52,7 @@ describe('analyzeCandles — return structure', () => {
   it('returns an object with all required top-level fields', () => {
     const result = getResult();
     if (!result) return; // might be null if ADX filter triggers
-    const required = ['coin','pair','dir','score','timeframe','leverage',
+    const required = ['coin','pair','dir','regimeScore','entryScore','timeframe','leverage',
       'entry','stop','liqPrice','stopAdjusted','stopPct',
       'm1','m2','m3','capStop','feePctCap','reasons','indicators','summary',
       'patterns','divergences','conditionalEntry','candles','mtfConfluence'];
@@ -67,11 +67,12 @@ describe('analyzeCandles — return structure', () => {
     expect(result.timeframe).toBe('15m');
   });
 
-  it('score is between 0 and 100', () => {
+  it('regimeScore and entryScore are signed integers (dual-score)', () => {
     const result = getResult();
     if (!result) return;
-    expect(result.score).toBeGreaterThanOrEqual(0);
-    expect(result.score).toBeLessThanOrEqual(100);
+    expect(typeof result.regimeScore).toBe('number');
+    expect(typeof result.entryScore).toBe('number');
+    expect(result.score).toBeUndefined();
   });
 
   it('dir is "buy" or "sell"', () => {

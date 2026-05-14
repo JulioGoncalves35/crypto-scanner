@@ -549,22 +549,22 @@ describe('_computeRegimeScore', () => {
 });
 
 describe('_computeEntryScore', () => {
-  it('returns positive on RSI oversold + MACD bullish cross', () => {
+  it('RSI oversold + MACD bullish cross alone no longer drive entryScore (regime-only)', () => {
     const ind = makeInd({
       rsi: 22, stochRSI: 10,
       macdNow: 1, sigNow: 0, macdPrev: 0, sigPrev: 1, // cross up
     });
     const { entryScore } = _computeEntryScore(100, ind, NEUTRAL_FG, [], []);
-    expect(entryScore).toBeGreaterThan(0);
+    expect(entryScore).toBe(0);
   });
 
-  it('returns negative on RSI overbought + MACD bearish cross', () => {
+  it('RSI overbought + MACD bearish cross alone no longer drive entryScore (regime-only)', () => {
     const ind = makeInd({
       rsi: 85, stochRSI: 95,
       macdNow: 0, sigNow: 1, macdPrev: 1, sigPrev: 0, // cross down
     });
     const { entryScore } = _computeEntryScore(100, ind, NEUTRAL_FG, [], []);
-    expect(entryScore).toBeLessThan(0);
+    expect(entryScore).toBe(0);
   });
 
   it('ignores EMA alignment (regime-only)', () => {
@@ -584,7 +584,8 @@ describe('_computeEntryScore', () => {
       squeeze: { releasedBull: true, squeezed: false, momentumTrend: 'rising' },
     });
     const { entryScore } = _computeEntryScore(94, ind, NEUTRAL_FG, [], []);
-    expect(entryScore).toBeGreaterThan(60);
+    // bosChoch=22 + squeeze=15 + confluence(momentum+pattern+event=3cats)=10 → 47
+    expect(entryScore).toBeGreaterThan(40);
   });
 });
 
