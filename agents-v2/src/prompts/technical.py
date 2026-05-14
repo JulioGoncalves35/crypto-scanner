@@ -22,7 +22,7 @@ Output STRICTLY this JSON shape (no prose, no markdown fences):
 }"""
 
 def build(c: Candidate) -> tuple[str, str]:
-    user = f"""Setup: {c.coin} {c.direction.upper()} {c.timeframe}, score={c.score}/100, stop={c.stop_pct:.2f}%
+    user = f"""Setup: {c.coin} {c.direction.upper()} {c.timeframe}, regime={c.regime_score:+d}, entry={c.entry_score:+d}, stop={c.stop_pct:.2f}%
 Signals: {", ".join(c.signals) if c.signals else "(none)"}
 
 Return your JSON verdict."""

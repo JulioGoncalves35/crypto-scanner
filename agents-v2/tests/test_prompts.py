@@ -3,7 +3,7 @@ from src.prompts.sentiment import build as build_sent
 from src.prompts.news import build as build_news
 from src.schemas import Candidate
 
-C = Candidate(coin="BTC", direction="buy", timeframe="1h", score=88,
+C = Candidate(coin="BTC", direction="buy", timeframe="1h", regime_score=60, entry_score=40,
               entry=70000, stop=68500, m1=71200, m2=72500, m3=74000,
               stop_pct=2.1, leverage=10,
               signals=["EMA200 bullish", "ADX 28", "BOS up"])
@@ -12,7 +12,8 @@ def test_technical_prompt_contains_candidate_fields():
     sys, user = build_tech(C)
     assert "BTC" in user
     assert "1h" in user
-    assert "88" in user
+    assert "+60" in user  # regime_score
+    assert "+40" in user  # entry_score
     assert "EMA200 bullish" in user
     assert "JSON" in sys
 

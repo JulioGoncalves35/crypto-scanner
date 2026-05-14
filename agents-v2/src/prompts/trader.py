@@ -25,7 +25,8 @@ Output STRICTLY this JSON:
   "size_multiplier": 1.0 (or 0.5 for OPEN_REDUCED, ignored for SKIP),
   "payload": null  OR  {
     "coin": "...", "direction": "buy|sell", "timeframe": "...",
-    "score": int, "entry": float, "stop": float,
+    "regime_score": int, "entry_score": int,
+    "entry": float, "stop": float,
     "m1": float, "m2": float, "m3": float,
     "stop_pct": float, "leverage": int,
     "type": "scalp|day|swing", "signals": []
