@@ -12,7 +12,7 @@ from datetime import datetime
 from pathlib import Path
 
 from src import config
-from src.db import ensure_table, insert_decision
+from src.db import ensure_table, insert_decision, get_recent_decisions
 from src.backend_client import get_latest_scan_candidates, open_trade
 from src.schemas import Candidate
 from src.graph import run_council
@@ -73,6 +73,10 @@ def main(argv: list[str]) -> int:
         len(eligible), config.COUNCIL_MIN_REGIME, config.COUNCIL_MIN_ENTRY, config.COUNCIL_4H_MIN_ENTRY,
     )
 
+    # Batch context for validator (computed once, reused per candidate)
+    batch_regime_scores = [int(c.get("regime_score", 0)) for c in eligible]
+    history = get_recent_decisions(limit=200)
+
     for c in eligible:
         try:
             candidate = Candidate(**c, scan_id=scan_id)
@@ -83,7 +87,10 @@ def main(argv: list[str]) -> int:
         log.info("→ council on %s %s %s (R=%+d E=%+d)",
                  candidate.coin, candidate.direction, candidate.timeframe,
                  candidate.regime_score, candidate.entry_score)
-        final = run_council(candidate)
+        final = run_council(candidate, batch_regime_scores=batch_regime_scores,
+                            history=history)
+        validator = final.get("validator") or {}
+        v_verdict = validator.get("verdict", "MISSING")
         trader = final.get("trader") or {}
         decision = trader.get("decision", "ERROR")
         reason = trader.get("reason", "no trader output")
@@ -101,15 +108,17 @@ def main(argv: list[str]) -> int:
 
         agent_outputs = {
             k: final.get(k) for k in
-            ("technical", "sentiment", "news", "bull", "bear", "trader")
+            ("validator", "technical", "sentiment", "news", "bull", "bear", "trader")
         }
         insert_decision(
             scan_id=scan_id, candidate_coin=candidate.coin,
             candidate_tf=candidate.timeframe, candidate_score=candidate.entry_score,
             candidate_dir=candidate.direction, agent_outputs=agent_outputs,
             final_decision=decision, final_reason=reason, trade_id=trade_id,
+            validator_verdict=v_verdict,
         )
-        log.info("  decision=%s trade_id=%s reason=%s", decision, trade_id, reason)
+        log.info("  validator=%s decision=%s trade_id=%s reason=%s",
+                 v_verdict, decision, trade_id, reason)
 
     return 0
 

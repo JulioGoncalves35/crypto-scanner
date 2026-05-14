@@ -41,21 +41,37 @@ def ensure_table() -> None:
         c.execute(
             "CREATE INDEX IF NOT EXISTS idx_decisions_created ON agent_decisions(created_at DESC)"
         )
+        # Migration: add validator_verdict column if missing
+        cols = c.execute("PRAGMA table_info(agent_decisions)").fetchall()
+        names = {row["name"] if hasattr(row, "keys") else row[1] for row in cols}
+        if "validator_verdict" not in names:
+            c.execute("ALTER TABLE agent_decisions ADD COLUMN validator_verdict TEXT")
 
 def insert_decision(*, scan_id, candidate_coin, candidate_tf,
                     candidate_score, candidate_dir, agent_outputs,
-                    final_decision, final_reason, trade_id=None) -> int:
+                    final_decision, final_reason, trade_id=None,
+                    validator_verdict: str | None = None) -> int:
     with _conn() as c:
         cur = c.execute("""
             INSERT INTO agent_decisions
               (scan_id, candidate_coin, candidate_tf, candidate_score,
                candidate_dir, agent_outputs_json, final_decision,
-               final_reason, trade_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+               final_reason, trade_id, validator_verdict)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (scan_id, candidate_coin, candidate_tf, candidate_score,
               candidate_dir, json.dumps(agent_outputs), final_decision,
-              final_reason, trade_id))
+              final_reason, trade_id, validator_verdict))
         return cur.lastrowid
+
+
+def get_recent_decisions(limit: int = 200) -> list[dict[str, Any]]:
+    """Return recent decisions ordered by created_at DESC."""
+    with _conn() as c:
+        rows = c.execute(
+            "SELECT * FROM agent_decisions ORDER BY id DESC LIMIT ?",
+            (int(limit),),
+        ).fetchall()
+    return [dict(r) for r in rows]
 
 def get_latest_scan_id() -> int:
     """Return the id of the most recent scan_log entry, or -1 if none."""
