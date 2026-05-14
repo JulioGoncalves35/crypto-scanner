@@ -38,6 +38,17 @@ def test_candidate_rejects_legacy_score_field():
             stop_pct=-2.0, leverage=10,
         )
 
+def test_validator_output_shape():
+    from src.schemas import ValidatorOutput
+    v = ValidatorOutput(
+        verdict="REJECT", confidence=80, key_concern="stale BOS signal",
+        tf_coherent=True, signals_verified=False,
+        chronic_candidate=True, saturation_percentile=0.92,
+    )
+    assert v.verdict == "REJECT"
+    assert 0 <= v.saturation_percentile <= 1
+
+
 def test_trader_output_open_requires_payload():
     with pytest.raises(ValidationError):
         TraderOutput(decision="OPEN", reason="x")
