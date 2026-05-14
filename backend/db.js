@@ -55,7 +55,7 @@ function initSchema() {
       current_capital REAL NOT NULL DEFAULT 1000,
       alloc_pct REAL NOT NULL DEFAULT 2,
       max_positions INTEGER NOT NULL DEFAULT 10,
-      min_score INTEGER NOT NULL DEFAULT 85,
+      min_score INTEGER NOT NULL DEFAULT 30,
       leverage INTEGER NOT NULL DEFAULT 10,
       updated_at TEXT NOT NULL
     );
@@ -148,13 +148,24 @@ function initSchema() {
     }
   } catch (_) {}
 
-  // Migration: bump min_score to 85 for any account below threshold
+  // Migration: bump min_score to 30 for any account below threshold (entry-only score recalibration)
   try {
     const acc = db.prepare('SELECT min_score FROM paper_account WHERE id = 1').get();
-    if (acc && acc.min_score < 85) {
+    if (acc && acc.min_score < 30) {
       const old = acc.min_score;
-      db.prepare('UPDATE paper_account SET min_score = 85 WHERE id = 1').run();
-      console.log(`[db] migrated min_score ${old} → 85`);
+      db.prepare('UPDATE paper_account SET min_score = 30 WHERE id = 1').run();
+      console.log(`[db] migrated min_score ${old} → 30`);
+    }
+  } catch (_) {}
+
+  // Migration: account at min_score=85 (old combined-score threshold) → 30
+  // The guard above (< 30) does not catch accounts at 85. Without this, the scanner
+  // finds 0 candidates permanently after the entry-score cleanup.
+  try {
+    const acc85 = db.prepare('SELECT min_score FROM paper_account WHERE id = 1').get();
+    if (acc85 && acc85.min_score === 85) {
+      db.prepare('UPDATE paper_account SET min_score = 30 WHERE id = 1').run();
+      console.log('[db] migration: min_score 85 → 30 (entry-only score recalibration)');
     }
   } catch (_) {}
 

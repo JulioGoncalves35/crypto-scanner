@@ -1,20 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(curl:*)",
       "Bash(node:*)",
       "Bash(npm:*)",
       "Bash(npm run *)",
       "Bash(npm install:*)",
       "Bash(npm test:*)",
       "Bash(npx:*)",
-      "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git status:*)",
       "Bash(git log:*)",
       "Bash(git diff:*)",
       "Bash(gh api *)",
-      "Bash(cd:*)",
       "Bash(ls:*)",
       "Bash(wc:*)",
       "Bash(echo:*)",
@@ -47,14 +44,10 @@
       "Bash(powershell -Command \"Get-Content /tmp/preview.json | Select-Object -First 5\")",
       "Bash(powershell *)",
       "Bash(git checkout *)",
-      "Bash(Get-ChildItem agents-v2 *)",
       "Bash(Select-Object FullName)",
       "Bash(Select-Object -First 20)",
-      "Bash(Get-ChildItem -Path C:\\\\Users\\\\julio\\\\Documents\\\\github\\\\crypto-scanner\\\\agents-v2 -Recurse)",
       "Bash(Select-Object -First 20 FullName)",
-      "Bash(Get-ChildItem *)",
       "Bash(git check-ignore *)",
-      "Bash(awk -F'_' '{print $1}')",
       "Bash(ps -W)",
       "Bash(grep -E \"^\\(BTC|ETH|SOL\\)_\\(15m|1h|4h\\)\\\\.csv$\")",
       "Bash(xargs grep -l \"python\\\\|hook\")",
@@ -63,7 +56,12 @@
       "Bash(where python3 *)",
       "Bash(Sort-Object LastWriteTime -Descending)",
       "Bash(Select-Object -First 5)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Skill(superpowers:brainstorming)",
+      "Skill(superpowers:writing-plans)",
+      "Skill(superpowers:subagent-driven-development)",
+      "Bash(grep *)",
+      "Skill(superpowers:finishing-a-development-branch)"
     ]
   }
 }

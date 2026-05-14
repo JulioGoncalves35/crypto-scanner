@@ -68,6 +68,8 @@ def test_validator_run_success(monkeypatch):
             "key_concern": "fresh BOS, TFs aligned",
             "tf_coherent": True, "signals_verified": True,
             "chronic_candidate": False, "saturation_percentile": 0.0,
+            "market_phase": "trending",
+            "timing_quality": "good",
         }
     monkeypatch.setattr("src.agents.validator.call_llm", ok)
 

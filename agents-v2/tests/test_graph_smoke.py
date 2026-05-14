@@ -14,6 +14,7 @@ def test_full_pipeline_open_decision():
         "key_concern": "fresh setup", "tf_coherent": True,
         "signals_verified": True, "chronic_candidate": False,
         "saturation_percentile": 0.4,
+        "market_phase": "trending", "timing_quality": "good",
     }
     fake_tech = {"regime": "trending_up", "confluences": ["a"], "red_flags": [],
                  "confidence_0_100": 80, "tf_alignment": "aligned"}

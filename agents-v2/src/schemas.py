@@ -22,6 +22,7 @@ class Candidate(BaseModel):
     leverage: int = Field(ge=1, le=125)
     signals: list[str] = Field(default_factory=list)
     scan_id: Optional[int] = None
+    momentum_ctx: Optional[dict] = None   # from momentumCtx in analyzeCandles
 
     @field_validator("coin", mode="before")
     @classmethod
@@ -70,6 +71,8 @@ class ValidatorOutput(BaseModel):
     signals_verified: bool
     chronic_candidate: bool = False
     saturation_percentile: float = Field(ge=0.0, le=1.0, default=0.0)
+    market_phase:   Literal["trending", "choppy", "reversing"] = "choppy"
+    timing_quality: Literal["good", "neutral", "poor"] = "neutral"
 
 
 class ResearcherOutput(BaseModel):
