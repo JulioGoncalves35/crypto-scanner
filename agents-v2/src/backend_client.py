@@ -71,6 +71,7 @@ def _normalize_candidate(c: dict) -> dict:
         "stop_pct":  _pct(c.get("stopPct")),
         "leverage":  c.get("leverage"),
         "signals":   [r["text"] for r in c.get("reasons", []) if isinstance(r, dict)],
+        "momentum_ctx": c.get("momentumCtx"),   # None for old-format candidates
     }
 
 
