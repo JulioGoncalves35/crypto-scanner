@@ -81,25 +81,41 @@ runRealAnalysis() → fetchFearGreed() → per coin: fetchFunding + fetchOI
 
 ---
 
-## Scoring Engine (`_computeScore`)
+## Scoring Engine (dual-score, desde 2026-05-13)
 
-- **ADX hard filter (TF-aware):** `TF_ADX_MIN = { '5m': 23, '15m': 22, '30m': 20, '1h': 18, '4h': 18, '1D': 18 }`
-- **ADX scoring:** >30 → ±10 · >25 → ±6 · 20–25 → -3 · <20 → -8
-- **MTF:** confluence bonus +6–12 (2+ TFs same dir) · conflict penalty -20 (lower TF opposes highest TF)
-- **BOS/CHoCH:** Break of Structure ±12 · Change of Character ±22
-- **Squeeze Momentum:** released ±15 · post-squeeze momentum ±6
-- **Order Block:** ±14 quando price dentro da zona (99%–101%)
-- **Trendline Break:** LTB break (bullish) +10 · LTA break (bearish) -10
-- **Ichimoku:** capped ±20 (price above/below cloud ±10, TK cross ±8, Chikou ±4) — requer ≥78 candles
-- **Anchored VWAP:** >0.2% above → +8 · >0.2% below → -8
-- **Volume Profile:** above POC +6 · below POC -6 · below VAL +5 · above VAH -5
-- **CVD:** ±7 por trend crescente/decrescente
-- **Combo penalty:** RSI oversold + F&G <25 em SHORT → `score += 20` (short squeeze risk). Simétrico para LONG.
-- **Confluência multi-categoria:** 2 categorias alinhadas ±5 · 3 → ±10 · 4 → ±15. Só aplica quando `score !== 0`.
+`analyzeCandles` retorna **dois inteiros signed e uncapped**: `regimeScore` (contexto/condições) e `entryScore` (gatilhos/timing). Não há mais campo `score`. Conflito de sinal entre os dois → `analyzeCandles` retorna `null` (feature, não bug).
+
+**`_computeRegimeScore`** — indicadores estruturais/contextuais:
+- ADX hard filter TF-aware: `{ '5m': 23, '15m': 22, '30m': 20, '1h': 18, '4h': 18, '1D': 18 }`
+- ADX scoring: >30 → ±10 · >25 → ±6 · 20–25 → -3 · <20 → -8
+- Ichimoku ±20 (price vs cloud ±10, TK cross ±8, Chikou ±4) — requer ≥78 candles
+- Anchored VWAP ±8 (>0.2% offset)
+- Volume Profile (mutually exclusive): VA acima/abaixo ±5, depois POC ±6
+- CVD ±7 (trend EMA)
+- Funding rate / OI extremes
+- Combo penalty: RSI oversold + F&G <25 em SHORT → +20 (short squeeze risk). Simétrico LONG.
+
+**`_computeEntryScore`** — eventos/gatilhos:
+- BOS/CHoCH: Break of Structure ±12 · Change of Character ±22
+- Squeeze Momentum: released ±15 · post-squeeze momentum ±6
+- Order Block ±14 (price dentro da zona 99%–101%)
+- Trendline Break: LTB ±10 (bullish) · LTA ±10 (bearish)
+- Pattern/divergence sums (patterns.score)
+- Confluência multi-categoria: 2/3/4 categorias alinhadas → ±5/±10/±15. Só aplica quando `entryScore !== 0`.
+
+**MTF (em `applyMTFScoring`):** confluence bonus +6–12 (2+ TFs same dir) **só altera `entryScore`**; conflict penalty -20 também. `regimeScore` é per-TF e nunca recebe MTF bonus.
 
 **Stop mínimo por TF:** `TF_MIN_STOP = { 5m: 0.8%, 15m: 1.2%, 30m: 1.5%, 1h: 2%, 4h: 3%, 1D: 5% }`
 
-**Nível de confiança (exibição apenas):** score 60–72 → NV1 · 73–84 → NV2 · 85+ → NV3
+**Nível de confiança (exibição apenas):** `|entryScore|` ≥60 → NV3 · ≥40 → NV2 · ≥25 → NV1.
+
+**Thresholds do council (env vars):** `COUNCIL_MIN_REGIME=45` · `COUNCIL_MIN_ENTRY=30` · `COUNCIL_4H_MIN_ENTRY=50` (4h exige entry score maior; tem WR ruim historicamente).
+
+**Backend filtros antes de abrir:**
+1. `Math.abs(entryScore) >= min_score` (default 85)
+2. Regime gate: `Math.abs(regimeScore) >= account.min_regime ?? 45`
+3. BTC EMA200 4h (macro)
+4. `MAX_STOP_RISK_MULTIPLIER = 50`
 
 ---
 
@@ -218,6 +234,10 @@ cd agents-v2 && python run_backtest_replay.py --since 2026-04-15
 
 ## Common Pitfalls
 
+- **Dual-score — `analyzeCandles` retorna `regimeScore`+`entryScore`, nunca `score`.** Frontend, backend (`scanner.js`, `paper-trader.js`, `routes/trades.js`), e Python (`Candidate`, `OpenPayload`, `_normalize_candidate`) precisam ler ambos. Procurar `setup.score` / `result.score` em diff antes de comitar.
+- **Conflict guard (sign mismatch):** `regimeScore !== 0 && entryScore !== 0 && sign(regime) !== sign(entry)` → `analyzeCandles` retorna `null`. Não tratar como erro — é o filtro de coerência. `Math.sign(0)` é 0, então um lado zerado não bloqueia.
+- **MTF bonus só infla `entryScore`:** `applyMTFScoring` em `painel-core.js` e o bloco inline em `runRealAnalysis` (`painel.html`) somam confluence/penalty apenas no entryScore. Regime fica intocado (é per-TF). Não restaurar `s.score = ...` — quebra o split.
+- **painel.html mirrors the JS engine:** ambos os arquivos contêm `_computeRegimeScore` + `_computeEntryScore` + `analyzeCandles`. Toda mudança no motor entra nos dois.
 - **AbortError vs timeout:** `fetchJSON` usa `AbortController` local para timeout de 10s — idêntico ao AbortError de cancelamento do usuário. Sempre verificar `signal?.aborted` antes de re-throw: `if (e.name === 'AbortError' && signal?.aborted) throw e;`
 - **Fetches sequenciais em `runRealAnalysis`:** usa `await` sequencial (não `Promise.all`) para não esgotar os proxies CORS por rate limit. Não converter para concorrência.
 - **painel-core.js vs painel.html — diferenças intencionais de API:**
