@@ -8,3 +8,17 @@
 2026-05-13 11:37:49,502 [INFO] src.llm_client: [llm] risk_reviewer → mistral-large (primary, attempt=1)
 2026-05-13 11:37:52,498 [INFO] httpx: HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-05-13 11:37:52,501 [INFO] run_risk_review: trade 1778105515638-AVAX-4h (AVAXUSDT): HOLD — Thesis intact as price remains between current_stop and m1, with no significant progress toward m1 yet.
+2026-05-13 21:51:53,606 [INFO] httpx: HTTP Request: GET http://localhost:3001/api/trades/active "HTTP/1.1 200 OK"
+2026-05-13 21:51:53,607 [INFO] run_risk_review: reviewing 3 active trades (dry_run=False)
+2026-05-13 21:51:54,394 [INFO] httpx: HTTP Request: GET https://api.bybit.com/v5/market/tickers?category=linear&symbol=INJUSDT "HTTP/1.1 200 OK"
+2026-05-13 21:51:54,397 [INFO] src.llm_client: [llm] risk_reviewer → mistral-large (primary, attempt=1)
+2026-05-13 21:51:57,067 [INFO] httpx: HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-13 21:51:57,068 [INFO] run_risk_review: trade 1778705382409-INJ-4h (INJUSDT): HOLD — Thesis remains intact as price is between current_stop and m1, with no significant progress toward m1 yet.
+2026-05-13 21:51:57,860 [INFO] httpx: HTTP Request: GET https://api.bybit.com/v5/market/tickers?category=linear&symbol=BNBUSDT "HTTP/1.1 200 OK"
+2026-05-13 21:51:57,862 [INFO] src.llm_client: [llm] risk_reviewer → mistral-large (primary, attempt=1)
+2026-05-13 21:52:00,460 [INFO] httpx: HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-13 21:52:00,466 [INFO] run_risk_review: trade 1778705261314-BNB-4h (BNBUSDT): HOLD — Thesis remains intact as price is between current_stop and m1, with no signs of a broken swing low.
+2026-05-13 21:52:01,242 [INFO] httpx: HTTP Request: GET https://api.bybit.com/v5/market/tickers?category=linear&symbol=AVAXUSDT "HTTP/1.1 200 OK"
+2026-05-13 21:52:01,243 [INFO] src.llm_client: [llm] risk_reviewer → mistral-large (primary, attempt=1)
+2026-05-13 21:52:03,775 [INFO] httpx: HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-13 21:52:03,780 [INFO] run_risk_review: trade 1778105515638-AVAX-4h (AVAXUSDT): HOLD — Thesis intact; price is between current_stop and m1, and has not yet moved >50% toward m1.

@@ -1273,6 +1273,182 @@ function _calcTechIndicators(candles, closes, tf) {
     bosChoch, cvd, volProfile, anchoredVwap, squeeze, ichimoku, orderBlock, trendlineBreak };
 }
 
+function _computeRegimeScore(price, ind, fg, fundingRate = null, openInterest = null) {
+  const { ema9, ema21, ema200, vwap, obvTrend, adx, cvd,
+    ichimoku, anchoredVwap, macdNow, sigNow } = ind;
+
+  let score = 0;
+  const reasons = [], indicators = [];
+
+  // EMA alignment
+  if (ema9 != null && ema21 != null && ema200 != null) {
+    if      (price > ema9 && ema9 > ema21 && ema21 > ema200) { score += 16; reasons.push({text:'EMAs alinhadas ↑',type:'positive'}); }
+    else if (price < ema9 && ema9 < ema21 && ema21 < ema200) { score -= 16; reasons.push({text:'EMAs alinhadas ↓',type:'negative'}); }
+    else if (price > ema200) { score += 7; reasons.push({text:'Acima da EMA200',type:'positive'}); }
+    else                     { score -= 7; reasons.push({text:'Abaixo da EMA200',type:'negative'}); }
+  }
+
+  // Ichimoku cloud (capped internally at ±20)
+  if (ichimoku != null) {
+    let ichScore = 0;
+    if (ichimoku.priceAboveCloud) ichScore += 10;
+    else if (ichimoku.priceBelowCloud) ichScore -= 10;
+    if (ichimoku.tkCross === 'bullish') ichScore += 8;
+    else if (ichimoku.tkCross === 'bearish') ichScore -= 8;
+    if (ichimoku.chikouBull === true) ichScore += 4;
+    else if (ichimoku.chikouBull === false) ichScore -= 4;
+    score += Math.max(-20, Math.min(20, ichScore));
+  }
+
+  // OBV
+  if (obvTrend === 'rising')  { score += 6; reasons.push({text:'OBV ascensão',type:'positive'}); }
+  if (obvTrend === 'falling') { score -= 6; reasons.push({text:'OBV queda',type:'negative'}); }
+
+  // CVD
+  if (cvd != null) {
+    if (cvd.trend === 'rising')  score += 7;
+    else if (cvd.trend === 'falling') score -= 7;
+  }
+
+  // VWAP
+  if (vwap) {
+    if      (price > vwap * 1.002) score += 7;
+    else if (price < vwap * 0.998) score -= 7;
+  }
+
+  // Anchored VWAP
+  if (anchoredVwap != null) {
+    const av = anchoredVwap.vwap;
+    if      (price > av * 1.002) score += 8;
+    else if (price < av * 0.998) score -= 8;
+  }
+
+  // MACD POSITION (not crossover — crossover lives in entry score)
+  if (macdNow != null && sigNow != null) {
+    if (macdNow > sigNow) score += 7;
+    else                  score -= 7;
+  }
+
+  // ADX strength (direction taken from running regime score)
+  const regimeDir = score >= 0 ? 1 : -1;
+  if (adx !== null) {
+    if      (adx > 30) score += regimeDir * 10;
+    else if (adx > 25) score += regimeDir * 6;
+    else if (adx < 20) score -= 8;
+    else               score -= 3;
+  }
+
+  // Funding rate
+  if (fundingRate !== null) {
+    if      (fundingRate <= -0.0005) score += 12;
+    else if (fundingRate <= -0.0001) score += 6;
+    else if (fundingRate >=  0.0005) score -= 12;
+    else if (fundingRate >=  0.0001) score -= 6;
+  }
+
+  // Open Interest
+  if (openInterest !== null) {
+    const oiChg = openInterest.change24h;
+    if      (oiChg >  5) score += regimeDir * 8;
+    else if (oiChg < -5) score -= 6;
+  }
+
+  // Fear & Greed
+  if      (fg.value < 25) score += 10;
+  else if (fg.value > 75) score -= 10;
+
+  return { regimeScore: score, reasons, indicators };
+}
+
+function _computeEntryScore(price, ind, fg, patterns = null, divergences = null) {
+  const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
+    bb, volRatio, bosChoch, squeeze, orderBlock, trendlineBreak,
+    emaCross, mktStruct, triangle, dblPattern } = ind;
+  const pats = patterns ?? ind.patterns ?? [];
+  const divs = divergences ?? ind.divergences ?? [];
+
+  let score = 0;
+  const reasons = [], indicators = [];
+
+  // RSI extremes
+  if (rsi !== null) {
+    if      (rsi < 30) score += 20;
+    else if (rsi < 40) score += 10;
+    else if (rsi > 70) score -= 20;
+    else if (rsi > 60) score -= 10;
+  }
+
+  // StochRSI extremes
+  if (stochRSI !== null) {
+    if      (stochRSI < 20) score += 8;
+    else if (stochRSI > 80) score -= 8;
+  }
+
+  // MACD CROSSOVER ONLY (position lives in regime score)
+  const mxUp   = macdNow > sigNow && macdPrev <= sigPrev;
+  const mxDown = macdNow < sigNow && macdPrev >= sigPrev;
+  if      (mxUp)   score += 20;
+  else if (mxDown) score -= 20;
+  if (histNow > histPrev && histNow > 0) score += 4;
+  if (histNow < histPrev && histNow < 0) score -= 4;
+
+  // Bollinger touch
+  if (bb) {
+    if      (price <= bb.lower) score += 10;
+    else if (price >= bb.upper) score -= 10;
+  }
+
+  // Volume spike (snapshot direction before applying)
+  const entryDir = score >= 0 ? 1 : -1;
+  if (volRatio > 1.5) score += entryDir * 7;
+
+  // Pattern signals
+  pats.forEach(pat => { if (pat.score !== 0) score += pat.score; });
+  divs.forEach(div => { score += div.score; });
+
+  if (emaCross && emaCross.score !== 0) score += emaCross.score;
+  if (mktStruct && mktStruct.score !== 0) score += mktStruct.score;
+  if (triangle && triangle.score !== 0) score += triangle.score;
+  if (dblPattern && dblPattern.score !== 0) score += dblPattern.score;
+  if (bosChoch && bosChoch.score !== 0) score += bosChoch.score;
+  if (trendlineBreak != null) score += trendlineBreak.score;
+
+  // Squeeze
+  if (squeeze != null) {
+    if      (squeeze.releasedBull) score += 15;
+    else if (squeeze.releasedBear) score -= 15;
+    else if (!squeeze.squeezed && squeeze.momentumTrend === 'rising')  score += 6;
+    else if (!squeeze.squeezed && squeeze.momentumTrend === 'falling') score -= 6;
+  }
+
+  // Order Block (only when price in zone)
+  if (orderBlock != null && orderBlock.priceInZone) score += orderBlock.score;
+
+  // Multi-category confluence (entry timing quality)
+  if (score !== 0) {
+    const isLong = score > 0;
+    const momentumAligned = rsi !== null && ((isLong && rsi < 50) || (!isLong && rsi > 50));
+    const patternAligned = pats.some(p => isLong ? p.score > 0 : p.score < 0) ||
+                           divs.some(d => isLong ? d.score > 0 : d.score < 0) ||
+                           (squeeze != null && ((isLong && (squeeze.releasedBull || squeeze.momentumTrend === 'rising')) ||
+                                                 (!isLong && (squeeze.releasedBear || squeeze.momentumTrend === 'falling'))));
+    const volumeAligned = volRatio > 1.5;
+    const eventAligned  = mxUp || mxDown || (bosChoch && bosChoch.score !== 0) || (trendlineBreak != null && trendlineBreak.score !== 0);
+    const alignedCount = [momentumAligned, patternAligned, volumeAligned, eventAligned].filter(Boolean).length;
+    if (alignedCount >= 2) {
+      const sign = isLong ? 1 : -1;
+      const confBonus = alignedCount >= 4 ? 15 : alignedCount >= 3 ? 10 : 5;
+      score += sign * confBonus;
+    }
+  }
+
+  // Combo penalty: short squeeze risk
+  if (score < 0 && rsi !== null && rsi < 40 && fg.value < 25) score += 20;
+  if (score > 0 && rsi !== null && rsi > 60 && fg.value > 75) score -= 20;
+
+  return { entryScore: score, reasons, indicators, mxUp, mxDown };
+}
+
 function _computeScore(price, ind, fg, fundingRate = null, openInterest = null) {
   const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
     ema9, ema21, ema200, bb, vwap, obvTrend, volRatio, patterns, divergences, adx,
@@ -1649,13 +1825,29 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
   if (ind.adx !== null && ind.adx < (TF_ADX_MIN[tf] ?? 18)) return null;
 
   const safeFg = fg ?? { value: 50, label: 'Neutro' };
-  const { score: rawScore, reasons, indicators, mxUp, mxDown, mAbove,
-    emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd,
-    ichimoku, squeeze, orderBlock, anchoredVwap } = _computeScore(price, ind, safeFg, fundingRate, openInterest);
+  const regimeOut = _computeRegimeScore(price, ind, safeFg, fundingRate, openInterest);
+  const entryOut  = _computeEntryScore(price, ind, safeFg, ind.patterns, ind.divergences);
+  const regimeScore = regimeOut.regimeScore;
+  const entryScore  = entryOut.entryScore;
 
-  const dir       = rawScore >= 0 ? 'buy' : 'sell';
-  const normScore = Math.min(100, Math.round(Math.abs(rawScore)));
-  if (normScore < parseInt(options.score)) return null;
+  // Conflict: regime and entry disagree → discard
+  if (regimeScore !== 0 && entryScore !== 0 &&
+      Math.sign(regimeScore) !== Math.sign(entryScore)) {
+    return null;
+  }
+  const dir = (regimeScore + entryScore) >= 0 ? 'buy' : 'sell';
+
+  // options.score now filters by |entryScore|
+  if (Math.abs(entryScore) < parseInt(options.score)) return null;
+
+  const reasons    = [...regimeOut.reasons, ...entryOut.reasons];
+  const indicators = [...regimeOut.indicators, ...entryOut.indicators];
+  // mxUp/mxDown still needed downstream for `summary`
+  const { mxUp, mxDown } = entryOut;
+  const mAbove = ind.macdNow > ind.sigNow;
+  // Pattern objects pulled from ind for the return payload
+  const { emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd,
+          ichimoku, squeeze, orderBlock, anchoredVwap } = ind;
 
   const lev = options.leverage;
 
@@ -1718,7 +1910,7 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
 
   return {
     coin, pair:`${coin}/USDT`, dir,
-    score: normScore, timeframe: tf, leverage: lev,
+    regimeScore, entryScore, timeframe: tf, leverage: lev,
     entry, stop, liqPrice, entryToLiqDist, stopAdjusted,
     stopPct: fmtPct(stopPctRaw),
     m1:{ price:m1p, pct:fmtPct((m1p-entry)/entry*100), cap:capM1 },
@@ -1788,7 +1980,7 @@ function applyMTFScoring(results, softResults = []) {
       const softTFs = softConfirms.map(s => s.timeframe);
 
       dirSetups.forEach(s => {
-        s.score = Math.min(100, s.score + bonus);
+        s.entryScore = s.entryScore + bonus;  // uncapped
         s.mtfConfluence = {
           dir,
           count: allConfirmingTFs.length,
@@ -1818,7 +2010,7 @@ function applyMTFScoring(results, softResults = []) {
         if (sIsLower && s.dir !== highestTF.dir) {
           const tfGap = TF_ORDER.indexOf(highestTF.timeframe) - TF_ORDER.indexOf(s.timeframe);
           const penalty = tfGap >= 2 ? 20 : 8;
-          s.score = Math.max(0, s.score - penalty);
+          s.entryScore = s.entryScore - penalty;  // signed; allowed to go negative
           if (!s.reasons.find(r => r.text.includes('Conflito')))
             s.reasons.unshift({ text: `Conflito: ${s.timeframe} vs ${highestTF.timeframe} (-${penalty} pts)`, type: 'negative' });
         }
@@ -1829,7 +2021,7 @@ function applyMTFScoring(results, softResults = []) {
   // Deduplication: keep only best (highest score) setup per coin
   const bestByCoin = {};
   results.forEach(r => {
-    if (!bestByCoin[r.coin] || r.score > bestByCoin[r.coin].score)
+    if (!bestByCoin[r.coin] || Math.abs(r.entryScore) > Math.abs(bestByCoin[r.coin].entryScore))
       bestByCoin[r.coin] = r;
   });
   const deduped = Object.values(bestByCoin);
@@ -1861,7 +2053,7 @@ export {
   // Risk / Reward
   calcLiqPrice, capReturn, getFibSet, calcMetas,
   // Analysis engine
-  _calcTechIndicators, _computeScore, analyzeCandles,
+  _calcTechIndicators, _computeScore, _computeRegimeScore, _computeEntryScore, analyzeCandles,
   // API layer
   fetchJSON, fetchWithFallback, fetchCandles,
   // MTF

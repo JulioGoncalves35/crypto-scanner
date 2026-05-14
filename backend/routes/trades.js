@@ -114,11 +114,14 @@ router.post('/open', async (req, res) => {
   if (!setup || typeof setup !== 'object') {
     return res.status(400).json({ error: 'missing setup body' });
   }
-  const required = ['coin', 'dir', 'timeframe', 'score', 'entry', 'stop', 'm1', 'm2', 'm3'];
+  const required = ['coin', 'dir', 'timeframe', 'regime_score', 'entry_score', 'entry', 'stop', 'm1', 'm2', 'm3'];
   for (const f of required) {
     if (setup[f] === undefined || setup[f] === null) {
       return res.status(400).json({ error: `missing setup.${f}` });
     }
+  }
+  if (!Number.isInteger(setup.regime_score) || !Number.isInteger(setup.entry_score)) {
+    return res.status(400).json({ error: 'regime_score and entry_score must be integers' });
   }
   try {
     const trade = await openPosition(setup);

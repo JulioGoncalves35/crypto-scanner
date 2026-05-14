@@ -4,7 +4,7 @@ from src.agents.technical import run as run_tech
 from src.agents.sentiment import run as run_sent
 from src.agents.news import run as run_news
 
-C = Candidate(coin="BTC", direction="buy", timeframe="1h", score=88,
+C = Candidate(coin="BTC", direction="buy", timeframe="1h", regime_score=60, entry_score=40,
               entry=70000, stop=68500, m1=71200, m2=72500, m3=74000,
               stop_pct=2.1, leverage=10, signals=[])
 

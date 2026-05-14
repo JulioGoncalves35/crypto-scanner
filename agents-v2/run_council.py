@@ -12,7 +12,7 @@ from datetime import datetime
 from pathlib import Path
 
 from src import config
-from src.db import ensure_table, insert_decision
+from src.db import ensure_table, insert_decision, get_recent_decisions
 from src.backend_client import get_latest_scan_candidates, open_trade
 from src.schemas import Candidate
 from src.graph import run_council
@@ -47,19 +47,35 @@ def main(argv: list[str]) -> int:
     log = logging.getLogger("run_council")
 
     dry = True if args.dry_run else (False if args.live else config.DRY_RUN)
-    log.info("council starting (dry_run=%s, min_score=%s)", dry, config.MIN_SCORE)
+    log.info(
+        "council starting (dry_run=%s, min_regime=%d, min_entry=%d, 4h_min_entry=%d)",
+        dry, config.COUNCIL_MIN_REGIME, config.COUNCIL_MIN_ENTRY, config.COUNCIL_4H_MIN_ENTRY,
+    )
 
     ensure_table()
     scan_id, raw_candidates = get_latest_scan_candidates()
     log.info("scan_id=%s, %d raw candidates", scan_id, len(raw_candidates))
 
     SHORT_TFS = {"5m", "15m", "30m"}
-    eligible = [
-        c for c in raw_candidates
-        if int(c.get("score", 0)) >= config.MIN_SCORE
-        and c.get("timeframe") not in SHORT_TFS
-    ]
-    log.info("%d candidates pass min_score=%s and tf-filter", len(eligible), config.MIN_SCORE)
+
+    def _passes(c: dict) -> bool:
+        tf = c.get("timeframe")
+        if tf in SHORT_TFS:
+            return False
+        regime = abs(int(c.get("regime_score", 0)))
+        entry  = abs(int(c.get("entry_score", 0)))
+        min_entry = config.COUNCIL_4H_MIN_ENTRY if tf == "4h" else config.COUNCIL_MIN_ENTRY
+        return regime >= config.COUNCIL_MIN_REGIME and entry >= min_entry
+
+    eligible = [c for c in raw_candidates if _passes(c)]
+    log.info(
+        "%d candidates pass dual-threshold (regime>=%d, entry>=%d, 4h_entry>=%d)",
+        len(eligible), config.COUNCIL_MIN_REGIME, config.COUNCIL_MIN_ENTRY, config.COUNCIL_4H_MIN_ENTRY,
+    )
+
+    # Batch context for validator (computed once, reused per candidate)
+    batch_regime_scores = [int(c.get("regime_score", 0)) for c in eligible]
+    history = get_recent_decisions(limit=200)
 
     for c in eligible:
         try:
@@ -68,9 +84,13 @@ def main(argv: list[str]) -> int:
             log.warning("skip malformed candidate %s: %s", c.get("coin"), e)
             continue
 
-        log.info("→ council on %s %s %s (score=%d)",
-                 candidate.coin, candidate.direction, candidate.timeframe, candidate.score)
-        final = run_council(candidate)
+        log.info("→ council on %s %s %s (R=%+d E=%+d)",
+                 candidate.coin, candidate.direction, candidate.timeframe,
+                 candidate.regime_score, candidate.entry_score)
+        final = run_council(candidate, batch_regime_scores=batch_regime_scores,
+                            history=history)
+        validator = final.get("validator") or {}
+        v_verdict = validator.get("verdict", "MISSING")
         trader = final.get("trader") or {}
         decision = trader.get("decision", "ERROR")
         reason = trader.get("reason", "no trader output")
@@ -88,15 +108,17 @@ def main(argv: list[str]) -> int:
 
         agent_outputs = {
             k: final.get(k) for k in
-            ("technical", "sentiment", "news", "bull", "bear", "trader")
+            ("validator", "technical", "sentiment", "news", "bull", "bear", "trader")
         }
         insert_decision(
             scan_id=scan_id, candidate_coin=candidate.coin,
-            candidate_tf=candidate.timeframe, candidate_score=candidate.score,
+            candidate_tf=candidate.timeframe, candidate_score=candidate.entry_score,
             candidate_dir=candidate.direction, agent_outputs=agent_outputs,
             final_decision=decision, final_reason=reason, trade_id=trade_id,
+            validator_verdict=v_verdict,
         )
-        log.info("  decision=%s trade_id=%s reason=%s", decision, trade_id, reason)
+        log.info("  validator=%s decision=%s trade_id=%s reason=%s",
+                 v_verdict, decision, trade_id, reason)
 
     return 0
 

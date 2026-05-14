@@ -11,7 +11,8 @@ class Candidate(BaseModel):
     coin: str
     direction: Direction
     timeframe: Timeframe
-    score: int = Field(ge=0, le=100)
+    regime_score: int   # signed, uncapped
+    entry_score: int    # signed, uncapped
     entry: float
     stop: float
     m1: float
@@ -61,6 +62,16 @@ class NewsOutput(BaseModel):
     items: list[NewsItem] = Field(default_factory=list)
 
 
+class ValidatorOutput(BaseModel):
+    verdict: Literal["VALIDATE", "DOWNGRADE", "REJECT"]
+    confidence: int = Field(ge=0, le=100)
+    key_concern: str
+    tf_coherent: bool
+    signals_verified: bool
+    chronic_candidate: bool = False
+    saturation_percentile: float = Field(ge=0.0, le=1.0, default=0.0)
+
+
 class ResearcherOutput(BaseModel):
     side: Literal["bull", "bear"]
     thesis: str
@@ -74,7 +85,8 @@ class OpenPayload(BaseModel):
     coin: str
     direction: Direction
     timeframe: Timeframe
-    score: int
+    regime_score: int
+    entry_score: int
     entry: float
     stop: float
     m1: float
@@ -115,6 +127,7 @@ class RiskReviewerOutput(BaseModel):
 class CouncilState(BaseModel):
     """Shared state object flowing through the LangGraph."""
     candidate: Candidate
+    validator: Optional[ValidatorOutput] = None
     technical: Optional[TechnicalOutput] = None
     sentiment: Optional[SentimentOutput] = None
     news: Optional[NewsOutput] = None

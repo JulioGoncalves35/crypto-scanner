@@ -37,6 +37,7 @@ def _increment_gemini_rpd() -> int:
     return data[today]
 
 ROUTES: dict[str, dict[str, str]] = {
+    "validator":     {"primary": "cerebras-qwen235b",   "fallback": "groq-llama70b"},
     "technical":     {"primary": "cerebras-qwen235b",   "fallback": "groq-llama70b"},
     "sentiment":     {"primary": "cerebras-qwen235b",   "fallback": "groq-llama70b"},
     "news":          {"primary": "gemini-flash",        "fallback": "openrouter-deepseek"},

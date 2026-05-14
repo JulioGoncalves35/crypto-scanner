@@ -8,7 +8,7 @@ from src.agents.bear import run as run_bear
 from src.agents.trader import run as run_trader
 from src.agents.risk_reviewer import run as run_risk
 
-C = Candidate(coin="BTC", direction="buy", timeframe="1h", score=88,
+C = Candidate(coin="BTC", direction="buy", timeframe="1h", regime_score=60, entry_score=40,
               entry=70000, stop=68500, m1=71200, m2=72500, m3=74000,
               stop_pct=2.1, leverage=10, signals=["x"])
 T = TechnicalOutput(regime="trending_up", confluences=["a"], red_flags=[],

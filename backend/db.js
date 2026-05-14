@@ -107,6 +107,14 @@ function initSchema() {
     db.exec('ALTER TABLE trades ADD COLUMN analysis_json TEXT');
     console.log('[db] migration: added trades.analysis_json');
   }
+  if (!tradeCols.includes('regime_score')) {
+    db.exec('ALTER TABLE trades ADD COLUMN regime_score INTEGER');
+    console.log('[db] migration: added trades.regime_score');
+  }
+  if (!tradeCols.includes('entry_score')) {
+    db.exec('ALTER TABLE trades ADD COLUMN entry_score INTEGER');
+    console.log('[db] migration: added trades.entry_score');
+  }
 
   // Migration: add candidates_json column to scan_log if not present
   const scanCols = db.prepare('PRAGMA table_info(scan_log)').all().map(c => c.name);
@@ -268,12 +276,14 @@ export function getTrades({ status, limit = 100, offset = 0 } = {}) {
 export function insertTrade(trade) {
   getDb().prepare(`
     INSERT INTO trades
-      (id, coin, direction, timeframe, type, score, entry, stop, current_stop,
+      (id, coin, direction, timeframe, type, score, regime_score, entry_score,
+       entry, stop, current_stop,
        m1, m2, m3, stop_pct, leverage, found_at, status, capital_allocated, signals, analysis_json)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?)
   `).run(
     trade.id, trade.coin, trade.direction, trade.timeframe, trade.type,
-    trade.score, trade.entry, trade.stop, trade.current_stop,
+    trade.score, trade.regime_score ?? null, trade.entry_score ?? null,
+    trade.entry, trade.stop, trade.current_stop,
     trade.m1, trade.m2, trade.m3, trade.stop_pct, trade.leverage,
     trade.found_at, trade.capital_allocated, trade.signals, trade.analysis_json ?? null
   );

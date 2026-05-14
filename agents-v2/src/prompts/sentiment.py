@@ -28,7 +28,8 @@ def build(c: Candidate, *, fear_greed: int | None,
 - Fear & Greed (market-wide): {fg}
 - Funding rate (8h): {fr}
 - Open Interest change 24h: {oi}
-- Setup score: {c.score}/100
+- Regime score: {c.regime_score:+d}
+- Entry score:  {c.entry_score:+d}
 
 Return your JSON verdict."""
     return SYSTEM, user

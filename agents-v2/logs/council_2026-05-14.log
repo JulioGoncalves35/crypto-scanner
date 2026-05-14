@@ -1,0 +1,15 @@
+﻿=== run @ 2026-05-14 01:42:13 ===
+2026-05-14 01:42:14,035 [INFO] run_council: council starting (dry_run=False, min_regime=45, min_entry=30, 4h_min_entry=50)
+2026-05-14 01:44:10,264 [INFO] httpx: HTTP Request: POST http://localhost:3001/api/scan/preview "HTTP/1.1 200 OK"
+2026-05-14 01:44:10,273 [INFO] run_council: scan_id=2277, 0 raw candidates
+2026-05-14 01:44:10,274 [INFO] run_council: 0 candidates pass dual-threshold (regime>=45, entry>=30, 4h_entry>=50)
+=== run @ 2026-05-14 03:42:12 ===
+2026-05-14 03:42:14,111 [INFO] run_council: council starting (dry_run=False, min_regime=45, min_entry=30, 4h_min_entry=50)
+2026-05-14 03:44:19,599 [INFO] httpx: HTTP Request: POST http://localhost:3001/api/scan/preview "HTTP/1.1 200 OK"
+2026-05-14 03:44:19,612 [INFO] run_council: scan_id=2286, 3 raw candidates
+2026-05-14 03:44:19,613 [INFO] run_council: 0 candidates pass dual-threshold (regime>=45, entry>=30, 4h_entry>=50)
+=== run @ 2026-05-14 05:42:12 ===
+2026-05-14 05:42:13,475 [INFO] run_council: council starting (dry_run=False, min_regime=45, min_entry=30, 4h_min_entry=50)
+2026-05-14 05:44:16,699 [INFO] httpx: HTTP Request: POST http://localhost:3001/api/scan/preview "HTTP/1.1 200 OK"
+2026-05-14 05:44:16,706 [INFO] run_council: scan_id=2295, 0 raw candidates
+2026-05-14 05:44:16,707 [INFO] run_council: 0 candidates pass dual-threshold (regime>=45, entry>=30, 4h_entry>=50)

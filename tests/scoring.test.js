@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { _computeScore, _calcTechIndicators, calcADX, calcRSI } from '../painel-core.js';
+import { _computeScore, _computeRegimeScore, _computeEntryScore, _calcTechIndicators, calcADX, calcRSI, analyzeCandles } from '../painel-core.js';
 import { makeTrendingCandles, makeDowntrendCandles, makeFlatCandles } from './fixtures/candles.js';
 
 const NEUTRAL_FG = { value: 50, label: 'Neutro' };
@@ -510,5 +510,129 @@ describe('_calcTechIndicators', () => {
     const closes = candles.map(c => c.close);
     const ind = _calcTechIndicators(candles, closes);
     expect(ind.rsiArr).toHaveLength(closes.length);
+  });
+});
+
+describe('_computeRegimeScore', () => {
+  it('returns positive when EMAs aligned bullish, price above', () => {
+    const ind = makeInd({ ema9: 105, ema21: 102, ema200: 95 });
+    const { regimeScore } = _computeRegimeScore(110, ind, NEUTRAL_FG, null, null);
+    expect(regimeScore).toBeGreaterThan(0);
+  });
+
+  it('returns negative when EMAs aligned bearish, price below', () => {
+    const ind = makeInd({ ema9: 95, ema21: 98, ema200: 105 });
+    const { regimeScore } = _computeRegimeScore(90, ind, NEUTRAL_FG, null, null);
+    expect(regimeScore).toBeLessThan(0);
+  });
+
+  it('ignores RSI extremes (entry-only indicator)', () => {
+    const indNeutral = makeInd({ rsi: 50 });
+    const indOversold = makeInd({ rsi: 15 });
+    const r1 = _computeRegimeScore(100, indNeutral, NEUTRAL_FG, null, null);
+    const r2 = _computeRegimeScore(100, indOversold, NEUTRAL_FG, null, null);
+    expect(r1.regimeScore).toBe(r2.regimeScore);
+  });
+
+  it('is uncapped (can exceed 100)', () => {
+    const ind = makeInd({
+      ema9: 110, ema21: 105, ema200: 95,
+      ichimoku: { priceAboveCloud: true, priceBelowCloud: false, tkCross: 'bullish', chikouBull: true },
+      vwap: 100, anchoredVwap: { vwap: 100 },
+      obvTrend: 'rising', cvd: { trend: 'rising' }, adx: 35,
+      macdNow: 2, sigNow: 1, macdPrev: 1, sigPrev: 1,
+    });
+    const fg = { value: 20, label: 'Medo' };
+    const { regimeScore } = _computeRegimeScore(110, ind, fg, -0.0006, { change24h: 6 });
+    expect(regimeScore).toBeGreaterThan(80);
+  });
+});
+
+describe('_computeEntryScore', () => {
+  it('returns positive on RSI oversold + MACD bullish cross', () => {
+    const ind = makeInd({
+      rsi: 22, stochRSI: 10,
+      macdNow: 1, sigNow: 0, macdPrev: 0, sigPrev: 1, // cross up
+    });
+    const { entryScore } = _computeEntryScore(100, ind, NEUTRAL_FG, [], []);
+    expect(entryScore).toBeGreaterThan(0);
+  });
+
+  it('returns negative on RSI overbought + MACD bearish cross', () => {
+    const ind = makeInd({
+      rsi: 85, stochRSI: 95,
+      macdNow: 0, sigNow: 1, macdPrev: 1, sigPrev: 0, // cross down
+    });
+    const { entryScore } = _computeEntryScore(100, ind, NEUTRAL_FG, [], []);
+    expect(entryScore).toBeLessThan(0);
+  });
+
+  it('ignores EMA alignment (regime-only)', () => {
+    const flat   = makeInd({ ema9: 100, ema21: 100, ema200: 100 });
+    const aligned = makeInd({ ema9: 110, ema21: 105, ema200: 95 });
+    const r1 = _computeEntryScore(110, flat, NEUTRAL_FG, [], []);
+    const r2 = _computeEntryScore(110, aligned, NEUTRAL_FG, [], []);
+    expect(r1.entryScore).toBe(r2.entryScore);
+  });
+
+  it('is uncapped and applies confluence bonus', () => {
+    const ind = makeInd({
+      rsi: 18, stochRSI: 10,
+      macdNow: 2, sigNow: 1, macdPrev: 0, sigPrev: 1,
+      bb: { upper: 110, mid: 100, lower: 95 },
+      bosChoch: { name: 'CHoCH alta', score: 22 },
+      squeeze: { releasedBull: true, squeezed: false, momentumTrend: 'rising' },
+    });
+    const { entryScore } = _computeEntryScore(94, ind, NEUTRAL_FG, [], []);
+    expect(entryScore).toBeGreaterThan(60);
+  });
+});
+
+// Sideways-with-drift fixture: high enough liquidity, ADX-pass regime trend,
+// but RSI stays mid so entry-score doesn't auto-conflict on extremes.
+function makeWavyCandles(count = 220, startPrice = 10000) {
+  const candles = [];
+  for (let i = 0; i < count; i++) {
+    const noise = (Math.sin(i / 10) + Math.cos(i / 3)) * 50;
+    const close = startPrice + i * 0.1 + noise;
+    const open  = close - 0.5;
+    candles.push({
+      time:   1000000 + i * 60000,
+      open,
+      high:   close + 5,
+      low:    open - 3,
+      close,
+      volume: 1000 + i * 10,
+    });
+  }
+  return candles;
+}
+
+describe('analyzeCandles dual-score', () => {
+  it('returns regimeScore + entryScore (signed, uncapped) and no `score` field', () => {
+    const candles = makeWavyCandles(220);
+    const out = analyzeCandles('BTC', '5m', candles, NEUTRAL_FG, null, null,
+      { score: '0', leverage: 10, rr: 'fib' });
+    expect(out).not.toBeNull();
+    expect(typeof out.regimeScore).toBe('number');
+    expect(typeof out.entryScore).toBe('number');
+    expect(out.score).toBeUndefined();
+  });
+
+  it('returns null when regime/entry directions conflict', () => {
+    const candles = makeTrendingCandles(220, 10000, 1);
+    const out = analyzeCandles('BTC', '1h', candles, NEUTRAL_FG, null, null,
+      { score: '0', leverage: 10, rr: 'fib' });
+    if (out) expect(Math.sign(out.regimeScore) * Math.sign(out.entryScore)).toBeGreaterThanOrEqual(0);
+  });
+
+  it('honours entry-score threshold in options.score', () => {
+    const candles = makeWavyCandles(220);
+    const lo = analyzeCandles('BTC', '5m', candles, NEUTRAL_FG, null, null,
+      { score: '0', leverage: 10, rr: 'fib' });
+    const hi = analyzeCandles('BTC', '5m', candles, NEUTRAL_FG, null, null,
+      { score: '999', leverage: 10, rr: 'fib' });
+    expect(lo).not.toBeNull();
+    expect(hi).toBeNull();
   });
 });

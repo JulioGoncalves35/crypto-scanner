@@ -215,3 +215,18 @@
 2026-05-13 17:49:42,006 [INFO] httpx: HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-05-13 17:49:42,411 [INFO] httpx: HTTP Request: POST http://localhost:3001/api/trades/open "HTTP/1.1 200 OK"
 2026-05-13 17:49:42,421 [INFO] run_council:   decision=OPEN trade_id=1778705382409-INJ-4h reason=Strong bullish technical regime (confidence 92) with aligned timeframes, bullish news catalysts (Volan Upgrade, inEVM launch), and contrarian sentiment (overheated shorts) dominate despite moderate red flags. Bull expected_rr (1.5) exceeds bear expected_rr (0.75).
+=== run @ 2026-05-13 19:42:12 ===
+2026-05-13 19:42:13,886 [INFO] run_council: council starting (dry_run=False, min_score=88)
+2026-05-13 19:44:15,369 [INFO] httpx: HTTP Request: POST http://localhost:3001/api/scan/preview "HTTP/1.1 200 OK"
+2026-05-13 19:44:15,380 [INFO] run_council: scan_id=2251, 0 raw candidates
+2026-05-13 19:44:15,380 [INFO] run_council: 0 candidates pass min_score=88 and tf-filter
+=== run @ 2026-05-13 21:42:13 ===
+2026-05-13 21:42:14,045 [INFO] run_council: council starting (dry_run=False, min_score=88)
+2026-05-13 21:44:14,913 [INFO] httpx: HTTP Request: POST http://localhost:3001/api/scan/preview "HTTP/1.1 200 OK"
+2026-05-13 21:44:14,922 [INFO] run_council: scan_id=2259, 1 raw candidates
+2026-05-13 21:44:14,922 [INFO] run_council: 0 candidates pass min_score=88 and tf-filter
+=== run @ 2026-05-13 23:42:13 ===
+2026-05-13 23:42:14,105 [INFO] run_council: council starting (dry_run=False, min_regime=45, min_entry=30, 4h_min_entry=50)
+2026-05-13 23:44:15,310 [INFO] httpx: HTTP Request: POST http://localhost:3001/api/scan/preview "HTTP/1.1 200 OK"
+2026-05-13 23:44:15,318 [INFO] run_council: scan_id=2268, 0 raw candidates
+2026-05-13 23:44:15,318 [INFO] run_council: 0 candidates pass dual-threshold (regime>=45, entry>=30, 4h_entry>=50)
