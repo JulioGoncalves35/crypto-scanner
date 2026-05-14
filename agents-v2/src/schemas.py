@@ -11,7 +11,8 @@ class Candidate(BaseModel):
     coin: str
     direction: Direction
     timeframe: Timeframe
-    score: int = Field(ge=0, le=100)
+    regime_score: int   # signed, uncapped
+    entry_score: int    # signed, uncapped
     entry: float
     stop: float
     m1: float
@@ -74,7 +75,8 @@ class OpenPayload(BaseModel):
     coin: str
     direction: Direction
     timeframe: Timeframe
-    score: int
+    regime_score: int
+    entry_score: int
     entry: float
     stop: float
     m1: float
