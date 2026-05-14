@@ -243,6 +243,9 @@ display: flex; align-items: center; justify-content: space-between;
 .score-num { font-family: var(--mono); font-size: 13px; font-weight: 700; min-width: 36px; text-align: right; }
 .score-num.high { color: var(--accent); }
 .score-num.mid  { color: var(--warn); }
+.badge-regime { background: #1b3a4b; color: #67e8f9; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-family: var(--mono); font-weight: 700; }
+.badge-entry  { background: #3a1b4b; color: #d8b4fe; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-family: var(--mono); font-weight: 700; }
+.badge-entry.neg, .badge-regime.neg { background: #4b1b1b; color: #fca5a5; }
 .direction-badge { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 2px; padding: 5px 12px; border-radius: 6px; text-transform: uppercase; }
 .direction-badge.buy  { background: rgba(0,229,160,0.15); color: var(--accent); }
 .direction-badge.sell { background: rgba(255,61,107,0.15); color: var(--danger); }
@@ -2759,8 +2762,8 @@ async function runRealAnalysis(signal = null) {
           const result = analyzeCandles(coin, tf, candles, fg, fundingRate, openInterest, []);
           if (result) {
             results.push(result);
-            if (result.score >= 80 && typeof notifySetup === 'function') notifySetup(result);
-            addLog(`✓ ${coin} ${tf} · Score ${result.score} · M3: +${result.m3.cap.netPct}%`, 'var(--accent)');
+            if (Math.abs(result.entryScore) >= 40 && typeof notifySetup === 'function') notifySetup(result);
+            addLog(`✓ ${coin} ${tf} · R ${result.regimeScore>=0?'+':''}${result.regimeScore} · E ${result.entryScore>=0?'+':''}${result.entryScore} · M3: +${result.m3.cap.netPct}%`, 'var(--accent)');
           } else {
             addLog(`◌ ${coin} ${tf} — score abaixo do filtro (${state.score}+)`, 'var(--muted)');
           }
@@ -2999,7 +3002,7 @@ function renderCards(data) {
 
   const groups = {};
   data.forEach(d => { if (!groups[d.coin]) groups[d.coin]=[]; groups[d.coin].push(d); });
-  Object.keys(groups).forEach(c => groups[c].sort((a,b)=>b.score-a.score));
+  Object.keys(groups).forEach(c => groups[c].sort((a,b)=>Math.abs(b.entryScore)-Math.abs(a.entryScore)));
   const sorted = Object.keys(groups).sort((a,b) =>
     parseFloat(groups[b][0].m3.cap.netPct) - parseFloat(groups[a][0].m3.cap.netPct)
   );
@@ -3029,13 +3032,13 @@ function renderGroupCard(coin, setups) {
   const total = setups.length;
   const lev   = d.leverage || state.leverage;
   const isLong= d.dir==='buy';
-  const sc    = d.score>=80?'high':d.score>=65?'mid':'low';
+  const absE  = Math.abs(d.entryScore);
   const capM3 = d.m3.cap;
   const m3Hot = parseFloat(capM3.netPct) >= 100;
   const sign  = '+'; // M1/M2/M3 are always profit targets
 
-  // M2: Nível de confiança baseado no score
-  const confLevel = d.score >= 85 ? 3 : d.score >= 73 ? 2 : 1;
+  // Nível de confiança baseado em |entryScore|
+  const confLevel = absE >= 60 ? 3 : absE >= 40 ? 2 : absE >= 25 ? 1 : 1;
   const confColors = ['','#f59e0b','#fb923c','#22c55e'];
   const confRisk   = ['','1%','2%','3%'];
   const confLevBadge = `<span title="Nível de confluência — sugestão de risco: ${confRisk[confLevel]} da banca"
@@ -3058,7 +3061,7 @@ function renderGroupCard(coin, setups) {
   const tfBadges = setups.map((s,i)=>{
     const a = i===idx?'active-tf':'';
     const cl= s.dir==='sell'?'sell-tf':'';
-    return `<span class="group-tf-badge ${a} ${cl}" onclick="switchTF('${coin}',${i})" title="${s.dir==='buy'?'▲ Long':'▼ Short'} · Score ${s.score} · +${s.m3.cap.netPct}% capital">${s.timeframe.toUpperCase()}</span>`;
+    return `<span class="group-tf-badge ${a} ${cl}" onclick="switchTF('${coin}',${i})" title="${s.dir==='buy'?'▲ Long':'▼ Short'} · R${s.regimeScore>=0?'+':''}${s.regimeScore} · E${s.entryScore>=0?'+':''}${s.entryScore} · +${s.m3.cap.netPct}% capital">${s.timeframe.toUpperCase()}</span>`;
   }).join('');
 
   card.innerHTML = `
@@ -3105,10 +3108,9 @@ function renderGroupCard(coin, setups) {
           ${confLevBadge}
           ${weekendWarn}
         </div>
-        <div class="score-row" style="flex:1;margin:0 12px">
-          <span class="score-label">SCORE</span>
-          <div class="score-track"><div class="score-fill ${sc}" style="width:${d.score}%"></div></div>
-          <span class="score-num ${sc}">${d.score}</span>
+        <div class="score-row" style="flex:1;margin:0 12px;justify-content:flex-end;gap:8px">
+          <span class="badge-regime ${d.regimeScore < 0 ? 'neg' : ''}" title="Regime Score (uncapped)">R ${d.regimeScore >= 0 ? '+' : ''}${d.regimeScore}</span>
+          <span class="badge-entry ${d.entryScore  < 0 ? 'neg' : ''}" title="Entry Score (uncapped)">E ${d.entryScore  >= 0 ? '+' : ''}${d.entryScore}</span>
         </div>
       </div>
 
@@ -3217,7 +3219,7 @@ function openModal(d) {
       <div>
         <div style="font-size:26px;font-weight:800;letter-spacing:-1px">${d.coin}/USDT Perpetual</div>
         <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:4px">
-          ${d.timeframe.toUpperCase()} · Score ${d.score}/100 · ${lev}x Alavancagem · Bybit Futures
+          ${d.timeframe.toUpperCase()} · R ${d.regimeScore >= 0 ? '+' : ''}${d.regimeScore} · E ${d.entryScore >= 0 ? '+' : ''}${d.entryScore} · ${lev}x Alavancagem · Bybit Futures
         </div>
       </div>
       <button class="modal-close" onclick="closeModal()">✕</button>
@@ -3553,11 +3555,12 @@ function saveToHistory(results, mode) {
   if (!results || results.length === 0) return;
   const existing = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
   const topSetups = [...results]
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => Math.abs(b.entryScore) - Math.abs(a.entryScore))
     .slice(0, 5)
     .map(r => ({
       coin: r.coin, timeframe: r.timeframe, dir: r.dir,
-      score: r.score, m3NetPct: r.m3.cap.netPct, entry: r.entry
+      regimeScore: r.regimeScore, entryScore: r.entryScore,
+      m3NetPct: r.m3.cap.netPct, entry: r.entry
     }));
   const entry = {
     id: Date.now(),
@@ -3600,7 +3603,7 @@ function renderHistory() {
       return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px">
         <span style="color:${isLong ? 'var(--accent)' : 'var(--danger)'};min-width:60px">${isLong ? '&#9650;' : '&#9660;'} ${s.coin}</span>
         <span style="color:var(--muted);min-width:32px">${s.timeframe}</span>
-        <span style="color:var(--text)">Score ${s.score}</span>
+        <span style="color:var(--text)">E ${s.entryScore >= 0 ? '+' : ''}${s.entryScore ?? '—'}</span>
         <span style="margin-left:auto;color:${isLong ? 'var(--accent)' : 'var(--danger)'}">${sign}${s.m3NetPct}% M3</span>
       </div>`;
     }).join('');
@@ -3654,7 +3657,7 @@ function notifySetup(result) {
   if (!notificationsEnabled || Notification.permission !== 'granted') return;
   const dir = result.dir === 'buy' ? 'LONG' : 'SHORT';
   const sign = result.dir === 'buy' ? '+' : '-';
-  new Notification(`${result.coin} ${dir} — Score ${result.score}`, {
+  new Notification(`${result.coin} ${dir} — E ${result.entryScore>=0?'+':''}${result.entryScore}`, {
     body: `${result.timeframe} | M3: ${sign}${result.m3.cap.netPct}% | Entry: $${result.entry.toFixed(result.entry >= 1 ? 2 : 4)}`,
     icon: `https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/svg/color/${result.coin.toLowerCase()}.svg`,
     tag: `${result.coin}-${result.timeframe}`,
@@ -3732,7 +3735,8 @@ function saveToJournal(d) {
     m1p:       fp(d.m1.price), m1cap: sign + d.m1.cap.netPct,
     m2p:       fp(d.m2.price), m2cap: sign + d.m2.cap.netPct,
     m3p:       fp(d.m3.price), m3cap: sign + d.m3.cap.netPct,
-    score:     d.score,
+    regimeScore: d.regimeScore,
+    entryScore:  d.entryScore,
     signals,
     notes:     '',
   });
@@ -3782,10 +3786,11 @@ function renderJournalStats(entries) {
     avgReturn = (total / wins.length).toFixed(1);
   }
 
-  // Precisão por faixa de score (apenas entradas com resultado)
-  const scoreHigh = withResult.filter(e => e.score >= 80);
+  // Precisão por faixa de |entryScore| (apenas entradas com resultado)
+  const _absE = (e) => Math.abs(e.entryScore ?? e.score ?? 0);
+  const scoreHigh = withResult.filter(e => _absE(e) >= 40);
   const scoreHighWin = scoreHigh.filter(e => ['m1','m2','m3'].includes(e.result)).length;
-  const scoreMid = withResult.filter(e => e.score >= 65 && e.score < 80);
+  const scoreMid = withResult.filter(e => _absE(e) >= 25 && _absE(e) < 40);
   const scoreMidWin = scoreMid.filter(e => ['m1','m2','m3'].includes(e.result)).length;
 
   const winColor = winRate === null ? '' : winRate >= 60 ? 'green' : winRate >= 40 ? 'yellow' : 'red';
@@ -3886,7 +3891,7 @@ function renderEntryHTML(e) {
         <div class="je-meta">
           <strong class="${isLong ? 'je-long' : 'je-short'}">${isLong ? '▲ LONG' : '▼ SHORT'}</strong>
           &nbsp;·&nbsp; ${e.timeframe.toUpperCase()} &nbsp;·&nbsp; ${e.leverage}x
-          &nbsp;·&nbsp; Score <strong>${e.score}</strong>
+          &nbsp;·&nbsp; E <strong>${e.entryScore !== undefined ? ((e.entryScore>=0?'+':'')+e.entryScore) : (e.score ?? '—')}</strong>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">${resBadge}<span class="je-date">${date}</span></div>
