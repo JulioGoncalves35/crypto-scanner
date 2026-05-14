@@ -1,0 +1,14 @@
+2026-05-14 18:17:15,684 [INFO] httpx: HTTP Request: GET http://localhost:3001/api/trades/active "HTTP/1.1 200 OK"
+2026-05-14 18:17:15,687 [INFO] run_risk_review: reviewing 3 active trades (dry_run=False)
+2026-05-14 18:17:18,752 [INFO] httpx: HTTP Request: GET https://api.bybit.com/v5/market/tickers?category=linear&symbol=INJUSDT "HTTP/1.1 200 OK"
+2026-05-14 18:17:18,755 [INFO] src.llm_client: [llm] risk_reviewer → mistral-large (primary, attempt=1)
+2026-05-14 18:17:28,506 [INFO] httpx: HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-14 18:17:28,515 [INFO] run_risk_review: trade 1778705382409-INJ-4h (INJUSDT): HOLD — Thesis remains intact as price is between current_stop and m1, with no significant progress toward m1 yet.
+2026-05-14 18:17:31,473 [INFO] httpx: HTTP Request: GET https://api.bybit.com/v5/market/tickers?category=linear&symbol=BNBUSDT "HTTP/1.1 200 OK"
+2026-05-14 18:17:31,475 [INFO] src.llm_client: [llm] risk_reviewer → mistral-large (primary, attempt=1)
+2026-05-14 18:17:38,135 [INFO] httpx: HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-14 18:17:41,185 [INFO] httpx: HTTP Request: GET https://api.bybit.com/v5/market/tickers?category=linear&symbol=AVAXUSDT "HTTP/1.1 200 OK"
+2026-05-14 18:17:41,187 [INFO] src.llm_client: [llm] risk_reviewer → mistral-large (primary, attempt=1)
+2026-05-14 18:17:49,260 [INFO] httpx: HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-14 18:17:49,269 [INFO] run_risk_review: trade 1778105515638-AVAX-4h (AVAXUSDT): TIGHTEN_STOP — Price has moved >50% toward m1 (9.6 to 10.3378), so stop is tightened to recent swing low to lock in gains.
+2026-05-14 18:17:51,938 [INFO] httpx: HTTP Request: POST http://localhost:3001/api/trades/1778105515638-AVAX-4h/tighten-stop "HTTP/1.1 200 OK"
