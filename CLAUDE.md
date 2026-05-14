@@ -171,7 +171,8 @@ Roda em `http://localhost:3001`. Cron de **15min** escaneia todos os 41 coins �
 
 **Stack (2026-05-11):** LangGraph + **Cerebras Qwen3 235B** (primary technical/sentiment, ~14.4k TPM free) + **Groq Llama 3.3 70B** (primary bull/bear, 100k TPD free) + **Mistral Large** (primary trader + risk_reviewer, ~1B tokens/mes free) + Gemini 2.5 Flash (primary news, 20 RPD) + OpenRouter Qwen3-Next (fallback geral). Cadencia alvo: **1 run a cada 2 horas** via Windows Task Scheduler (`agents-v2/scripts/run_council_scheduled.ps1`). Pre-filter no `run_council.py` descarta TFs 5m/15m/30m e candidatos com score < 88 antes do LLM.
 
-**6 agentes + 1 reviewer:**
+**6 agentes + 1 gate + 1 reviewer:**
+- `validator` (Cerebras Qwen3 235B, fallback Groq) — primeiro nó do graph. Pré-checks determinísticos (`chronic_candidate`, `saturation_percentile`) + LLM (freshness dos signals, coerência MTF). `VALIDATE` → roda council. `DOWNGRADE` → roda com ceticismo. `REJECT` → early exit (economiza ~4.5k tokens). Fallback em erro = `DOWNGRADE` (fail-open).
 - `technical` (Cerebras Qwen3 235B, fallback Groq) — re-interpreta indicadores do scanner
 - `sentiment` (Cerebras Qwen3 235B, fallback Groq) — F&G, funding, OI; flags de crowded trade
 - `news`      (Gemini Flash, fallback OpenRouter) — Verification Section obrigatória; pode hard-block
@@ -216,6 +217,11 @@ cd agents-v2 && python run_backtest_replay.py --since 2026-04-15
 - **Gemini RPD counter:** `llm_client.py` incrementa `agents-v2/logs/gemini_rpd.json` a cada chamada bem-sucedida ao `gemini-flash`. Log: `[gemini-rpd] today=N/20 remaining=M`. WARNING automático quando remaining ≤ 5.
 - **Council log — SKIP reason:** `run_council.py` linha 99 logava só `decision` e `trade_id`, omitindo `reason`. Corrigido em 2026-05-13 — agora loga `decision=SKIP trade_id=None reason=<motivo>`. Motivos comuns dos guardrails: `bear_rr > bull_rr`, `tf_alignment == "conflicting"`, `news hard_block`.
 - **Task Scheduler + log PermissionError:** Se uma instância do council travar com o FileHandler aberto, a próxima instância falha com `PermissionError` no `_setup_logging` (antes de qualquer lógica de negócio) — o processo aborta inteiro. Sintoma: `=== run @ ... ===` seguido de traceback no início do log, runs acumulando sem candidatos processados. Fix temporário: renomear/deletar o arquivo de log do dia travado.
+- **Validator REJECT bypassa analystas:** quando o validator retorna `REJECT`, o graph faz early-exit via `_early_exit` node; `final.technical/sentiment/news/bull/bear` ficam todos `None` e o `trader` é sintetizado como `{decision: "SKIP", reason: "validator REJECT: ..."}`. Consumidores downstream (`agent_outputs` serialization, replay) precisam tolerar `None` nesses campos.
+- **Validator overrides LLM em campos determinísticos:** `chronic_candidate` e `saturation_percentile` são recalculados em Python antes do `ValidatorOutput(**raw)`, sobrescrevendo o que o LLM devolveu. Nunca confie no LLM para esses dois — eles vêm dos pré-checks.
+- **Validator fallback = DOWNGRADE (não REJECT):** erro de provider deve deixar o council rodar com flag de ceticismo, não silenciar tudo. Não inverter para REJECT — perderia trades reais em outage transient.
+- **Node names ≠ State keys (LangGraph):** o validator node é `gate_validator`, não `validator`, porque `validator` é chave do `State` TypedDict. Mesma regra dos `analyst_*/researcher_*/decision_trader`. Tentar `g.add_node("validator", ...)` quebra com `ValueError: 'validator' is already being used as a state key`.
+- **`agent_decisions.validator_verdict` migration:** coluna adicionada via `ALTER TABLE` em `ensure_table()`. Rows antigas têm `NULL` — queries de análise devem filtrar com `WHERE validator_verdict IS NOT NULL` quando relevante.
 
 ---
 
