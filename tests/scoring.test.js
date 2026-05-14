@@ -636,3 +636,92 @@ describe('analyzeCandles dual-score', () => {
     expect(hi).toBeNull();
   });
 });
+
+// ─── _computeEntryScore — post-cleanup contracts ──────────────────────────────
+// These tests verify that RSI/StochRSI/MACD crossover/BB no longer affect entryScore.
+// They will FAIL until _computeEntryScore is refactored in Task 2.
+describe('_computeEntryScore — momentum indicators removed', () => {
+  function makeEntryInd(overrides = {}) {
+    return {
+      rsi:       50,
+      stochRSI:  50,
+      macdNow:   1,  macdPrev: 1,
+      sigNow:    0,  sigPrev:  0,
+      histNow:   0,  histPrev: 0,
+      bb:        { upper: 110, mid: 100, lower: 90 },
+      volRatio:  1.0,
+      bosChoch:  null,
+      squeeze:   null,
+      orderBlock: null,
+      trendlineBreak: null,
+      emaCross:  null,
+      mktStruct: null,
+      triangle:  null,
+      dblPattern: null,
+      patterns:  [],
+      divergences: [],
+      ...overrides,
+    };
+  }
+  const FG = { value: 50, label: 'Neutro' };
+
+  it('RSI < 30 does NOT add to entryScore', () => {
+    const { entryScore: withOversold } = _computeEntryScore(100, makeEntryInd({ rsi: 28 }), FG);
+    const { entryScore: withNeutral  } = _computeEntryScore(100, makeEntryInd({ rsi: 50 }), FG);
+    expect(withOversold).toBe(withNeutral);
+  });
+
+  it('RSI > 70 does NOT subtract from entryScore', () => {
+    const { entryScore: withOverbought } = _computeEntryScore(100, makeEntryInd({ rsi: 75 }), FG);
+    const { entryScore: withNeutral    } = _computeEntryScore(100, makeEntryInd({ rsi: 50 }), FG);
+    expect(withOverbought).toBe(withNeutral);
+  });
+
+  it('StochRSI < 20 does NOT add to entryScore', () => {
+    const { entryScore: low } = _computeEntryScore(100, makeEntryInd({ stochRSI: 10 }), FG);
+    const { entryScore: mid } = _computeEntryScore(100, makeEntryInd({ stochRSI: 50 }), FG);
+    expect(low).toBe(mid);
+  });
+
+  it('StochRSI > 80 does NOT subtract from entryScore', () => {
+    const { entryScore: high } = _computeEntryScore(100, makeEntryInd({ stochRSI: 90 }), FG);
+    const { entryScore: mid  } = _computeEntryScore(100, makeEntryInd({ stochRSI: 50 }), FG);
+    expect(high).toBe(mid);
+  });
+
+  it('MACD bullish crossover does NOT add to entryScore', () => {
+    const { entryScore: cross }   = _computeEntryScore(100, makeEntryInd({ macdNow: 1, sigNow: 0, macdPrev: -1, sigPrev: 0 }), FG);
+    const { entryScore: noCross } = _computeEntryScore(100, makeEntryInd({ macdNow: 1, sigNow: 0, macdPrev:  1, sigPrev: 0 }), FG);
+    expect(cross).toBe(noCross);
+  });
+
+  it('BB lower touch does NOT add to entryScore', () => {
+    const { entryScore: atLower  } = _computeEntryScore(90,  makeEntryInd(), FG);
+    const { entryScore: atMiddle } = _computeEntryScore(100, makeEntryInd(), FG);
+    expect(atLower).toBe(atMiddle);
+  });
+
+  it('mxUp and mxDown are still returned (needed for momentumCtx)', () => {
+    const { mxUp, mxDown } = _computeEntryScore(100, makeEntryInd({
+      macdNow: 1, sigNow: 0, macdPrev: -1, sigPrev: 0,
+    }), FG);
+    expect(mxUp).toBe(true);
+    expect(mxDown).toBe(false);
+  });
+
+  it('volume spike does NOT fire when score=0 (no prior trigger)', () => {
+    const { entryScore } = _computeEntryScore(100, makeEntryInd({ volRatio: 3.0 }), FG);
+    expect(entryScore).toBe(0);
+  });
+
+  it('volume spike fires and follows direction when score != 0', () => {
+    const { entryScore: withVol  } = _computeEntryScore(100, makeEntryInd({
+      bosChoch: { score: 12 }, volRatio: 2.0,
+    }), FG);
+    const { entryScore: withoutVol } = _computeEntryScore(100, makeEntryInd({
+      bosChoch: { score: 12 }, volRatio: 1.0,
+    }), FG);
+    expect(withVol).toBeGreaterThan(withoutVol);
+    expect(withVol - withoutVol).toBe(7);
+  });
+});
