@@ -76,7 +76,9 @@ export async function openPosition(setup) {
     direction:          setup.dir,
     timeframe:          setup.timeframe,
     type:               setup._rawType || TF_TYPE[setup.timeframe] || 'day',
-    score:              setup.score,
+    score:              setup.entry_score ?? setup.entryScore ?? setup.score ?? null,
+    regime_score:       setup.regime_score ?? setup.regimeScore ?? null,
+    entry_score:        setup.entry_score ?? setup.entryScore ?? null,
     entry,
     stop,
     current_stop:       stop,
@@ -118,7 +120,7 @@ export async function openPosition(setup) {
 
   if (!inserted) return null;
 
-  console.log(`[paper-trader] opened ${trade.direction.toUpperCase()} ${trade.coin} @ ${entry} | score=${setup.score} | alloc=$${capital_allocated}`);
+  console.log(`[paper-trader] opened ${trade.direction.toUpperCase()} ${trade.coin} @ ${entry} | R=${trade.regime_score ?? '?'} E=${trade.entry_score ?? '?'} | alloc=$${capital_allocated}`);
   return trade;
 }
 
