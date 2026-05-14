@@ -107,6 +107,14 @@ function initSchema() {
     db.exec('ALTER TABLE trades ADD COLUMN analysis_json TEXT');
     console.log('[db] migration: added trades.analysis_json');
   }
+  if (!tradeCols.includes('regime_score')) {
+    db.exec('ALTER TABLE trades ADD COLUMN regime_score INTEGER');
+    console.log('[db] migration: added trades.regime_score');
+  }
+  if (!tradeCols.includes('entry_score')) {
+    db.exec('ALTER TABLE trades ADD COLUMN entry_score INTEGER');
+    console.log('[db] migration: added trades.entry_score');
+  }
 
   // Migration: add candidates_json column to scan_log if not present
   const scanCols = db.prepare('PRAGMA table_info(scan_log)').all().map(c => c.name);

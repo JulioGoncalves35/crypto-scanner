@@ -156,10 +156,15 @@ export async function runScan() {
         );
         if (!setup) continue;
 
-        if (setup.score >= parseInt(min_score)) {
+        const absE = Math.abs(setup.entryScore);
+        const absR = Math.abs(setup.regimeScore);
+        // Regime gate: require minimum regime conviction (default 45)
+        if (absR < parseInt(account.min_regime ?? 45)) continue;
+
+        if (absE >= parseInt(min_score)) {
           setup._rawType = TF_TYPE[tf] || 'day';
           hardResults.push(setup);
-        } else if (setup.score >= parseInt(min_score) - 15) {
+        } else if (absE >= parseInt(min_score) - 15) {
           // soft result for MTF confluence calculation
           setup._rawType = TF_TYPE[tf] || 'day';
           softResults.push(setup);
@@ -176,7 +181,7 @@ export async function runScan() {
 
     for (const setup of dedupedSetups) {
       // Re-check score after MTF adjustments
-      if (setup.score < parseInt(min_score)) continue;
+      if (Math.abs(setup.entryScore) < parseInt(min_score)) continue;
 
       // Macro trend filter: skip trades that go counter to BTC's 4h EMA200 trend
       if (macroTrend === 'bear' && setup.dir === 'buy') {
