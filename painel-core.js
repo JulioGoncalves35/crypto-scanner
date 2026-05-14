@@ -1819,6 +1819,15 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
   // mxUp/mxDown still needed downstream for `summary`
   const { mxUp, mxDown } = entryOut;
   const mAbove = ind.macdNow > ind.sigNow;
+
+  const momentumCtx = {
+    rsi:       ind.rsi,
+    stochRSI:  ind.stochRSI,
+    macdCross: mxUp ? 'up' : mxDown ? 'down' : null,
+    bbPos: ind.bb
+      ? (price >= ind.bb.upper ? 'upper' : price <= ind.bb.lower ? 'lower' : 'inside')
+      : null,
+  };
   // Pattern objects pulled from ind for the return payload
   const { emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd,
           ichimoku, squeeze, orderBlock, anchoredVwap } = ind;
@@ -1892,6 +1901,7 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
     m3:{ price:m3p, pct:fmtPct((m3p-entry)/entry*100), cap:capM3 },
     capStop, feePctCap,
     reasons, indicators, summary,
+    momentumCtx,
     patterns, divergences, conditionalEntry,
     emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd,
     ichimoku, squeeze, orderBlock, anchoredVwap,

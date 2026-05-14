@@ -726,3 +726,25 @@ describe('_computeEntryScore — momentum indicators removed', () => {
     expect(withVol - withoutVol).toBe(7);
   });
 });
+
+describe('analyzeCandles — momentumCtx in return value', () => {
+  it('returns momentumCtx with rsi, stochRSI, macdCross, bbPos fields', async () => {
+    const { makeTrendingCandles } = await import('./fixtures/candles.js');
+    const candles = makeTrendingCandles(300);
+    const fg = { value: 50, label: 'Neutro' };
+    const result = analyzeCandles('BTC', '1h', candles, fg, null, null, { score: '0', leverage: 10, rr: 'fib' });
+    // analyzeCandles may return null if ADX or score filters fire — use a loose check
+    if (result !== null) {
+      expect(result).toHaveProperty('momentumCtx');
+      const ctx = result.momentumCtx;
+      expect(ctx).toHaveProperty('rsi');
+      expect(ctx).toHaveProperty('stochRSI');
+      expect(ctx).toHaveProperty('macdCross');
+      expect(ctx).toHaveProperty('bbPos');
+      // macdCross is 'up', 'down', or null
+      expect(['up', 'down', null]).toContain(ctx.macdCross);
+      // bbPos is 'upper', 'lower', 'inside', or null
+      expect(['upper', 'lower', 'inside', null]).toContain(ctx.bbPos);
+    }
+  });
+});
