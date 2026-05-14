@@ -1361,7 +1361,7 @@ function _computeRegimeScore(price, ind, fg, fundingRate = null, openInterest = 
 }
 
 function _computeEntryScore(price, ind, fg, patterns = null, divergences = null) {
-  const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev, histNow, histPrev,
+  const { rsi, stochRSI, macdNow, macdPrev, sigNow, sigPrev,
     bb, volRatio, bosChoch, squeeze, orderBlock, trendlineBreak,
     emaCross, mktStruct, triangle, dblPattern } = ind;
   const pats = patterns ?? ind.patterns ?? [];
@@ -1370,37 +1370,9 @@ function _computeEntryScore(price, ind, fg, patterns = null, divergences = null)
   let score = 0;
   const reasons = [], indicators = [];
 
-  // RSI extremes
-  if (rsi !== null) {
-    if      (rsi < 30) score += 20;
-    else if (rsi < 40) score += 10;
-    else if (rsi > 70) score -= 20;
-    else if (rsi > 60) score -= 10;
-  }
-
-  // StochRSI extremes
-  if (stochRSI !== null) {
-    if      (stochRSI < 20) score += 8;
-    else if (stochRSI > 80) score -= 8;
-  }
-
-  // MACD CROSSOVER ONLY (position lives in regime score)
+  // MACD crossover flags — computed for momentumCtx; NOT added to score
   const mxUp   = macdNow > sigNow && macdPrev <= sigPrev;
   const mxDown = macdNow < sigNow && macdPrev >= sigPrev;
-  if      (mxUp)   score += 20;
-  else if (mxDown) score -= 20;
-  if (histNow > histPrev && histNow > 0) score += 4;
-  if (histNow < histPrev && histNow < 0) score -= 4;
-
-  // Bollinger touch
-  if (bb) {
-    if      (price <= bb.lower) score += 10;
-    else if (price >= bb.upper) score -= 10;
-  }
-
-  // Volume spike (snapshot direction before applying)
-  const entryDir = score >= 0 ? 1 : -1;
-  if (volRatio > 1.5) score += entryDir * 7;
 
   // Pattern signals
   pats.forEach(pat => { if (pat.score !== 0) score += pat.score; });
@@ -1424,7 +1396,10 @@ function _computeEntryScore(price, ind, fg, patterns = null, divergences = null)
   // Order Block (only when price in zone)
   if (orderBlock != null && orderBlock.priceInZone) score += orderBlock.score;
 
-  // Multi-category confluence (entry timing quality)
+  // Volume spike — only fires after a trigger has established direction
+  if (score !== 0 && volRatio > 1.5) score += (score > 0 ? 1 : -1) * 7;
+
+  // Multi-category confluence
   if (score !== 0) {
     const isLong = score > 0;
     const momentumAligned = rsi !== null && ((isLong && rsi < 50) || (!isLong && rsi > 50));
@@ -1442,7 +1417,7 @@ function _computeEntryScore(price, ind, fg, patterns = null, divergences = null)
     }
   }
 
-  // Combo penalty: short squeeze risk
+  // Combo penalty: euphoric entry guard (two simultaneous extremes — valid, not directional)
   if (score < 0 && rsi !== null && rsi < 40 && fg.value < 25) score += 20;
   if (score > 0 && rsi !== null && rsi > 60 && fg.value > 75) score -= 20;
 
@@ -1845,6 +1820,15 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
   // mxUp/mxDown still needed downstream for `summary`
   const { mxUp, mxDown } = entryOut;
   const mAbove = ind.macdNow > ind.sigNow;
+
+  const momentumCtx = {
+    rsi:       ind.rsi,
+    stochRSI:  ind.stochRSI,
+    macdCross: mxUp ? 'up' : mxDown ? 'down' : null,
+    bbPos: ind.bb
+      ? (price >= ind.bb.upper ? 'upper' : price <= ind.bb.lower ? 'lower' : 'inside')
+      : null,
+  };
   // Pattern objects pulled from ind for the return payload
   const { emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd,
           ichimoku, squeeze, orderBlock, anchoredVwap } = ind;
@@ -1918,6 +1902,7 @@ function analyzeCandles(coin, tf, candles, fg, fundingRate = null, openInterest 
     m3:{ price:m3p, pct:fmtPct((m3p-entry)/entry*100), cap:capM3 },
     capStop, feePctCap,
     reasons, indicators, summary,
+    momentumCtx,
     patterns, divergences, conditionalEntry,
     emaCross, mktStruct, triangle, dblPattern, bosChoch, cvd,
     ichimoku, squeeze, orderBlock, anchoredVwap,

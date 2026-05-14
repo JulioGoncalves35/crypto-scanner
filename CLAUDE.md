@@ -95,13 +95,22 @@ runRealAnalysis() → fetchFearGreed() → per coin: fetchFunding + fetchOI
 - Funding rate / OI extremes
 - Combo penalty: RSI oversold + F&G <25 em SHORT → +20 (short squeeze risk). Simétrico LONG.
 
-**`_computeEntryScore`** — eventos/gatilhos:
+**`_computeEntryScore`** — eventos/gatilhos (desde 2026-05-14, pós cleanup):
 - BOS/CHoCH: Break of Structure ±12 · Change of Character ±22
 - Squeeze Momentum: released ±15 · post-squeeze momentum ±6
 - Order Block ±14 (price dentro da zona 99%–101%)
 - Trendline Break: LTB ±10 (bullish) · LTA ±10 (bearish)
 - Pattern/divergence sums (patterns.score)
-- Confluência multi-categoria: 2/3/4 categorias alinhadas → ±5/±10/±15. Só aplica quando `entryScore !== 0`.
+- Volume spike ±7 — só dispara quando `score !== 0` (trigger já estabeleceu direção); NÃO usa snapshot antecipado de `entryDir`
+- Confluência multi-categoria: 4 categorias (momentum, pattern, volume, event) alinhadas → ±5/±10/±15. Só aplica quando `entryScore !== 0`.
+- **Removidos em 2026-05-14:** RSI extremes, StochRSI extremes, MACD crossover, BB touch. Esses indicadores causavam conflito falso com `regimeScore` em mercado trending (RSI=70 → −20 colidia com regime bullish). Movidos para `momentumCtx` (avaliados pelo validator em contexto).
+- **`mxUp`/`mxDown`** ainda calculados internamente (para `momentumCtx`), mas não adicionados ao score.
+
+**`momentumCtx`** — campo adicionado ao retorno de `analyzeCandles` (desde 2026-05-14):
+```javascript
+{ rsi, stochRSI, macdCross: 'up'|'down'|null, bbPos: 'upper'|'lower'|'inside'|null }
+```
+Incluído em `scan_log.candidates_json` e retornado por `/api/scan/preview`. Python mapeia via `"momentum_ctx": c.get("momentumCtx")` em `backend_client.py`.
 
 **MTF (em `applyMTFScoring`):** confluence bonus +6–12 (2+ TFs same dir) **só altera `entryScore`**; conflict penalty -20 também. `regimeScore` é per-TF e nunca recebe MTF bonus.
 
@@ -112,7 +121,7 @@ runRealAnalysis() → fetchFearGreed() → per coin: fetchFunding + fetchOI
 **Thresholds do council (env vars):** `COUNCIL_MIN_REGIME=45` · `COUNCIL_MIN_ENTRY=30` · `COUNCIL_4H_MIN_ENTRY=50` (4h exige entry score maior; tem WR ruim historicamente).
 
 **Backend filtros antes de abrir:**
-1. `Math.abs(entryScore) >= min_score` (default 85)
+1. `Math.abs(entryScore) >= min_score` (default 30 desde 2026-05-14; era 85 quando entry score incluía RSI/MACD/BB)
 2. Regime gate: `Math.abs(regimeScore) >= account.min_regime ?? 45`
 3. BTC EMA200 4h (macro)
 4. `MAX_STOP_RISK_MULTIPLIER = 50`
@@ -124,7 +133,7 @@ runRealAnalysis() → fetchFearGreed() → per coin: fetchFunding + fetchOI
 Roda em `http://localhost:3001`. Cron de **15min** escaneia todos os 41 coins — desde 2026-04-29 **NÃO abre trades automaticamente**, apenas acumula candidatos em `scan_log.candidates_json`. Trade opening é exclusivo de `POST /api/trades/open` (Leader).
 
 **Três filtros antes de abrir qualquer posição:**
-1. `score >= min_score` (default 85 — WR=0% para 70-79, WR=9% para 80-84)
+1. `Math.abs(entryScore) >= min_score` (default 30 desde 2026-05-14; entry score agora é puro trigger — max ~70 sem padrões, não mais 90+ com RSI/MACD/BB)
 2. BTC EMA200 4h: BTC < EMA200 → bear → bloqueia LONGs; BTC > EMA200 → bull → bloqueia SHORTs. Falha retorna `null` (fail-open)
 3. `MAX_STOP_RISK_MULTIPLIER = 50`: rejeita se `stop_pct × leverage > 50`
 
@@ -222,6 +231,9 @@ cd agents-v2 && python run_backtest_replay.py --since 2026-04-15
 - **Validator fallback = DOWNGRADE (não REJECT):** erro de provider deve deixar o council rodar com flag de ceticismo, não silenciar tudo. Não inverter para REJECT — perderia trades reais em outage transient.
 - **Node names ≠ State keys (LangGraph):** o validator node é `gate_validator`, não `validator`, porque `validator` é chave do `State` TypedDict. Mesma regra dos `analyst_*/researcher_*/decision_trader`. Tentar `g.add_node("validator", ...)` quebra com `ValueError: 'validator' is already being used as a state key`.
 - **`agent_decisions.validator_verdict` migration:** coluna adicionada via `ALTER TABLE` em `ensure_table()`. Rows antigas têm `NULL` — queries de análise devem filtrar com `WHERE validator_verdict IS NOT NULL` quando relevante.
+- **`ValidatorOutput.market_phase` + `timing_quality` (desde 2026-05-14):** dois novos campos com defaults conservadores (`"choppy"` / `"neutral"`). Defaults acionam override table → forçam REJECT. **Qualquer mock de teste do validator DEVE incluir esses dois campos explicitamente** (ex: `"market_phase": "trending", "timing_quality": "good"`) — senão Pydantic usa defaults e a override table rejeita o VALIDATE, quebrando os testes. Arquivos afetados: `test_agents_validator.py`, `test_graph_smoke.py`.
+- **`_apply_phase_override` no validator (desde 2026-05-14):** tabela `_PHASE_OVERRIDES` em `agents/validator.py` capeia o verdict do LLM. Só pode downgrade, nunca upgrade. Regra: `trending+good/neutral` → sem override; qualquer combinação com `choppy` ou `reversing` → força DOWNGRADE ou REJECT. Se `momentum_ctx` for `None` (candidato antigo), LLM recebe aviso e deve devolver `choppy/neutral` → REJECT (fallback correto).
+- **`run_backtest_replay.py` usa `regime_score`+`entry_score` (desde 2026-05-14):** `score_replay` grava `"regime_score": cand.regime_score, "entry_score": cand.entry_score`. Não existe mais `cand.score` — campo removido do `Candidate`. Qualquer consumer de `agent_decisions` que lia `score` precisa ler os dois campos separados.
 
 ---
 
@@ -255,7 +267,7 @@ cd agents-v2 && python run_backtest_replay.py --since 2026-04-15
 - **`paper-trader` appenda USDT:** `openPosition` faz `coin.replace(/USDT$/i,'') + USDT`. Passar `"XRPUSDT"` gera `"XRPUSDTUSDT"`. Sempre passar símbolo base (`"XRP"`, `"1000PEPE"`).
 - **Gate do Leader é obrigatório:** nunca chamar `/api/trades/open` sem ambos os sub-agentes completados com sucesso.
 - **Tighten-stop direction-aware:** BUY: novo stop precisa ser maior; SELL: menor. Igualdade = false. Usa `isStopTighter` de `backend/stop-validator.js`.
-- **min_score padrão = 85:** `db.js` migra automaticamente contas com `min_score < 85` para 85 na inicialização (desde 2026-05-06 — antes pegava apenas `=== 70`).
+- **min_score padrão = 30 (desde 2026-05-14):** entry score sem RSI/MACD/BB tem pico em ~70 sem padrões; manter 85 gerava 0 candidatos permanentemente. `db.js` migra contas com `min_score < 30` → 30, E contas com `min_score === 85` → 30 (guard especial pois 85 não é `< 30`). Conta nova: DEFAULT 30.
 - **`_calcTechIndicators` recebe `tf`:** terceiro parâmetro obrigatório desde 2026-05-05. Qualquer novo call site deve passar o timeframe — usado para `FIND_LEVELS_LB` (lookback TF-aware: 5m=100, 15m=80, 30m/1h=60, 4h/1D=50).
 - **`calcRSI` — primeiro RSI válido em `p`:** seed de Wilder emite no índice `p` (não `p+1`). `rsi[p-1]` é sempre `null`; `rsi[p]` é o primeiro valor real.
 - **`calcOBVTrend` — guard de tamanho:** retorna `'neutral'` quando `emaOBV.length < 5` (janela insuficiente para slope confiável). Não usar `?? emaOBV[0]` — fallback para `null` causa comparações silenciosamente erradas.

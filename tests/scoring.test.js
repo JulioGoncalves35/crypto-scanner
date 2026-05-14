@@ -549,22 +549,22 @@ describe('_computeRegimeScore', () => {
 });
 
 describe('_computeEntryScore', () => {
-  it('returns positive on RSI oversold + MACD bullish cross', () => {
+  it('RSI oversold + MACD bullish cross alone no longer drive entryScore (regime-only)', () => {
     const ind = makeInd({
       rsi: 22, stochRSI: 10,
       macdNow: 1, sigNow: 0, macdPrev: 0, sigPrev: 1, // cross up
     });
     const { entryScore } = _computeEntryScore(100, ind, NEUTRAL_FG, [], []);
-    expect(entryScore).toBeGreaterThan(0);
+    expect(entryScore).toBe(0);
   });
 
-  it('returns negative on RSI overbought + MACD bearish cross', () => {
+  it('RSI overbought + MACD bearish cross alone no longer drive entryScore (regime-only)', () => {
     const ind = makeInd({
       rsi: 85, stochRSI: 95,
       macdNow: 0, sigNow: 1, macdPrev: 1, sigPrev: 0, // cross down
     });
     const { entryScore } = _computeEntryScore(100, ind, NEUTRAL_FG, [], []);
-    expect(entryScore).toBeLessThan(0);
+    expect(entryScore).toBe(0);
   });
 
   it('ignores EMA alignment (regime-only)', () => {
@@ -584,7 +584,8 @@ describe('_computeEntryScore', () => {
       squeeze: { releasedBull: true, squeezed: false, momentumTrend: 'rising' },
     });
     const { entryScore } = _computeEntryScore(94, ind, NEUTRAL_FG, [], []);
-    expect(entryScore).toBeGreaterThan(60);
+    // bosChoch=22 + squeeze=15 + confluence(momentum+pattern+event=3cats)=10 → 47
+    expect(entryScore).toBeGreaterThan(40);
   });
 });
 
@@ -634,5 +635,116 @@ describe('analyzeCandles dual-score', () => {
       { score: '999', leverage: 10, rr: 'fib' });
     expect(lo).not.toBeNull();
     expect(hi).toBeNull();
+  });
+});
+
+// ─── _computeEntryScore — post-cleanup contracts ──────────────────────────────
+// These tests verify that RSI/StochRSI/MACD crossover/BB no longer affect entryScore.
+// They will FAIL until _computeEntryScore is refactored in Task 2.
+describe('_computeEntryScore — momentum indicators removed', () => {
+  function makeEntryInd(overrides = {}) {
+    return {
+      rsi:       50,
+      stochRSI:  50,
+      macdNow:   1,  macdPrev: 1,
+      sigNow:    0,  sigPrev:  0,
+      histNow:   0,  histPrev: 0,
+      bb:        { upper: 110, mid: 100, lower: 90 },
+      volRatio:  1.0,
+      bosChoch:  null,
+      squeeze:   null,
+      orderBlock: null,
+      trendlineBreak: null,
+      emaCross:  null,
+      mktStruct: null,
+      triangle:  null,
+      dblPattern: null,
+      patterns:  [],
+      divergences: [],
+      ...overrides,
+    };
+  }
+  const FG = { value: 50, label: 'Neutro' };
+
+  it('RSI < 30 does NOT add to entryScore', () => {
+    const { entryScore: withOversold } = _computeEntryScore(100, makeEntryInd({ rsi: 28 }), FG);
+    const { entryScore: withNeutral  } = _computeEntryScore(100, makeEntryInd({ rsi: 50 }), FG);
+    expect(withOversold).toBe(withNeutral);
+  });
+
+  it('RSI > 70 does NOT subtract from entryScore', () => {
+    const { entryScore: withOverbought } = _computeEntryScore(100, makeEntryInd({ rsi: 75 }), FG);
+    const { entryScore: withNeutral    } = _computeEntryScore(100, makeEntryInd({ rsi: 50 }), FG);
+    expect(withOverbought).toBe(withNeutral);
+  });
+
+  it('StochRSI < 20 does NOT add to entryScore', () => {
+    const { entryScore: low } = _computeEntryScore(100, makeEntryInd({ stochRSI: 10 }), FG);
+    const { entryScore: mid } = _computeEntryScore(100, makeEntryInd({ stochRSI: 50 }), FG);
+    expect(low).toBe(mid);
+  });
+
+  it('StochRSI > 80 does NOT subtract from entryScore', () => {
+    const { entryScore: high } = _computeEntryScore(100, makeEntryInd({ stochRSI: 90 }), FG);
+    const { entryScore: mid  } = _computeEntryScore(100, makeEntryInd({ stochRSI: 50 }), FG);
+    expect(high).toBe(mid);
+  });
+
+  it('MACD bullish crossover does NOT add to entryScore', () => {
+    const { entryScore: cross }   = _computeEntryScore(100, makeEntryInd({ macdNow: 1, sigNow: 0, macdPrev: -1, sigPrev: 0 }), FG);
+    const { entryScore: noCross } = _computeEntryScore(100, makeEntryInd({ macdNow: 1, sigNow: 0, macdPrev:  1, sigPrev: 0 }), FG);
+    expect(cross).toBe(noCross);
+  });
+
+  it('BB lower touch does NOT add to entryScore', () => {
+    const { entryScore: atLower  } = _computeEntryScore(90,  makeEntryInd(), FG);
+    const { entryScore: atMiddle } = _computeEntryScore(100, makeEntryInd(), FG);
+    expect(atLower).toBe(atMiddle);
+  });
+
+  it('mxUp and mxDown are still returned (needed for momentumCtx)', () => {
+    const { mxUp, mxDown } = _computeEntryScore(100, makeEntryInd({
+      macdNow: 1, sigNow: 0, macdPrev: -1, sigPrev: 0,
+    }), FG);
+    expect(mxUp).toBe(true);
+    expect(mxDown).toBe(false);
+  });
+
+  it('volume spike does NOT fire when score=0 (no prior trigger)', () => {
+    const { entryScore } = _computeEntryScore(100, makeEntryInd({ volRatio: 3.0 }), FG);
+    expect(entryScore).toBe(0);
+  });
+
+  it('volume spike fires and follows direction when score != 0', () => {
+    const { entryScore: withVol  } = _computeEntryScore(100, makeEntryInd({
+      bosChoch: { score: 12 }, volRatio: 2.0,
+    }), FG);
+    const { entryScore: withoutVol } = _computeEntryScore(100, makeEntryInd({
+      bosChoch: { score: 12 }, volRatio: 1.0,
+    }), FG);
+    expect(withVol).toBeGreaterThan(withoutVol);
+    expect(withVol - withoutVol).toBe(12); // 7 volume + 5 confluence (volumeAligned + eventAligned)
+  });
+});
+
+describe('analyzeCandles — momentumCtx in return value', () => {
+  it('returns momentumCtx with rsi, stochRSI, macdCross, bbPos fields', async () => {
+    const { makeTrendingCandles } = await import('./fixtures/candles.js');
+    const candles = makeTrendingCandles(300);
+    const fg = { value: 50, label: 'Neutro' };
+    const result = analyzeCandles('BTC', '1h', candles, fg, null, null, { score: '0', leverage: 10, rr: 'fib' });
+    // analyzeCandles may return null if ADX or score filters fire — use a loose check
+    if (result !== null) {
+      expect(result).toHaveProperty('momentumCtx');
+      const ctx = result.momentumCtx;
+      expect(ctx).toHaveProperty('rsi');
+      expect(ctx).toHaveProperty('stochRSI');
+      expect(ctx).toHaveProperty('macdCross');
+      expect(ctx).toHaveProperty('bbPos');
+      // macdCross is 'up', 'down', or null
+      expect(['up', 'down', null]).toContain(ctx.macdCross);
+      // bbPos is 'upper', 'lower', 'inside', or null
+      expect(['upper', 'lower', 'inside', null]).toContain(ctx.bbPos);
+    }
   });
 });
