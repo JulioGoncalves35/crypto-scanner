@@ -7,6 +7,7 @@
 2026-05-14 18:17:31,473 [INFO] httpx: HTTP Request: GET https://api.bybit.com/v5/market/tickers?category=linear&symbol=BNBUSDT "HTTP/1.1 200 OK"
 2026-05-14 18:17:31,475 [INFO] src.llm_client: [llm] risk_reviewer → mistral-large (primary, attempt=1)
 2026-05-14 18:17:38,135 [INFO] httpx: HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-14 18:17:38,159 [INFO] run_risk_review: trade 1778705261314-BNB-4h (BNBUSDT): HOLD — Thesis remains intact as price is between current_stop and m1, with no signs of a broken structure.
 2026-05-14 18:17:41,185 [INFO] httpx: HTTP Request: GET https://api.bybit.com/v5/market/tickers?category=linear&symbol=AVAXUSDT "HTTP/1.1 200 OK"
 2026-05-14 18:17:41,187 [INFO] src.llm_client: [llm] risk_reviewer → mistral-large (primary, attempt=1)
 2026-05-14 18:17:49,260 [INFO] httpx: HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 200 OK"
