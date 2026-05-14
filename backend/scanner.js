@@ -157,9 +157,6 @@ export async function runScan() {
         if (!setup) continue;
 
         const absE = Math.abs(setup.entryScore);
-        const absR = Math.abs(setup.regimeScore);
-        // Regime gate: require minimum regime conviction (default 45)
-        if (absR < parseInt(account.min_regime ?? 45)) continue;
 
         if (absE >= parseInt(min_score)) {
           setup._rawType = TF_TYPE[tf] || 'day';

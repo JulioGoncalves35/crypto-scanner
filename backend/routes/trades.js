@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getTrades, getActiveTrades, getTrade, getStats, updateTrade } from '../db.js';
+import { getTrades, getActiveTrades, getTrade, getStats, updateTrade, getAccount } from '../db.js';
 import { closeManualAt, openPosition } from '../paper-trader.js';
 import { isStopTighter } from '../stop-validator.js';
 import { fetchCurrentPrice } from '../price-checker.js';
@@ -122,6 +122,13 @@ router.post('/open', async (req, res) => {
   }
   if (!Number.isInteger(setup.regime_score) || !Number.isInteger(setup.entry_score)) {
     return res.status(400).json({ error: 'regime_score and entry_score must be integers' });
+  }
+  const account = getAccount();
+  const minRegime = account.min_regime ?? 45;
+  if (Math.abs(setup.regime_score) < minRegime) {
+    return res.status(409).json({
+      error: `regime_score ${setup.regime_score} below minimum ${minRegime}`,
+    });
   }
   try {
     const trade = await openPosition(setup);
