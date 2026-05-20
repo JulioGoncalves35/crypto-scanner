@@ -62,7 +62,8 @@
       "Skill(superpowers:subagent-driven-development)",
       "Bash(grep *)",
       "Skill(superpowers:finishing-a-development-branch)",
-      "Bash(gh run *)"
+      "Bash(gh run *)",
+      "Bash(Get-Content \"C:\\\\Users\\\\julio\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-julio-Documents-github-crypto-scanner\\\\ab59f120-77e5-43fa-b31c-4a4d7693ee9d\\\\tasks\\\\bskbazyk2.output\" -ErrorAction SilentlyContinue)"
     ]
   }
 }

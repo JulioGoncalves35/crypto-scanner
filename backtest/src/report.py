@@ -41,8 +41,9 @@ def save_results(results: dict, label: str = "") -> None:
             row.update(w["stats"])
             rows.append(row)
         if rows:
+            all_keys = list(dict.fromkeys(k for row in rows for k in row))
             with open(windows_path, "w", newline="", encoding="utf-8") as f:
-                wr = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+                wr = csv.DictWriter(f, fieldnames=all_keys, extrasaction="ignore")
                 wr.writeheader()
                 wr.writerows(rows)
             print(f"Windows saved: {windows_path}")

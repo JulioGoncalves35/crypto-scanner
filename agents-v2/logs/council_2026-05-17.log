@@ -1,0 +1,7 @@
+﻿=== run @ 2026-05-17 17:03:36 ===
+2026-05-17 17:04:07,081 [INFO] run_council: council starting (dry_run=False, min_regime=45, min_entry=30, 4h_min_entry=50)
+=== run @ 2026-05-17 17:42:18 ===
+2026-05-17 17:42:28,827 [INFO] run_council: council starting (dry_run=False, min_regime=45, min_entry=30, 4h_min_entry=50)
+2026-05-17 17:44:40,656 [INFO] httpx: HTTP Request: POST http://localhost:3001/api/scan/preview "HTTP/1.1 200 OK"
+2026-05-17 17:44:40,778 [INFO] run_council: scan_id=2406, 6 raw candidates
+2026-05-17 17:44:40,779 [INFO] run_council: 0 candidates pass dual-threshold (regime>=45, entry>=30, 4h_entry>=50)
